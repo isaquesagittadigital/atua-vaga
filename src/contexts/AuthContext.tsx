@@ -49,22 +49,55 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const signInWithPassword = async (email: string, password: string) => {
-        const { error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+
+        const response = await fetch(`${apiUrl}/auth/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, password })
         });
-        if (error) throw error;
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Erro ao fazer login');
+        }
+
+        // Manually set the session in the client-side Supabase instance
+        if (data.session) {
+            const { error } = await supabase.auth.setSession(data.session);
+            if (error) throw error;
+        }
     };
 
     const signUp = async (email: string, password: string, additionalData?: object) => {
-        const { error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-                data: additionalData
-            }
+        // Use backend for registration to enforce validation rules
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+
+        const response = await fetch(`${apiUrl}/auth/register`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email,
+                password,
+                ...additionalData
+            })
         });
-        if (error) throw error;
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Erro ao cadastrar');
+        }
+
+        // Auto-login after successful backend registration (since backend just creates user)
+        // We need to sign in from the client side because backend creation doesn't return a session token usable here unless we pass it
+        // But for security, let's just use signInWithPassword immediately after.
+        await signInWithPassword(email, password);
     };
 
     const signOut = async () => {

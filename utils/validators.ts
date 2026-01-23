@@ -8,6 +8,7 @@ export const formatCPF = (value: string): string => {
     .replace(/(-\d{2})\d+?$/, '$1'); // Limit to 11 digits
 };
 
+
 export const isValidCPF = (cpf: string): boolean => {
   const cleanCPF = cpf.replace(/\D/g, '');
   if (cleanCPF.length !== 11) return false;
@@ -29,3 +30,14 @@ export const isValidCPF = (cpf: string): boolean => {
 
   return true;
 };
+
+export const formatPhone = (value: string): string => {
+  const cleanValue = value.replace(/\D/g, '');
+  const match = cleanValue.match(/^(\d{0,2})(\d{0,5})(\d{0,4})$/);
+  if (match) {
+    if (match[2]) return `(${match[1]}) ${match[2]}${match[3] ? '-' + match[3] : ''}`;
+    if (match[1]) return `(${match[1]}`;
+  }
+  return value;
+};
+

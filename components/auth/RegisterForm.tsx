@@ -1,8 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronLeft, EyeOff, Eye } from 'lucide-react';
 import { GoogleIcon } from '../ui/Icons';
-import { formatCPF } from '../../utils/validators';
+import { formatCPF, isValidCPF, formatPhone } from '../../utils/validators';
 import StatusModal from '../modals/StatusModal';
 import ConfirmModal from '../modals/ConfirmModal';
 import { useAuth } from '../../src/contexts/AuthContext';
@@ -21,6 +21,9 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
   const [showSuccess, setShowSuccess] = useState(false);
   const [showAlreadyRegistered, setShowAlreadyRegistered] = useState(false);
   const [showPass, setShowPass] = useState({ pass: false, confirm: false });
+  const [validationErrors, setValidationErrors] = useState({ cpf: '', password: '' });
+  const [isStep1Valid, setIsStep1Valid] = useState(false);
+  const [isStep2Valid, setIsStep2Valid] = useState(false);
 
   const [formData, setFormData] = useState({
     cpf: '',
@@ -31,16 +34,45 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
     phone: ''
   });
 
+  // Real-time validation for Step 1
+  useEffect(() => {
+    if (step === 1) {
+      const isCpfValid = isValidCPF(formData.cpf);
+      // PRD: Min 8 chars, 1 uppercase, 1 special char
+      const hasMinLen = formData.password.length >= 8;
+      const hasUpper = /[A-Z]/.test(formData.password);
+      const hasSpecial = /[\W_]/.test(formData.password);
+      const isPasswordComplex = hasMinLen && hasUpper && hasSpecial;
+      const doPasswordsMatch = formData.password === formData.confirmPassword;
+
+      // Update password error message in real-time
+      if (formData.confirmPassword && !doPasswordsMatch) {
+        setValidationErrors(prev => ({ ...prev, password: 'As senhas não coincidem' }));
+      } else {
+        setValidationErrors(prev => ({ ...prev, password: '' }));
+      }
+
+      setIsStep1Valid(isCpfValid && isPasswordComplex && doPasswordsMatch);
+    } else if (step === 2) {
+      // Step 2 Validation: All fields required, email format
+      const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
+      const isNameFilled = formData.name.trim().length > 2;
+      const isPhoneFilled = formData.phone.replace(/\D/g, '').length >= 10;
+
+      setIsStep2Valid(isEmailValid && isNameFilled && isPhoneFilled);
+    }
+  }, [formData, step]);
+
   const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, cpf: formatCPF(e.target.value) }));
+    if (validationErrors.cpf) {
+      setValidationErrors(prev => ({ ...prev, cpf: '' }));
+    }
   };
 
   const handleStep1 = (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
-      alert("As senhas não coincidem!");
-      return;
-    }
+    if (!isStep1Valid) return; // Prevent submission if invalid
     setStep(2);
   };
 
@@ -61,7 +93,12 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
       if (error.message.includes("already registered") || error.code === '400') {
         setShowAlreadyRegistered(true);
       } else {
-        alert("Erro ao cadastrar: " + error.message);
+        // Generic error handling as per PRD
+        if (error.message.includes('API Key') || error.message.includes('Failed to fetch')) {
+          alert("Erro ao finalizar o cadastro. Tente novamente em instantes.");
+        } else {
+          alert("Erro ao cadastrar: " + error.message);
+        }
       }
     } finally {
       setLoading(false);
@@ -95,12 +132,17 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
               <label className="block text-[11px] font-bold text-gray-400 mb-2 uppercase tracking-wider">CPF</label>
               <input
                 type="text"
-                placeholder="000.000.000-00"
+                placeholder="Digite seu CPF (apenas números)"
                 value={formData.cpf}
                 onChange={handleCpfChange}
                 className={inputClasses}
                 required
               />
+              {validationErrors.cpf && (
+                <span className="text-red-500 text-[12px] font-bold mt-1.5 block animate-in slide-in-from-top-1 fade-in duration-300">
+                  {validationErrors.cpf}
+                </span>
+              )}
             </div>
 
             <div>
@@ -108,7 +150,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
               <div className="relative">
                 <input
                   type={showPass.pass ? 'text' : 'password'}
-                  placeholder="**********"
+                  placeholder="Crie uma senha segura"
                   value={formData.password}
                   onChange={(e) => setFormData(p => ({ ...p, password: e.target.value }))}
                   className={inputClasses}
@@ -118,6 +160,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
                   {showPass.pass ? <Eye size={20} /> : <EyeOff size={20} />}
                 </button>
               </div>
+              <p className="text-[11px] text-gray-400 mt-2">Mínimo 8 caracteres, 1 maiúscula e 1 caractere especial</p>
             </div>
 
             <div>
@@ -135,12 +178,20 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
                   {showPass.confirm ? <Eye size={20} /> : <EyeOff size={20} />}
                 </button>
               </div>
+              {validationErrors.password && (
+                <span className="text-red-500 text-[12px] font-bold mt-1.5 block animate-in slide-in-from-top-1 fade-in duration-300">
+                  {validationErrors.password}
+                </span>
+              )}
             </div>
 
             <button
               type="submit"
-              disabled={loading}
-              className="w-full py-4 bg-[#F04E23] hover:bg-[#E03E13] text-white font-bold rounded-2xl transition-all shadow-lg shadow-orange-100 text-[16px]"
+              disabled={loading || !isStep1Valid}
+              className={`w-full py-4 font-bold rounded-2xl transition-all shadow-lg text-[16px] ${isStep1Valid
+                ? 'bg-[#F04E23] hover:bg-[#E03E13] text-white shadow-orange-100'
+                : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
+                }`}
             >
               {loading ? 'Processando...' : 'Continuar'}
             </button>
@@ -177,7 +228,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
                 type="tel"
                 placeholder="+55 00 000000000"
                 value={formData.phone}
-                onChange={(e) => setFormData(p => ({ ...p, phone: e.target.value }))}
+                onChange={(e) => setFormData(p => ({ ...p, phone: formatPhone(e.target.value) }))}
                 className={inputClasses}
                 required
               />
@@ -185,8 +236,11 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
 
             <button
               type="submit"
-              disabled={loading}
-              className="w-full py-4 bg-[#F04E23] hover:bg-[#E03E13] text-white font-bold rounded-2xl transition-all shadow-lg shadow-orange-100 text-[16px]"
+              disabled={loading || !isStep2Valid}
+              className={`w-full py-4 font-bold rounded-2xl transition-all shadow-lg text-[16px] ${isStep2Valid
+                ? 'bg-[#F04E23] hover:bg-[#E03E13] text-white shadow-orange-100'
+                : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
+                }`}
             >
               {loading ? 'Finalizando...' : 'Finalizar cadastro'}
             </button>

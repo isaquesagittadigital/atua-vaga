@@ -4,14 +4,51 @@ import Step2Optional from './Step2Optional';
 import OnboardingSuccess from './OnboardingSuccess';
 import { Logo } from '../../../ui/Icons';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../../src/contexts/AuthContext';
 
 const OnboardingPage: React.FC = () => {
     const [step, setStep] = useState(1);
-    const navigate = useNavigate();
+    const { session } = useAuth();
+    const [loading, setLoading] = useState(false);
 
-    // Progress logic
-    // Step 1: 50% (circle at start/middle)
-    // Step 2: 100% (circle at end)
+    // State to hold all onboarding data
+    const [formData, setFormData] = useState({
+        technical: {},
+        optional: {}
+    });
+
+    const updateFormData = (section: 'technical' | 'optional', data: any) => {
+        setFormData(prev => ({
+            ...prev,
+            [section]: { ...prev[section], ...data }
+        }));
+    };
+
+    const handleFinish = async () => {
+        if (!session) return;
+        setLoading(true);
+
+        try {
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+            const response = await fetch(`${apiUrl}/company/onboarding`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`
+                },
+                body: JSON.stringify(formData)
+            });
+
+            if (!response.ok) throw new Error('Failed to save onboarding data');
+
+            setStep(3); // Show success screen
+        } catch (error) {
+            console.error('Error saving onboarding:', error);
+            alert('Erro ao salvar dados. Tente novamente.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     if (step === 3) {
         return (
@@ -82,8 +119,22 @@ const OnboardingPage: React.FC = () => {
                         </div>
                     </div>
 
-                    {step === 1 && <Step1Technical onNext={() => setStep(2)} />}
-                    {step === 2 && <Step2Optional onBack={() => setStep(1)} onFinish={() => setStep(3)} />}
+                    {step === 1 && (
+                        <Step1Technical
+                            data={formData.technical}
+                            onUpdate={(data) => updateFormData('technical', data)}
+                            onNext={() => setStep(2)}
+                        />
+                    )}
+                    {step === 2 && (
+                        <Step2Optional
+                            data={formData.optional}
+                            onUpdate={(data) => updateFormData('optional', data)}
+                            onBack={() => setStep(1)}
+                            onFinish={handleFinish}
+                            loading={loading}
+                        />
+                    )}
                 </div>
             </main>
         </div>

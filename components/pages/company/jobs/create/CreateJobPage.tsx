@@ -4,11 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import Step1BasicData from './Step1BasicData';
 import Step2Requirements from './Step2Requirements';
 import Step3Screening from './Step3Screening';
-import { supabase } from '../../../../../src/lib/supabase';
+
 import { useAuth } from '../../../../../src/contexts/AuthContext';
 
 const CreateJobPage: React.FC = () => {
-    const { user } = useAuth();
+    const { user, session } = useAuth();
     const [step, setStep] = useState(1);
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
@@ -35,7 +35,7 @@ const CreateJobPage: React.FC = () => {
     };
 
     const handleSubmit = async () => {
-        if (!user) {
+        if (!user || !session) {
             alert("Você precisa estar logado para publicar uma vaga.");
             return;
         }
@@ -60,17 +60,27 @@ ${jobData.description}
 (Detalhes dos requisitos seriam listados aqui baseados no Step 2)
             `.trim();
 
-            const { error } = await supabase.from('jobs').insert({
-                company_id: user.id,
-                title: jobData.title,
-                description: fullDescription,
-                location: jobData.location,
-                type: jobData.contractType,
-                salary_range: jobData.salary,
-                status: 'active'
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+            const response = await fetch(`${apiUrl}/jobs`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`
+                },
+                body: JSON.stringify({
+                    title: jobData.title,
+                    description: fullDescription,
+                    location: jobData.location,
+                    type: jobData.contractType,
+                    salary_range: jobData.salary,
+                    status: 'active'
+                })
             });
 
-            if (error) throw error;
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Falha ao criar vaga');
+            }
 
             alert("Vaga publicada com sucesso!");
             navigate('/company/dashboard'); // Navigate to dashboard or jobs list

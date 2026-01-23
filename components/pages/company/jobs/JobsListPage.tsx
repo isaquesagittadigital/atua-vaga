@@ -1,44 +1,40 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import JobCard from './JobCard';
+import { useAuth } from '../../../../src/contexts/AuthContext';
 
 const JobsListPage: React.FC = () => {
     const navigate = useNavigate();
+    const { session } = useAuth();
+    const [jobs, setJobs] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    // Mock data based on Image 2
-    const jobs = [
-        {
-            id: '1',
-            title: 'Analista de Marketing Digital',
-            company: 'Digital Marketing Experts S/A',
-            location: 'Remoto',
-            salary: 'A combinar',
-            contractType: 'Período flexível',
-            benefits: 'VR/VT',
-            postedAt: '1 dia atrás'
-        },
-        {
-            id: '2',
-            title: 'Pessoa Recursos Humanos',
-            company: 'Digital Marketing Experts S/A',
-            location: 'Remoto',
-            salary: 'A combinar',
-            contractType: 'Período flexível',
-            benefits: 'VR/VT',
-            postedAt: '1 dia atrás'
-        },
-        {
-            id: '3',
-            title: 'Gerente de Projetos',
-            company: 'Digital Marketing Experts S/A',
-            location: 'Remoto',
-            salary: 'A combinar',
-            contractType: 'Período flexível',
-            benefits: 'VR/VT',
-            postedAt: '1 dia atrás'
+    useEffect(() => {
+        fetchJobs();
+    }, [session]);
+
+    const fetchJobs = async () => {
+        if (!session) return;
+
+        try {
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+            const response = await fetch(`${apiUrl}/jobs`, {
+                headers: {
+                    'Authorization': `Bearer ${session.access_token}`
+                }
+            });
+
+            if (!response.ok) throw new Error('Failed to fetch jobs');
+
+            const data = await response.json();
+            setJobs(data);
+        } catch (error) {
+            console.error('Error loading jobs:', error);
+        } finally {
+            setLoading(false);
         }
-    ];
+    };
 
     return (
         <div className="max-w-[1400px] w-full mx-auto px-6 py-8">
@@ -54,13 +50,38 @@ const JobsListPage: React.FC = () => {
             </div>
             <p className="text-sm text-gray-500 mb-10">Baseado no seu perfil, preferências e requisitos da vaga.</p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {jobs.map((job) => (
-                    <JobCard key={job.id} {...job} />
-                ))}
-
-                {/* Empty State visual helper if needed, but list is populated */}
-            </div>
+            {loading ? (
+                <div className="flex justify-center p-12">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#F04E23]"></div>
+                </div>
+            ) : jobs.length === 0 ? (
+                <div className="text-center py-20 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+                    <h3 className="text-lg font-bold text-gray-700 mb-2">Nenhuma vaga encontrada</h3>
+                    <p className="text-gray-500 mb-6">Comece criando sua primeira vaga para encontrar talentos.</p>
+                    <button
+                        onClick={() => navigate('/company/jobs/new')}
+                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                        Criar vaga agora
+                    </button>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {jobs.map((job) => (
+                        <JobCard
+                            key={job.id}
+                            id={job.id}
+                            title={job.title}
+                            company="Sua Empresa" // We can fetch company name later or store in user metadata
+                            location={job.location}
+                            salary={job.salary_range}
+                            contractType={job.type}
+                            benefits="Benefícios (Ver detalhes)" // Placeholder or add to DB schema
+                            postedAt={new Date(job.created_at).toLocaleDateString('pt-BR')}
+                        />
+                    ))}
+                </div>
+            )}
         </div>
     );
 };
