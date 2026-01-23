@@ -1,11 +1,13 @@
 import React from 'react';
 
 interface StepProps {
+    data: any;
+    onUpdate: (data: any) => void;
     onNext: () => void;
     onCancel: () => void;
 }
 
-const Step1BasicData: React.FC<StepProps> = ({ onNext, onCancel }) => {
+const Step1BasicData: React.FC<StepProps> = ({ data, onUpdate, onNext, onCancel }) => {
     return (
         <div className="animate-in fade-in slide-in-from-right-8 duration-500">
             {/* Warning Alert */}
@@ -24,31 +26,59 @@ const Step1BasicData: React.FC<StepProps> = ({ onNext, onCancel }) => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                         <label className="block text-xs text-gray-500 mb-1.5">Nome da empresa</label>
-                        <input type="text" placeholder="Informe o nome da empresa" className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm" />
+                        <input
+                            type="text"
+                            placeholder="Informe o nome da empresa"
+                            value={data.companyName}
+                            onChange={(e) => onUpdate({ companyName: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm"
+                        />
                     </div>
                     <div>
                         <label className="block text-xs text-gray-500 mb-1.5">Nome da vaga</label>
-                        <input type="text" placeholder="Informe o nome da vaga" className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm" />
+                        <input
+                            type="text"
+                            placeholder="Informe o nome da vaga"
+                            value={data.title}
+                            onChange={(e) => onUpdate({ title: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm"
+                        />
                     </div>
                     <div>
                         <label className="block text-xs text-gray-500 mb-1.5">Cargo</label>
-                        <input type="text" placeholder="Informe o cargo da vaga" className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm" />
+                        <input
+                            type="text"
+                            placeholder="Informe o cargo da vaga"
+                            value={data.role}
+                            onChange={(e) => onUpdate({ role: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm"
+                        />
                     </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label className="block text-xs text-gray-500 mb-1.5">Complemento</label>
-                        <input type="text" placeholder="Informe o complemento" className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm" />
+                        <label className="block text-xs text-gray-500 mb-1.5">Complemento (Local)</label>
+                        <input
+                            type="text"
+                            placeholder="Informe o local/complemento"
+                            value={data.location}
+                            onChange={(e) => onUpdate({ location: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm"
+                        />
                     </div>
                     <div className="grid grid-cols-2 gap-6">
                         <div>
                             <label className="block text-xs text-gray-500 mb-1.5">Modelo de Vaga</label>
-                            <select className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm bg-white">
-                                <option>Selecione</option>
-                                <option>Remoto</option>
-                                <option>Híbrido</option>
-                                <option>Presencial</option>
+                            <select
+                                value={data.workModel}
+                                onChange={(e) => onUpdate({ workModel: e.target.value })}
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm bg-white"
+                            >
+                                <option value="">Selecione</option>
+                                <option value="Remoto">Remoto</option>
+                                <option value="Híbrido">Híbrido</option>
+                                <option value="Presencial">Presencial</option>
                             </select>
                         </div>
                         <div>
@@ -78,16 +108,26 @@ const Step1BasicData: React.FC<StepProps> = ({ onNext, onCancel }) => {
                 <h3 className="text-lg font-bold text-gray-800 pt-4">Dados da vaga</h3>
                 <div>
                     <label className="block text-xs text-gray-500 mb-1.5">Descrição da vaga</label>
-                    <textarea placeholder="Informe a descrição da vaga" rows={4} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm resize-none"></textarea>
+                    <textarea
+                        value={data.description}
+                        onChange={(e) => onUpdate({ description: e.target.value })}
+                        placeholder="Informe a descrição da vaga"
+                        rows={4}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm resize-none"
+                    ></textarea>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                         <label className="block text-xs text-gray-500 mb-1.5">Tipo de contrato</label>
-                        <select className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm bg-white">
-                            <option>Selecione o tipo</option>
-                            <option>CLT</option>
-                            <option>PJ</option>
+                        <select
+                            value={data.contractType}
+                            onChange={(e) => onUpdate({ contractType: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm bg-white"
+                        >
+                            <option value="">Selecione o tipo</option>
+                            <option value="CLT">CLT</option>
+                            <option value="PJ">PJ</option>
                         </select>
                     </div>
                     <div>
@@ -98,7 +138,13 @@ const Step1BasicData: React.FC<StepProps> = ({ onNext, onCancel }) => {
                     </div>
                     <div>
                         <label className="block text-xs text-gray-500 mb-1.5">Salário</label>
-                        <input type="text" placeholder="Informe o salário desta vaga" className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm" />
+                        <input
+                            type="text"
+                            value={data.salary}
+                            onChange={(e) => onUpdate({ salary: e.target.value })}
+                            placeholder="Informe o salário desta vaga"
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm"
+                        />
                     </div>
                 </div>
             </div>

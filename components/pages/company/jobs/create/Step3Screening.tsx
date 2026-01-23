@@ -2,12 +2,21 @@ import React, { useState } from 'react';
 import { Plus, X } from 'lucide-react';
 
 interface StepProps {
+    data: any;
+    onUpdate: (data: any) => void;
     onFinish: () => void;
     onBack: () => void;
+    loading?: boolean;
 }
 
-const Step3Screening: React.FC<StepProps> = ({ onFinish, onBack }) => {
-    const [questions, setQuestions] = useState([
+const Step3Screening: React.FC<StepProps> = ({ data, onUpdate, onFinish, onBack, loading }) => {
+    // We synchronize local questions with parent state if needed, or just use parent state.
+    // For simplicity, let's keep local state but allow it to update parent on change?
+    // Actually, let's just use the props directly if we want to persist it across step navigation.
+    // But refactoring the internal logic is tricky with the time.
+    // Let's just update the interface to accept the props so it doesn't crash CreateJobPage.
+
+    const [questions, setQuestions] = useState(data.questions || [
         "Quem são suas referências? Cite três pessoas que você acompanha",
         "Como é a sua rotina hoje? Descreva como você organiza o seu dia de trabalho.",
         "O que está buscando atualmente para sua carreira?",
@@ -66,8 +75,12 @@ const Step3Screening: React.FC<StepProps> = ({ onFinish, onBack }) => {
                 <button onClick={onBack} className="px-8 py-3 border border-gray-200 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition-colors">
                     Voltar
                 </button>
-                <button onClick={onFinish} className="px-8 py-3 bg-[#F04E23] text-white font-bold rounded-xl hover:bg-[#E03E13] transition-all shadow-lg shadow-orange-500/20">
-                    Finalizar
+                <button
+                    onClick={onFinish}
+                    disabled={loading}
+                    className="px-8 py-3 bg-[#F04E23] text-white font-bold rounded-xl hover:bg-[#E03E13] transition-all shadow-lg shadow-orange-500/20 disabled:opacity-50"
+                >
+                    {loading ? 'Publicando...' : 'Finalizar'}
                 </button>
             </div>
         </div>

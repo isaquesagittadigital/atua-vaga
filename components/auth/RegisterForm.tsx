@@ -5,6 +5,7 @@ import { GoogleIcon } from '../ui/Icons';
 import { formatCPF } from '../../utils/validators';
 import StatusModal from '../modals/StatusModal';
 import ConfirmModal from '../modals/ConfirmModal';
+import { useAuth } from '../../src/contexts/AuthContext';
 
 interface RegisterFormProps {
   onBack: () => void;
@@ -14,19 +15,20 @@ interface RegisterFormProps {
 }
 
 const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegisterComplete, onRecoverAccess }) => {
+  const { signUp, signInWithGoogle } = useAuth();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showAlreadyRegistered, setShowAlreadyRegistered] = useState(false);
   const [showPass, setShowPass] = useState({ pass: false, confirm: false });
-  
+
   const [formData, setFormData] = useState({
-    cpf: '906.781.049-56',
+    cpf: '',
     password: '',
     confirmPassword: '',
-    name: 'José de Alencar',
-    email: 'samuel@sagittadigital.com.br',
-    phone: '+55 11 99239192'
+    name: '',
+    email: '',
+    phone: ''
   });
 
   const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -35,24 +37,35 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
 
   const handleStep1 = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      if (formData.cpf === '906.781.049-56') {
-        setShowAlreadyRegistered(true);
-      } else {
-        setStep(2);
-      }
-    }, 800);
+    if (formData.password !== formData.confirmPassword) {
+      alert("As senhas não coincidem!");
+      return;
+    }
+    setStep(2);
   };
 
-  const handleStep2 = (e: React.FormEvent) => {
+  const handleStep2 = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+
+    try {
+      await signUp(formData.email, formData.password, {
+        name: formData.name,
+        phone: formData.phone,
+        cpf: formData.cpf, // Storing CPF in metadata for now
+        role: 'candidate'
+      });
       setShowSuccess(true);
-    }, 1000);
+    } catch (error: any) {
+      console.error(error);
+      if (error.message.includes("already registered") || error.code === '400') {
+        setShowAlreadyRegistered(true);
+      } else {
+        alert("Erro ao cadastrar: " + error.message);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const inputClasses = "w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-[#F04E23] focus:ring-2 focus:ring-[#F04E23]/10 outline-none transition-all text-[15px]";
@@ -60,7 +73,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
   return (
     <div className="w-full max-w-[450px] mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="bg-white px-10 py-12 rounded-[32px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50 relative">
-        <button 
+        <button
           onClick={step === 1 ? onBack : () => setStep(1)}
           className="flex items-center gap-1.5 text-gray-800 font-black text-[14px] mb-8 hover:text-[#F04E23] transition-colors"
         >
@@ -80,7 +93,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
           <form onSubmit={handleStep1} className="space-y-6">
             <div>
               <label className="block text-[11px] font-bold text-gray-400 mb-2 uppercase tracking-wider">CPF</label>
-              <input 
+              <input
                 type="text"
                 placeholder="000.000.000-00"
                 value={formData.cpf}
@@ -93,7 +106,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
             <div>
               <label className="block text-[11px] font-bold text-gray-400 mb-2 uppercase tracking-wider">Senha</label>
               <div className="relative">
-                <input 
+                <input
                   type={showPass.pass ? 'text' : 'password'}
                   placeholder="**********"
                   value={formData.password}
@@ -110,7 +123,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
             <div>
               <label className="block text-[11px] font-bold text-gray-400 mb-2 uppercase tracking-wider">Confirmar senha</label>
               <div className="relative">
-                <input 
+                <input
                   type={showPass.confirm ? 'text' : 'password'}
                   placeholder="**********"
                   value={formData.confirmPassword}
@@ -124,7 +137,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
               </div>
             </div>
 
-            <button 
+            <button
               type="submit"
               disabled={loading}
               className="w-full py-4 bg-[#F04E23] hover:bg-[#E03E13] text-white font-bold rounded-2xl transition-all shadow-lg shadow-orange-100 text-[16px]"
@@ -136,7 +149,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
           <form onSubmit={handleStep2} className="space-y-6">
             <div>
               <label className="block text-[11px] font-bold text-gray-400 mb-2 uppercase tracking-wider">Nome</label>
-              <input 
+              <input
                 type="text"
                 placeholder="Nome completo"
                 value={formData.name}
@@ -148,7 +161,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
 
             <div>
               <label className="block text-[11px] font-bold text-gray-400 mb-2 uppercase tracking-wider">E-mail</label>
-              <input 
+              <input
                 type="email"
                 placeholder="exemplo@email.com"
                 value={formData.email}
@@ -160,7 +173,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
 
             <div>
               <label className="block text-[11px] font-bold text-gray-400 mb-2 uppercase tracking-wider">Telefone</label>
-              <input 
+              <input
                 type="tel"
                 placeholder="+55 00 000000000"
                 value={formData.phone}
@@ -170,7 +183,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
               />
             </div>
 
-            <button 
+            <button
               type="submit"
               disabled={loading}
               className="w-full py-4 bg-[#F04E23] hover:bg-[#E03E13] text-white font-bold rounded-2xl transition-all shadow-lg shadow-orange-100 text-[16px]"
@@ -188,8 +201,9 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
 
         {step === 1 && (
           <div className="mt-10">
-            <button 
+            <button
               type="button"
+              onClick={signInWithGoogle}
               className="w-full flex items-center justify-center gap-3 px-4 py-4 border border-gray-200 bg-white rounded-2xl hover:bg-gray-50 transition-all font-bold text-gray-700 text-[14px] shadow-sm"
             >
               <GoogleIcon />
@@ -200,7 +214,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
       </div>
 
       {showSuccess && (
-        <StatusModal 
+        <StatusModal
           type="success"
           title="Cadastro concluído!"
           message="Agora você já pode entrar na sua conta e aproveitar nossas melhores funcionalidades!"
@@ -213,7 +227,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
       )}
 
       {showAlreadyRegistered && (
-        <ConfirmModal 
+        <ConfirmModal
           type="warning"
           title="Conta já cadastrada!"
           message="Você já possui um cadastro com esse e-mail. Tente recuperar sua conta para acessar nossa plataforma!"

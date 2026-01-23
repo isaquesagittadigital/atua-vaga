@@ -10,8 +10,11 @@ import {
 const inputClasses = "w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-[#F04E23] focus:ring-2 focus:ring-[#F04E23]/10 outline-none transition-all text-[15px]";
 const labelClasses = "block text-[14px] font-bold text-gray-600 mb-2";
 
+import { useAuth } from '../../../src/contexts/AuthContext';
+
 const ProfessionalRegistration: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [step, setStep] = useState(1);
   const [showFinalModal, setShowFinalModal] = useState(false);
 
@@ -37,19 +40,19 @@ const ProfessionalRegistration: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className={labelClasses}>Nome</label>
-                  <input type="text" defaultValue="José de Alencar" className={inputClasses} />
+                  <input type="text" defaultValue={user?.user_metadata?.full_name || ''} placeholder="Seu nome completo" className={inputClasses} />
                 </div>
                 <div>
                   <label className={labelClasses}>CPF ou CNPJ</label>
-                  <input type="text" defaultValue="906.781.049-56" className={inputClasses} />
+                  <input type="text" defaultValue={user?.user_metadata?.cpf || ''} placeholder="000.000.000-00" className={inputClasses} />
                 </div>
                 <div>
                   <label className={labelClasses}>E-mail</label>
-                  <input type="email" defaultValue="samuel@sagittadigital.com.br" className={inputClasses} />
+                  <input type="email" defaultValue={user?.email || ''} placeholder="seu@email.com" className={inputClasses} />
                 </div>
                 <div>
                   <label className={labelClasses}>Telefone</label>
-                  <input type="tel" defaultValue="+55 11 99239192" className={inputClasses} />
+                  <input type="tel" defaultValue={user?.user_metadata?.phone || ''} placeholder="+55 11 99999-9999" className={inputClasses} />
                 </div>
                 <div>
                   <label className={labelClasses}>Data de nascimento</label>

@@ -4,10 +4,83 @@ import { useNavigate } from 'react-router-dom';
 import Step1BasicData from './Step1BasicData';
 import Step2Requirements from './Step2Requirements';
 import Step3Screening from './Step3Screening';
+import { supabase } from '../../../../../src/lib/supabase';
+import { useAuth } from '../../../../../src/contexts/AuthContext';
 
 const CreateJobPage: React.FC = () => {
+    const { user } = useAuth();
     const [step, setStep] = useState(1);
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
+
+    const [jobData, setJobData] = useState({
+        title: '',
+        companyName: '', // Visual only or for description
+        role: '',
+        location: '',
+        workModel: '',
+        area: '',
+        specialization: '',
+        level: '',
+        description: '',
+        contractType: '',
+        journey: '',
+        salary: '',
+        requirements: {} as any, // For step 2
+        questions: [] as string[] // For step 3
+    });
+
+    const updateJobData = (data: Partial<typeof jobData>) => {
+        setJobData(prev => ({ ...prev, ...data }));
+    };
+
+    const handleSubmit = async () => {
+        if (!user) {
+            alert("Você precisa estar logado para publicar uma vaga.");
+            return;
+        }
+
+        try {
+            setLoading(true);
+
+            // Construct the payload matching our simple table schema
+            // We append extra details to description since we don't have columns for them yet
+            const fullDescription = `
+${jobData.description}
+
+---
+**Detalhes da Vaga:**
+- Cargo: ${jobData.role}
+- Modelo: ${jobData.workModel}
+- Área: ${jobData.area}
+- Nível: ${jobData.level}
+- Jornada: ${jobData.journey}
+
+**Requisitos:**
+(Detalhes dos requisitos seriam listados aqui baseados no Step 2)
+            `.trim();
+
+            const { error } = await supabase.from('jobs').insert({
+                company_id: user.id,
+                title: jobData.title,
+                description: fullDescription,
+                location: jobData.location,
+                type: jobData.contractType,
+                salary_range: jobData.salary,
+                status: 'active'
+            });
+
+            if (error) throw error;
+
+            alert("Vaga publicada com sucesso!");
+            navigate('/company/dashboard'); // Navigate to dashboard or jobs list
+        } catch (error: any) {
+            console.error(error);
+            alert("Erro ao publicar vaga: " + error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="max-w-[1200px] mx-auto w-full px-6 py-8">
@@ -42,9 +115,31 @@ const CreateJobPage: React.FC = () => {
             </div>
 
             <div className="bg-white border p-8 rounded-b-2xl shadow-sm min-h-[600px]">
-                {step === 1 && <Step1BasicData onNext={() => setStep(2)} onCancel={() => navigate('/company/jobs')} />}
-                {step === 2 && <Step2Requirements onNext={() => setStep(3)} onBack={() => setStep(1)} />}
-                {step === 3 && <Step3Screening onFinish={() => navigate('/company/jobs')} onBack={() => setStep(2)} />}
+                {step === 1 && (
+                    <Step1BasicData
+                        data={jobData}
+                        onUpdate={updateJobData}
+                        onNext={() => setStep(2)}
+                        onCancel={() => navigate('/company/jobs')}
+                    />
+                )}
+                {step === 2 && (
+                    <Step2Requirements
+                        data={jobData}
+                        onUpdate={updateJobData}
+                        onNext={() => setStep(3)}
+                        onBack={() => setStep(1)}
+                    />
+                )}
+                {step === 3 && (
+                    <Step3Screening
+                        data={jobData}
+                        onUpdate={updateJobData}
+                        onFinish={handleSubmit}
+                        onBack={() => setStep(2)}
+                        loading={loading}
+                    />
+                )}
             </div>
         </div>
     );

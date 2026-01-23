@@ -3,12 +3,15 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Logo } from '../ui/Icons';
 import { Bell, FileText, User, HelpCircle, ThumbsUp, LogOut, Instagram, Facebook, Linkedin, X } from 'lucide-react';
 
+import { useAuth } from '../../src/contexts/AuthContext';
+
 interface NavbarProps {
   onNavigate: (view: string) => void;
   currentPage?: string;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage }) => {
+  const { user, signOut } = useAuth();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [showSocialModal, setShowSocialModal] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -25,10 +28,19 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage }) => {
     };
   }, []);
 
-  const handleLogout = () => {
-    setIsProfileMenuOpen(false);
-    onNavigate('login');
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      setIsProfileMenuOpen(false);
+      onNavigate('login');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
+
+  const userInitial = user?.user_metadata?.full_name?.charAt(0).toUpperCase() || 'U';
+  const userName = user?.user_metadata?.full_name || 'Usuário';
+  const userEmail = user?.email || 'email@exemplo.com';
 
   return (
     <>
@@ -59,20 +71,20 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage }) => {
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-              className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#5AB7F7] focus:outline-none transition-transform active:scale-95"
+              className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#5AB7F7] focus:outline-none transition-transform active:scale-95 bg-blue-100 flex items-center justify-center text-[#1D4ED8] font-black"
             >
-              <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=100" alt="Profile" className="w-full h-full object-cover" />
+              {userInitial}
             </button>
 
             {isProfileMenuOpen && (
               <div className="absolute right-0 top-full mt-3 w-72 bg-white rounded-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.1)] border border-gray-100 py-2 z-50 animate-in fade-in zoom-in-95 duration-100 origin-top-right">
                 <div className="px-5 py-4 flex items-center gap-3 border-b border-gray-100">
-                  <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
-                    <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=100" alt="Profile" className="w-full h-full object-cover" />
+                  <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-blue-100 flex items-center justify-center text-[#1D4ED8] font-black">
+                    {userInitial}
                   </div>
                   <div className="flex flex-col overflow-hidden">
-                    <span className="font-semibold text-gray-900 text-sm truncate">José de Alencar</span>
-                    <span className="text-xs text-gray-500 truncate">jose@sagittadigital.com.br</span>
+                    <span className="font-semibold text-gray-900 text-sm truncate">{userName}</span>
+                    <span className="text-xs text-gray-500 truncate">{userEmail}</span>
                   </div>
                 </div>
 

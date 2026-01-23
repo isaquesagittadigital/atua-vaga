@@ -1,11 +1,13 @@
 import React from 'react';
 
 interface StepProps {
+    data: any;
+    onUpdate: (data: any) => void;
     onNext: () => void;
     onBack: () => void;
 }
 
-const Step2Requirements: React.FC<StepProps> = ({ onNext, onBack }) => {
+const Step2Requirements: React.FC<StepProps> = ({ data, onUpdate, onNext, onBack }) => {
     return (
         <div className="animate-in fade-in slide-in-from-right-8 duration-500">
             <h3 className="text-lg font-bold text-gray-800 mb-6">Requisitos da vaga</h3>

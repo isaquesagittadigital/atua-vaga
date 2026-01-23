@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../../../src/lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import { Logo } from '../../ui/Icons';
 import {
@@ -7,18 +8,67 @@ import {
   Calendar, Info, ChevronLeft, Bookmark, Flag
 } from 'lucide-react';
 
+
+interface Job {
+  id: string;
+  title: string;
+  company_id: string; // We will need to join profiles to get company name
+  description: string;
+  location: string;
+  type: string;
+  salary_range: string;
+  created_at: string;
+  // Augmented properties for UI
+  company?: string;
+  match?: string;
+  date?: string;
+}
+
+
 const JobsPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [noResults, setNoResults] = useState(false);
   const [selectedJob, setSelectedJob] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<'details' | 'competition'>('details');
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const jobs = [
-    { id: 1, title: 'Analista de Marketing Digital', company: 'Digital Marketing Experts S/A', match: '90%', date: '1 dia atrás' },
-    { id: 2, title: 'Pessoa Recursos Humanos', company: 'Digital Marketing Experts S/A', match: '70%', date: '1 dia atrás' },
-    { id: 3, title: 'Gerente de Projetos', company: 'Digital Marketing Experts S/A', match: '20%', date: '1 dia atrás' },
-  ];
+  useEffect(() => {
+    fetchJobs();
+  }, []);
+
+  const fetchJobs = async () => {
+    try {
+      setLoading(true);
+      // Joining with profiles to get company name (assuming company_id links to a profile with role 'company')
+      // For this MVP schema, we might not have 'name' in profiles table directly as a column based on my previous migration?
+      // Let's check the migration step... Ah, I didn't add 'name' to profiles table in the first migration!
+      // I only added email and role.
+      // FIX: I will fetch raw jobs for now and placeholder the company name until I update the schema.
+
+      const { data, error } = await supabase
+        .from('jobs')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      if (data) {
+        const formattedJobs = data.map((job: any) => ({
+          ...job,
+          company: 'Empresa Confidencial', // Placeholder until we have profile names
+          match: 'N/A', // Match calculation is complex, keeping placeholder
+          date: new Date(job.created_at).toLocaleDateString()
+        }));
+        setJobs(formattedJobs);
+      }
+    } catch (error) {
+      console.error('Error fetching jobs:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

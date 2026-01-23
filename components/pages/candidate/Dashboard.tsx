@@ -6,14 +6,34 @@ import {
   Briefcase, ChevronRight, Trophy, ArrowUpRight
 } from 'lucide-react';
 
-const Dashboard: React.FC = () => {
-  const navigate = useNavigate();
+import { useAuth } from '../../../src/contexts/AuthContext';
+import { supabase } from '../../../src/lib/supabase';
+import { useEffect, useState } from 'react';
 
-  const suggestedJobs = [
-    { title: 'Analista de Marketing Digital', company: 'Digital Marketing Experts S/A', location: 'Remoto', match: '90%' },
-    { title: 'Pessoa Recursos Humanos', company: 'Digital Marketing Experts S/A', location: 'Remoto', match: '70%' },
-    { title: 'Gerente de Projetos', company: 'Digital Marketing Experts S/A', location: 'Remoto', match: '20%' },
-  ];
+const Dashboard: React.FC = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [recentJobs, setRecentJobs] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetchRecentJobs();
+  }, []);
+
+  const fetchRecentJobs = async () => {
+    const { data } = await supabase
+      .from('jobs')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(3);
+
+    if (data) {
+      setRecentJobs(data);
+    }
+  };
+
+
+  // Removed static suggestedJobs
+
 
   const JobRow: React.FC<{ title: string, company: string, match: string, onSelect: () => void }> = ({ title, company, match, onSelect }) => (
     <div
@@ -44,12 +64,12 @@ const Dashboard: React.FC = () => {
         {/* Sidebar Left */}
         <aside className="w-full lg:w-[320px] xl:w-[360px] space-y-6">
           <div className="bg-white rounded-[32px] p-10 shadow-sm border border-gray-50 text-center cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/app/profile')}>
-            <div className="w-24 h-24 rounded-3xl overflow-hidden mb-6 border-4 border-[#F8FAFC] mx-auto">
-              <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=150" alt="Avatar" className="w-full h-full object-cover grayscale" />
+            <div className="w-24 h-24 rounded-3xl overflow-hidden mb-6 border-4 border-[#F8FAFC] mx-auto bg-blue-100 flex items-center justify-center text-4xl font-black text-[#1D4ED8]">
+              {user?.user_metadata?.full_name?.charAt(0).toUpperCase() || 'U'}
             </div>
-            <h3 className="text-2xl font-black text-gray-900 leading-none">José de Alencar</h3>
-            <p className="text-gray-500 font-bold mt-2 text-[15px]">Gerente de projetos</p>
-            <p className="text-gray-400 text-sm mt-0.5 font-bold">São Paulo, SP</p>
+            <h3 className="text-2xl font-black text-gray-900 leading-none">{user?.user_metadata?.full_name || 'Usuário'}</h3>
+            <p className="text-gray-500 font-bold mt-2 text-[15px]">Candidato</p>
+            <p className="text-gray-400 text-sm mt-0.5 font-bold">Brasil</p>
 
             <div className="mt-8 bg-[#F0F7FF] rounded-2xl p-5 text-left space-y-4">
               <p className="text-[13px] font-black text-[#1D4ED8]">100 produtoras buscaram profissionais da sua área</p>
@@ -104,9 +124,19 @@ const Dashboard: React.FC = () => {
               <button onClick={() => navigate('/app/jobs')} className="text-gray-400 font-bold hover:text-[#F04E23] transition-colors flex items-center gap-1">Ver todas <ChevronRight size={18} /></button>
             </div>
             <div className="space-y-4">
-              <JobRow title="Analista de Marketing Digital" company="Digital Marketing Experts" match="87%" onSelect={() => navigate('/app/jobs')} />
-              <JobRow title="Especialista em RH" company="Talent Management" match="87%" onSelect={() => navigate('/app/jobs')} />
-              <JobRow title="Gerente de Projetos" company="Inova Tech S.A" match="95%" onSelect={() => navigate('/app/jobs')} />
+              {recentJobs.length > 0 ? (
+                recentJobs.map(job => (
+                  <JobRow
+                    key={job.id}
+                    title={job.title}
+                    company="Empresa Confidencial"
+                    match="Novo"
+                    onSelect={() => navigate('/app/jobs')}
+                  />
+                ))
+              ) : (
+                <p className="text-gray-500 text-center py-4">Nenhuma vaga recente encontrada.</p>
+              )}
             </div>
           </div>
 
