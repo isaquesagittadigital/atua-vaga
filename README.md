@@ -1,20 +1,73 @@
+
 <div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+  <img src="public/logonavbar.png" alt="Atua Vaga Logo" width="250" />
 </div>
 
-# Run and deploy your AI Studio app
+<h1 align="center">Atua Vaga 🎯</h1>
 
-This contains everything you need to run your app locally.
+<div align="center">
+  <strong>Conectando Talentos a Oportunidades</strong>
+</div>
 
-View your app in AI Studio: https://ai.studio/apps/drive/128M5AnnKpHo6d29gbNfn-OmkFREZ1rhc
+<br />
 
-## Run Locally
+## 📋 Sobre o Projeto
 
-**Prerequisites:**  Node.js
+**Atua Vaga** é uma plataforma moderna de recrutamento e seleção desenvolvida para simplificar a conexão entre empresas e candidatos. O sistema oferece uma experiência fluida para gestão de vagas, candidaturas e processos seletivos.
 
+## 🚀 Tecnologias Utilizadas
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+O projeto foi desenvolvido com as seguintes tecnologias:
+
+- **[React](https://react.dev/)** - Biblioteca para construção de interfaces
+- **[TypeScript](https://www.typescriptlang.org/)** - Superset JavaScript com tipagem estática
+- **[Vite](https://vitejs.dev/)** - Build tool e servidor de desenvolvimento rápido
+- **[Lucide React](https://lucide.dev/)** - Biblioteca de ícones moderna
+
+## ✨ Funcionalidades
+
+### 🏢 Para Empresas
+- Cadastro e gestão simplificada de vagas
+- Triagem de candidatos
+- Visualização de perfis profissionais
+
+### 🧑‍💻 Para Candidatos
+- Busca e filtro de oportunidades
+- Criação de currículo online
+- Aplicação rápida para vagas
+- Acompanhamento de processos
+
+### ⚙️ Administrativo
+- Dashboard de métricas
+- Gestão de usuários e permissões
+
+## 🔧 Como Executar
+
+Siga os passos abaixo para rodar o projeto localmente:
+
+1. **Clone o repositório**
+   ```bash
+   git clone https://github.com/sagitta-digital/atua-vaga.git
+   ```
+
+2. **Instale as dependências**
+   ```bash
+   npm install
+   ```
+
+3. **Execute o projeto**
+   ```bash
+   npm run dev
+   ```
+
+4. **Acesse no navegador**
+   O projeto estará rodando em `http://localhost:5173` (ou a porta indicada no terminal).
+
+## 📄 Licença
+
+Este projeto é proprietário da Sagitta Digital.
+
+---
+<div align="center">
+  Feito com 💙 por Sagitta Digital
+</div>
