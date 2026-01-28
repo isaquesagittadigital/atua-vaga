@@ -21,7 +21,7 @@ import CompanyRegisterPage from './components/pages/company/auth/CompanyRegister
 import Dashboard from './components/pages/candidate/Dashboard';
 import JobsPage from './components/pages/candidate/JobsPage';
 import MyJobsPage from './components/pages/candidate/MyJobsPage';
-import ProfessionalRegistration from './components/pages/candidate/ProfessionalRegistration';
+import ProfessionalRegistrationPage from './components/pages/candidate/registration/ProfessionalRegistrationPage';
 import ProfilePage from './components/pages/candidate/ProfilePage';
 import BehavioralTestPage from './components/pages/candidate/BehavioralTestPage';
 import BehavioralResultPage from './components/pages/candidate/BehavioralResultPage';
@@ -192,7 +192,7 @@ const AppContent: React.FC = () => {
           <Route path="notifications" element={<NotificationsPage />} />
           <Route path="faq" element={<FAQPage onNavigate={() => { }} />} />
           <Route path="company-profile" element={<CompanyProfilePage onNavigate={() => { }} />} />
-          <Route path="professional-registration" element={<ProfessionalRegistration onNavigate={() => { }} onComplete={() => { }} />} />
+          <Route path="professional-registration" element={<ProfessionalRegistrationPage />} />
         </Route>
 
         {/* Company Routes */}

@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Logo } from '../ui/Icons';
-import { Bell, FileText, User, HelpCircle, ThumbsUp, LogOut, Instagram, Facebook, Linkedin, X, Check, Trash2 } from 'lucide-react';
+import { Bell, User, HelpCircle, ThumbsUp, LogOut, Instagram, Facebook, Linkedin, X, Check, Trash2, UserCog } from 'lucide-react';
 
 import { useAuth } from '../../contexts/AuthContext';
 import { NotificationService, Notification } from '../../services/NotificationService';
@@ -98,11 +98,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage }) => {
           </div>
         </div>
         <div className="flex items-center gap-6">
+
           <button
-            onClick={() => onNavigate('behavioral-test')}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-all"
+            onClick={() => onNavigate('professional-registration')}
+            className={`p-2 ${currentPage === 'professional-registration' ? 'text-[#F04E23] bg-orange-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'} rounded-lg transition-all`}
+            title="Cadastro Profissional"
           >
-            <FileText size={22} />
+            <UserCog size={22} />
           </button>
           <div className="relative" ref={notificationRef}>
             <button

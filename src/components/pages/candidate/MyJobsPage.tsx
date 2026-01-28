@@ -185,7 +185,7 @@ const MyJobsPage: React.FC = () => {
 };
 
 // --- Initial List View Item (Image 2 Style) ---
-const JobRowItem = ({ job, onClick }: { job: Job, onClick: () => void }) => (
+const JobRowItem: React.FC<{ job: Job; onClick: () => void }> = ({ job, onClick }) => (
   <div className="bg-white rounded-2xl p-6 mb-4 flex items-center justify-between shadow-sm border border-gray-100 hover:shadow-md transition-all">
     <div className="flex items-center gap-6">
       {/* Logo */}
@@ -223,7 +223,7 @@ const JobRowItem = ({ job, onClick }: { job: Job, onClick: () => void }) => (
 );
 
 // --- Master-Detail Sidebar Item (Image 3 List Style) ---
-const JobSidebarItem = ({ job, isSelected, onClick }: { job: Job; isSelected: boolean, onClick: () => void }) => (
+const JobSidebarItem: React.FC<{ job: Job; isSelected: boolean; onClick: () => void }> = ({ job, isSelected, onClick }) => (
   <div
     onClick={onClick}
     className={`p-6 rounded-2xl border cursor-pointer transition-all hover:shadow-md mb-4
