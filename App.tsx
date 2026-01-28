@@ -185,11 +185,11 @@ const AppContent: React.FC = () => {
         }>
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="jobs" element={<JobsPage onNavigate={() => { }} />} />
-          <Route path="my-jobs" element={<MyJobsPage onNavigate={() => { }} />} />
+          <Route path="my-jobs" element={<MyJobsPage />} />
           <Route path="profile" element={<ProfilePage onNavigate={() => { }} />} />
           <Route path="behavioral-test" element={<BehavioralTestPage onNavigate={() => { }} />} />
           <Route path="behavioral-result" element={<BehavioralResultPage onNavigate={() => { }} />} />
-          <Route path="notifications" element={<NotificationsPage onNavigate={() => { }} />} />
+          <Route path="notifications" element={<NotificationsPage />} />
           <Route path="faq" element={<FAQPage onNavigate={() => { }} />} />
           <Route path="company-profile" element={<CompanyProfilePage onNavigate={() => { }} />} />
           <Route path="professional-registration" element={<ProfessionalRegistration onNavigate={() => { }} onComplete={() => { }} />} />

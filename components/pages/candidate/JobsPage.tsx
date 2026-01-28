@@ -7,6 +7,7 @@ import {
   ChevronDown, MapPin, DollarSign, Clock, Briefcase,
   Calendar, Info, ChevronLeft, Bookmark, Flag
 } from 'lucide-react';
+import JobDetailsPanel from '../../components/jobs/JobDetailsPanel';
 
 
 interface Job {
@@ -20,6 +21,7 @@ interface Job {
   created_at: string;
   // Augmented properties for UI
   company?: string;
+  company_name?: string; // Add company_name for JobDetailsPanel
   match?: string;
   date?: string;
 }
@@ -48,7 +50,13 @@ const JobsPage: React.FC = () => {
 
       const { data, error } = await supabase
         .from('jobs')
-        .select('*')
+        .select(`
+          *,
+          companies (
+            name,
+            logo_url
+          )
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -56,8 +64,11 @@ const JobsPage: React.FC = () => {
       if (data) {
         const formattedJobs = data.map((job: any) => ({
           ...job,
-          company: 'Empresa Confidencial', // Placeholder until we have profile names
-          match: 'N/A', // Match calculation is complex, keeping placeholder
+          ...job,
+          company: job.companies?.name || 'Empresa Confidencial',
+          company_name: job.companies?.name || 'Empresa Confidencial', // Populate for JobDetailsPanel
+          logo_url: job.companies?.logo_url, // Add logo_url to state if needed
+          match: 'Novo', // Match calculation is complex, keeping placeholder
           date: new Date(job.created_at).toLocaleDateString()
         }));
         setJobs(formattedJobs);
@@ -133,38 +144,12 @@ const JobsPage: React.FC = () => {
             ))}
           </div>
 
-          <div className="flex-1 bg-white rounded-[32px] shadow-sm border border-gray-100 overflow-hidden flex flex-col">
-            <div className="p-10 border-b border-gray-100">
-              <div className="flex justify-between items-start mb-6">
-                <div className="flex-1">
-                  <h2 className="text-4xl font-black text-[#1D4ED8] mb-4">{selectedJob.title}</h2>
-                  <div
-                    className="flex items-center gap-3 cursor-pointer group w-fit"
-                    onClick={() => navigate('/app/company-profile')}
-                  >
-                    <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center border border-blue-100 group-hover:border-[#F04E23] transition-colors">
-                      <Logo className="scale-50" />
-                    </div>
-                    <p className="text-gray-500 font-bold text-lg group-hover:text-[#F04E23] transition-colors underline-offset-4 group-hover:underline">{selectedJob.company}</p>
-                  </div>
-                  <div className="flex flex-wrap gap-y-4 gap-x-8 mt-8">
-                    <JobInfoItem icon={<MapPin size={18} />} text="Remoto" />
-                    <JobInfoItem icon={<DollarSign size={18} />} text="A combinar" color="text-orange-500" />
-                    <JobInfoItem icon={<Clock size={18} />} text="Período flexível" />
-                    <JobInfoItem icon={<Briefcase size={18} />} text="CLT" />
-                    <JobInfoItem icon={<Calendar size={18} />} text="1 dia atrás • 25/01/2025 encerra" />
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-4 mt-8">
-                <button className="px-10 py-4 bg-[#F04E23] text-white font-black rounded-2xl hover:bg-[#E03E13] transition-all shadow-lg shadow-orange-100">
-                  Candidatar-se
-                </button>
-                <button className="flex items-center gap-2 text-gray-500 font-bold px-4 py-4 hover:bg-gray-50 rounded-2xl transition-all border border-gray-100">
-                  <Bookmark size={20} /> Salvar vaga
-                </button>
-              </div>
-            </div>
+          <div className="flex-1 bg-white rounded-[32px] border border-blue-200/50 shadow-xl shadow-blue-50/50 relative overflow-hidden flex flex-col">
+            <JobDetailsPanel
+              job={selectedJob}
+              onClose={() => setSelectedJob(null)}
+              isApplied={false} // JobsPage usually shows unapplied jobs, or we check status
+            />
           </div>
         </div>
       ) : noResults ? (

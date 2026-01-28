@@ -22,7 +22,13 @@ const Dashboard: React.FC = () => {
   const fetchRecentJobs = async () => {
     const { data } = await supabase
       .from('jobs')
-      .select('*')
+      .select(`
+        *,
+        companies (
+          name,
+          logo_url
+        )
+      `)
       .order('created_at', { ascending: false })
       .limit(3);
 
@@ -129,7 +135,7 @@ const Dashboard: React.FC = () => {
                   <JobRow
                     key={job.id}
                     title={job.title}
-                    company="Empresa Confidencial"
+                    company={job.companies?.name || 'Empresa Confidencial'}
                     match="Novo"
                     onSelect={() => navigate('/app/jobs')}
                   />

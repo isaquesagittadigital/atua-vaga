@@ -57,7 +57,7 @@ const JobCard: React.FC<JobCardProps> = ({ job, isSelected, onClick }) => {
 
                 <div className="flex-1">
                     <h3 className="font-bold text-lg text-[#1E3A8A] leading-tight mb-1">{job.title}</h3>
-                    <p className="text-gray-500 text-sm font-medium">{job.company_name || 'Empresa Confidencial'}</p>
+                    <p className="text-gray-500 text-sm font-medium">{job.company_name || 'Empresa'}</p>
                 </div>
             </div>
 

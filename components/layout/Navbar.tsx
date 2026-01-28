@@ -1,9 +1,11 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Logo } from '../ui/Icons';
-import { Bell, FileText, User, HelpCircle, ThumbsUp, LogOut, Instagram, Facebook, Linkedin, X } from 'lucide-react';
+import { Bell, FileText, User, HelpCircle, ThumbsUp, LogOut, Instagram, Facebook, Linkedin, X, Check, Trash2 } from 'lucide-react';
 
 import { useAuth } from '../../src/contexts/AuthContext';
+import { NotificationService, Notification } from '../../src/services/NotificationService';
+import NotificationDetailModal from '../modals/NotificationDetailModal';
 
 interface NavbarProps {
   onNavigate: (view: string) => void;
@@ -14,13 +16,55 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage }) => {
   const { user, signOut } = useAuth();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [showSocialModal, setShowSocialModal] = useState(false);
+
+  // Notification States
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
+
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const notificationRef = useRef<HTMLDivElement>(null);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  // Fetch Notifications
+  useEffect(() => {
+    if (user) {
+      fetchNotifications();
+    }
+  }, [user]);
+
+  const fetchNotifications = async () => {
+    if (!user) return;
+    const data = await NotificationService.fetchNotifications(user.id);
+    setNotifications(data);
+  };
+
+  const handleNotificationClick = async (notification: Notification) => {
+    // Mark as read locally
+    if (!notification.read) {
+      setNotifications(prev => prev.map(n => n.id === notification.id ? { ...n, read: true } : n));
+      await NotificationService.markAsRead(notification.id);
+    }
+
+    // Open Modal
+    setSelectedNotification(notification);
+    setShowNotificationModal(true);
+    setIsNotificationsOpen(false);
+  };
+
+  const handleMarkAllRead = async () => {
+    if (!user) return;
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    await NotificationService.markAllAsRead(user.id);
+  };
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsProfileMenuOpen(false);
       }
+
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
@@ -60,13 +104,17 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage }) => {
           >
             <FileText size={22} />
           </button>
-          <button
-            onClick={() => onNavigate('notifications')}
-            className={`p-2 ${currentPage === 'notifications' ? 'text-[#F04E23] bg-orange-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'} rounded-lg transition-all relative`}
-          >
-            <Bell size={22} />
-            <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-          </button>
+          <div className="relative" ref={notificationRef}>
+            <button
+              onClick={() => onNavigate('notifications')}
+              className={`p-2 ${currentPage === 'notifications' ? 'text-[#F04E23] bg-orange-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'} rounded-lg transition-all relative`}
+            >
+              <Bell size={22} />
+              {unreadCount > 0 && (
+                <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+              )}
+            </button>
+          </div>
 
           <div className="relative" ref={dropdownRef}>
             <button
@@ -180,6 +228,12 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage }) => {
           </div>
         </div>
       )}
+      {/* Notification Detail Modal */}
+      <NotificationDetailModal
+        notification={selectedNotification}
+        isOpen={showNotificationModal}
+        onClose={() => setShowNotificationModal(false)}
+      />
     </>
   );
 };
