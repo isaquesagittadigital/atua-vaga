@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, EyeOff, Eye } from 'lucide-react';
-import { GoogleIcon } from '../ui/Icons';
+
 import { formatCPF, isValidCPF, formatPhone } from '@/utils/validators';
 import StatusModal from '../modals/StatusModal';
 import ConfirmModal from '../modals/ConfirmModal';
@@ -17,7 +17,7 @@ interface RegisterFormProps {
 }
 
 const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegisterComplete, onRecoverAccess }) => {
-  const { signUp, signInWithGoogle } = useAuth();
+  const { signUp } = useAuth();
   const navigate = useNavigate(); // Used for redirection
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -289,18 +289,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
           </p>
         </div>
 
-        {step === 1 && (
-          <div className="mt-10">
-            <button
-              type="button"
-              onClick={signInWithGoogle}
-              className="w-full flex items-center justify-center gap-3 px-4 py-4 border border-gray-200 bg-white rounded-2xl hover:bg-gray-50 transition-all font-bold text-gray-700 text-[14px] shadow-sm transform hover:-translate-y-1 active:translate-y-0"
-            >
-              <GoogleIcon />
-              Entrar com Google
-            </button>
-          </div>
-        )}
+
       </div>
 
       {showSuccess && (

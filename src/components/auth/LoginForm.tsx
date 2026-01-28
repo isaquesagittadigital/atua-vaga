@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { EyeOff, Eye } from 'lucide-react';
-import { GoogleIcon } from '../ui/Icons';
+
 import { formatCPF } from '@/utils/validators';
 import { LoginFormData, FormErrors } from '../types';
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,7 +14,7 @@ interface LoginFormProps {
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({ onForgotPassword, onRegister, onLoginSuccess, loginType = 'candidate' }) => {
-  const { signInWithPassword, signInWithGoogle } = useAuth();
+  const { signInWithPassword } = useAuth();
 
   const [formData, setFormData] = useState<any>({
     cpf: '',
@@ -171,16 +171,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onForgotPassword, onRegister, onL
           </p>
         </div>
 
-        <div className="mt-10">
-          <button
-            type="button"
-            onClick={signInWithGoogle}
-            className="w-full flex items-center justify-center gap-3 px-4 py-4 border border-gray-200 bg-white rounded-2xl hover:bg-gray-50 transition-all font-bold text-gray-700 text-[14px] shadow-sm"
-          >
-            <GoogleIcon />
-            Entrar com Google
-          </button>
-        </div>
+
       </div>
     </div>
   );

@@ -14,6 +14,7 @@ interface FilterMegaMenuProps {
     onChange: (values: string[]) => void;
     onClear?: () => void; // Optional clear specific to this filter
     columns?: number; // Logic to split into columns, default 3
+    align?: 'left' | 'right';
 }
 
 const FilterMegaMenu: React.FC<FilterMegaMenuProps> = ({
@@ -22,7 +23,8 @@ const FilterMegaMenu: React.FC<FilterMegaMenuProps> = ({
     selectedValues,
     onChange,
     onClear,
-    columns = 3
+    columns = 3,
+    align = 'left'
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     // Local state for deferred application (to match "Aplicar Filtro" button behavior)
@@ -72,8 +74,8 @@ const FilterMegaMenu: React.FC<FilterMegaMenuProps> = ({
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all border ${isActive || isOpen
-                        ? 'bg-[#F04E23]/10 text-[#F04E23] border-[#F04E23]'
-                        : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                    ? 'bg-[#F04E23]/10 text-[#F04E23] border-[#F04E23]'
+                    : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
                     }`}
             >
                 {label}
@@ -81,14 +83,14 @@ const FilterMegaMenu: React.FC<FilterMegaMenuProps> = ({
             </button>
 
             {isOpen && (
-                <div className="absolute top-full left-0 mt-2 min-w-[800px] max-w-[90vw] bg-white rounded-xl shadow-2xl border border-gray-100 p-6 z-50 animate-in fade-in zoom-in-95 duration-200">
+                <div className={`absolute top-full mt-2 min-w-[320px] w-max max-w-[90vw] bg-white rounded-xl shadow-2xl border border-gray-100 p-6 z-50 animate-in fade-in zoom-in-95 duration-200 ${align === 'right' ? 'right-0' : 'left-0'}`}>
                     {/* Grid of Options */}
                     <div className="grid gap-x-8 gap-y-3" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
                         {options.map((option) => (
                             <label key={option.value} className="flex items-start gap-3 cursor-pointer group">
                                 <div className={`mt-0.5 w-5 h-5 rounded border flex items-center justify-center transition-colors ${tempSelected.includes(option.value)
-                                        ? 'bg-[#F04E23] border-[#F04E23] text-white'
-                                        : 'border-gray-300 group-hover:border-[#F04E23] bg-white'
+                                    ? 'bg-[#F04E23] border-[#F04E23] text-white'
+                                    : 'border-gray-300 group-hover:border-[#F04E23] bg-white'
                                     }`}>
                                     {tempSelected.includes(option.value) && <Check size={12} strokeWidth={3} />}
                                     <input

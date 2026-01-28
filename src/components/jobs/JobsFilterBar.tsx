@@ -201,6 +201,7 @@ const JobsFilterBar: React.FC<JobsFilterBarProps> = ({ searchQuery, setSearchQue
                     selectedValues={filters.work_schedule}
                     onChange={(vals) => handleArrayFilterChange('work_schedule', vals)}
                     onClear={() => handleArrayFilterChange('work_schedule', [])}
+                    align="right"
                 />
 
                 {/* 8. Senioridade */}
@@ -210,6 +211,7 @@ const JobsFilterBar: React.FC<JobsFilterBarProps> = ({ searchQuery, setSearchQue
                     selectedValues={filters.seniority}
                     onChange={(vals) => handleArrayFilterChange('seniority', vals)}
                     onClear={() => handleArrayFilterChange('seniority', [])}
+                    align="right"
                 />
 
                 {/* 9. PCD */}
@@ -226,6 +228,7 @@ const JobsFilterBar: React.FC<JobsFilterBarProps> = ({ searchQuery, setSearchQue
                         setFilters(prev => ({ ...prev, pcd: false }));
                     }}
                     columns={2}
+                    align="right"
                 />
 
                 {/* Reset Button */}

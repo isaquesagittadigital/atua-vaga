@@ -113,53 +113,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const signInWithPassword = async (email: string, password: string) => {
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-
-        const response = await fetch(`${apiUrl}/auth/login`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ email, password })
+        const { error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
         });
 
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.error || 'Erro ao fazer login');
-        }
-
-        // Manually set the session in the client-side Supabase instance
-        if (data.session) {
-            const { error } = await supabase.auth.setSession(data.session);
-            if (error) throw error;
-        }
+        if (error) throw error;
     };
 
     const signUp = async (email: string, password: string, additionalData?: object) => {
-        // Use backend for registration to enforce validation rules
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-
-        const response = await fetch(`${apiUrl}/auth/register`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                email,
-                password,
-                ...additionalData
-            })
+        const { error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+                data: additionalData
+            }
         });
 
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.error || 'Erro ao cadastrar');
-        }
-
-        // Auto-login after successful backend registration
-        await signInWithPassword(email, password);
+        if (error) throw error;
     };
 
     const signOut = async () => {
