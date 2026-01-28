@@ -3,15 +3,30 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 
+
+interface UserProfile {
+    id: string;
+    email: string;
+    role: 'candidate' | 'company_admin' | 'company_user' | 'super_admin';
+    full_name: string;
+}
+
+interface Company {
+    id: string;
+    name: string;
+    document: string;
+}
+
 interface AuthContextType {
     user: User | null;
     session: Session | null;
+    profile: UserProfile | null;
+    company: Company | null;
     loading: boolean;
     signInWithGoogle: () => Promise<void>;
     signInWithPassword: (email: string, password: string) => Promise<void>;
     signUp: (email: string, password: string, additionalData?: object) => Promise<void>;
     signOut: () => Promise<void>;
-
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,22 +34,71 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
     const [session, setSession] = useState<Session | null>(null);
+    const [profile, setProfile] = useState<UserProfile | null>(null);
+    const [company, setCompany] = useState<Company | null>(null);
     const [loading, setLoading] = useState(true);
+
+    const fetchProfileAndCompany = async (userId: string) => {
+        try {
+            // Fetch Profile
+            const { data: profileData, error: profileError } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', userId)
+                .single();
+
+            if (profileError) {
+                console.error("Error fetching profile:", profileError);
+            } else {
+                setProfile(profileData);
+
+                // If company user/admin, fetch Company
+                if (profileData.role === 'company_admin' || profileData.role === 'company_user') {
+                    const { data: memberData, error: memberError } = await supabase
+                        .from('company_members')
+                        .select('companies(*)')
+                        .eq('user_id', userId)
+                        .single();
+
+                    if (memberData && memberData.companies) {
+                        // Supabase returns array or object depending on relationship. 
+                        // With single() companies should be an object if 1:1 or N:1. 
+                        // Because of select('companies(*)') and assuming the fk.
+                        setCompany(memberData.companies as any);
+                    }
+                }
+            }
+        } catch (err) {
+            console.error("Error loading user data:", err);
+        }
+    };
 
     useEffect(() => {
         // Check active sessions and sets the user
         supabase.auth.getSession().then(({ data: { session } }) => {
             setSession(session);
             setUser(session?.user ?? null);
-            setLoading(false);
+            if (session?.user) {
+                fetchProfileAndCompany(session.user.id).then(() => setLoading(false));
+            } else {
+                setLoading(false);
+            }
         });
 
-        // Listen for changes on auth state (sign in, sign out, etc.)
+        // Listen for changes on auth state
         const {
             data: { subscription },
         } = supabase.auth.onAuthStateChange((_event, session) => {
             setSession(session);
             setUser(session?.user ?? null);
+
+            if (session?.user) {
+                // If we just logged in, fetch profile
+                fetchProfileAndCompany(session.user.id);
+            } else {
+                setProfile(null);
+                setCompany(null);
+            }
             setLoading(false);
         });
 
@@ -94,19 +158,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             throw new Error(data.error || 'Erro ao cadastrar');
         }
 
-        // Auto-login after successful backend registration (since backend just creates user)
-        // We need to sign in from the client side because backend creation doesn't return a session token usable here unless we pass it
-        // But for security, let's just use signInWithPassword immediately after.
+        // Auto-login after successful backend registration
         await signInWithPassword(email, password);
     };
 
     const signOut = async () => {
         const { error } = await supabase.auth.signOut();
+        setProfile(null);
+        setCompany(null);
         if (error) throw error;
     };
 
     return (
-        <AuthContext.Provider value={{ user, session, loading, signInWithGoogle, signInWithPassword, signUp, signOut }}>
+        <AuthContext.Provider value={{ user, session, profile, company, loading, signInWithGoogle, signInWithPassword, signUp, signOut }}>
             {!loading && children}
         </AuthContext.Provider>
     );

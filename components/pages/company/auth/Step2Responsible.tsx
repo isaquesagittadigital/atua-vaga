@@ -1,12 +1,15 @@
+
 import React from 'react';
 import { ChevronLeft } from 'lucide-react';
 
 interface Step2Props {
     onNext: () => void;
     onBack: () => void;
+    data: any;
+    updateData: (data: any) => void;
 }
 
-const Step2Responsible: React.FC<Step2Props> = ({ onNext, onBack }) => {
+const Step2Responsible: React.FC<Step2Props> = ({ onNext, onBack, data, updateData }) => {
     return (
         <div className="w-full max-w-[400px] animate-in fade-in slide-in-from-right-8 duration-500">
             <button
@@ -26,7 +29,9 @@ const Step2Responsible: React.FC<Step2Props> = ({ onNext, onBack }) => {
                     <label className="block text-sm font-bold text-gray-600 mb-2">Nome do responsável</label>
                     <input
                         type="text"
-                        defaultValue="José de Alencar"
+                        value={data.responsibleName}
+                        onChange={(e) => updateData({ responsibleName: e.target.value })}
+                        placeholder="José de Alencar"
                         className="w-full px-4 py-3.5 rounded-xl border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-[#F04E23] focus:ring-2 focus:ring-[#F04E23]/10 outline-none transition-all font-medium"
                     />
                 </div>
@@ -35,7 +40,12 @@ const Step2Responsible: React.FC<Step2Props> = ({ onNext, onBack }) => {
                     <label className="block text-sm font-bold text-gray-600 mb-2">CPF</label>
                     <input
                         type="text"
-                        defaultValue="123.456.789-10"
+                        value={data.document} // Assuming CPF or asking for CNPJ later? In code I used 'document' for CNPJ. Let's use specific field for CPF or map it if needed.
+                        // Wait, Step 3 asks for CNPJ ("document"). Step 2 asks for "CPF" (of responsible?)
+                        // My backend register logic expects 'cpf' for the User metadata/profile.
+                        // So I should map this input to 'cpf' in formData.
+                        onChange={(e) => updateData({ cpf: e.target.value })}
+                        placeholder="123.456.789-10"
                         className="w-full px-4 py-3.5 rounded-xl border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-[#F04E23] focus:ring-2 focus:ring-[#F04E23]/10 outline-none transition-all font-medium"
                     />
                 </div>
@@ -44,7 +54,9 @@ const Step2Responsible: React.FC<Step2Props> = ({ onNext, onBack }) => {
                     <label className="block text-sm font-bold text-gray-600 mb-2">Telefone</label>
                     <input
                         type="tel"
-                        defaultValue="+55 11 99239192"
+                        value={data.responsiblePhone}
+                        onChange={(e) => updateData({ responsiblePhone: e.target.value })}
+                        placeholder="+55 11 99239192"
                         className="w-full px-4 py-3.5 rounded-xl border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-[#F04E23] focus:ring-2 focus:ring-[#F04E23]/10 outline-none transition-all font-medium"
                     />
                 </div>

@@ -25,13 +25,18 @@ app.post('/api/auth/login', login);
 
 app.post('/api/jobs', requireAuth, async (req, res) => {
     try {
-        const user = (req as any).user;
+        const company = (req as any).company;
+
+        if (!company) {
+            return res.status(403).json({ error: 'Only companies can create jobs' });
+        }
+
         const { title, description, location, type, salary_range, status } = req.body;
 
         const { data, error } = await supabaseAdmin
             .from('jobs')
             .insert({
-                company_id: user.id,
+                company_id: company.id,
                 title,
                 description,
                 location,
@@ -53,12 +58,19 @@ app.post('/api/jobs', requireAuth, async (req, res) => {
 
 app.get('/api/jobs', requireAuth, async (req, res) => {
     try {
-        const user = (req as any).user;
+        const company = (req as any).company;
+
+        if (!company) {
+            // If candidate, maybe show all active jobs?
+            // For now, let's assume this endpoint is for COMPANY DASHBOARD.
+            // Accessing public jobs should probably be /api/public/jobs or /api/jobs/search
+            return res.status(403).json({ error: 'Company access required' });
+        }
 
         const { data, error } = await supabaseAdmin
             .from('jobs')
             .select('*')
-            .eq('company_id', user.id)
+            .eq('company_id', company.id)
             .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -72,25 +84,29 @@ app.get('/api/jobs', requireAuth, async (req, res) => {
 
 app.get('/api/dashboard/metrics', requireAuth, async (req, res) => {
     try {
-        const user = (req as any).user;
+        const company = (req as any).company;
+
+        if (!company) {
+            return res.status(403).json({ error: 'Company access required' });
+        }
 
         // Fetch counts from Supabase
         const { count: totalJobs, error: errorTotal } = await supabaseAdmin
             .from('jobs')
             .select('*', { count: 'exact', head: true })
-            .eq('company_id', user.id);
+            .eq('company_id', company.id);
 
         const { count: activeJobs, error: errorActive } = await supabaseAdmin
             .from('jobs')
             .select('*', { count: 'exact', head: true })
-            .eq('company_id', user.id)
+            .eq('company_id', company.id)
             .eq('status', 'active');
 
         // Assuming 'closed' status exists, or we define it now
         const { count: closedJobs, error: errorClosed } = await supabaseAdmin
             .from('jobs')
             .select('*', { count: 'exact', head: true })
-            .eq('company_id', user.id)
+            .eq('company_id', company.id)
             .eq('status', 'closed');
 
         if (errorTotal || errorActive || errorClosed) throw new Error('Error fetching metrics');
@@ -122,30 +138,6 @@ app.get('/api/candidates/matches', requireAuth, async (req, res) => {
         res.json(mockCandidates);
     } catch (error: any) {
         res.status(500).json({ error: 'Error fetching candidates' });
-    }
-});
-
-app.post('/api/company/onboarding', requireAuth, async (req, res) => {
-    try {
-        const user = (req as any).user;
-        const onboardingData = req.body;
-
-        // In a real app, we would upsert this into a 'company_profiles' table
-        // For now, we will just log it and return success to simulate the flow
-        console.log(`Onboarding data received for user ${user.id}:`, onboardingData);
-
-        // Example DB call (commented out until table exists):
-        /*
-        const { error } = await supabaseAdmin
-            .from('company_profiles')
-            .upsert({ user_id: user.id, ...onboardingData });
-        if (error) throw error;
-        */
-
-        res.status(200).json({ message: 'Onboarding data saved successfully' });
-    } catch (error: any) {
-        console.error('Error saving onboarding data:', error);
-        res.status(500).json({ error: 'Failed to save onboarding data' });
     }
 });
 

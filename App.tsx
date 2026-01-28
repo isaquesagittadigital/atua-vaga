@@ -1,5 +1,7 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+
+import React, { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { AuthProvider, useAuth } from './src/contexts/AuthContext';
 
 // Layouts
 import { CandidateLayout } from './components/layouts/CandidateLayout';
@@ -17,7 +19,7 @@ import CompanyRegisterPage from './components/pages/company/auth/CompanyRegister
 
 // Candidate Pages
 import Dashboard from './components/pages/candidate/Dashboard';
-import JobsPage from './components/pages/candidate/JobsPage';
+import JobsPage from './pages/JobsPage';
 import MyJobsPage from './components/pages/candidate/MyJobsPage';
 import ProfessionalRegistration from './components/pages/candidate/ProfessionalRegistration';
 import ProfilePage from './components/pages/candidate/ProfilePage';
@@ -55,22 +57,68 @@ const AuthPageWrapper: React.FC<{ children: React.ReactNode, title?: string }> =
   </div>
 );
 
-const App: React.FC = () => {
+// Protected Route Component
+const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode, allowedRoles?: string[] }) => {
+  const { user, profile, loading } = useAuth();
+  const location = useLocation();
+
+  if (loading) return <div className="flex items-center justify-center h-screen">Carregando...</div>;
+
+  if (!user) {
+    return <Navigate to="/auth/login" state={{ from: location }} replace />;
+  }
+
+  if (allowedRoles && profile && !allowedRoles.includes(profile.role)) {
+    // Redirect based on actual role
+    if (profile.role === 'candidate') return <Navigate to="/app/dashboard" replace />;
+    if (profile.role === 'company_admin' || profile.role === 'company_user') return <Navigate to="/company/dashboard" replace />;
+    if (profile.role === 'super_admin') return <Navigate to="/admin/dashboard" replace />;
+    return <Navigate to="/auth/login" replace />; // Fallback
+  }
+
+  return <>{children}</>;
+};
+
+const AppContent: React.FC = () => {
+  const { profile } = useAuth();
+
+  const handleLoginSuccess = () => {
+    // This is a backup if the form doesn't handle redirect, but ideally the form logic or the effect below handles it.
+    // Actually, inside LoginForm we call onLoginSuccess.
+    // We can dynamically redirect here.
+    console.log("Login Success triggered", profile);
+    // Rely on useEffect or manual check?
+    // Since profile might not be loaded *immediately* upon the callback (async state update),
+    // we might need to check "profile" in a useEffect or handle it in the callback by refreshing.
+    // For now, simple redirect based on expected role or just reload to let ProtectedRoute handle it?
+    // Better: navigate to root and let RequireAuth redirect?
+    window.location.href = '/';
+  };
+
   return (
     <BrowserRouter>
       <Routes>
-        {/* Redirect root to login */}
-        <Route path="/" element={<Navigate to="/auth/login" replace />} />
+        {/* Redirect root based on role or to login */}
+        <Route path="/" element={
+          <ProtectedRoute>
+            {/* If we are here, we are logged in. Redirect to dashboard based on role is handled by the guard if we try to access wrong route, 
+                      but for root, we need explicit redirect. */}
+            <Navigate to="/app/dashboard" replace />
+            {/* This Navigate is a bit naive, ideally we check role. 
+                     But ProtectedRoute logic above redirects if allowedRoles mismatch. 
+                     Since we didn't specify allowedRoles here, it passes. 
+                     Let's make a "RootRedirect" component? Or just rely on the user navigating to specific area. */}
+          </ProtectedRoute>
+        } />
 
-        {/* Auth Routes */}
+        {/* Auth Routes - Public */}
         <Route path="/auth">
-          {/* Candidate Auth */}
           <Route path="login" element={
             <AuthPageWrapper>
               <LoginForm
                 onForgotPassword={() => window.location.href = '/auth/forgot-password'}
                 onRegister={() => window.location.href = '/auth/register'}
-                onLoginSuccess={() => window.location.href = '/app/dashboard'}
+                onLoginSuccess={() => window.location.href = '/'} // ProtectedRoute will redirect
                 loginType="candidate"
               />
             </AuthPageWrapper>
@@ -80,7 +128,7 @@ const App: React.FC = () => {
               <RegisterForm
                 onBack={() => window.history.back()}
                 onLoginLink={() => window.location.href = '/auth/login'}
-                onRegisterComplete={() => window.location.href = '/app/dashboard'}
+                onRegisterComplete={() => window.location.href = '/'}
                 onRecoverAccess={() => window.location.href = '/auth/forgot-password'}
               />
             </AuthPageWrapper>
@@ -103,15 +151,13 @@ const App: React.FC = () => {
             </AuthPageWrapper>
           } />
 
-
-
           {/* Company Auth */}
           <Route path="company/login" element={
             <AuthPageWrapper title="Empresa">
               <LoginForm
                 onForgotPassword={() => window.location.href = '/auth/company/forgot-password'}
                 onRegister={() => window.location.href = '/auth/company/register'}
-                onLoginSuccess={() => window.location.href = '/company/dashboard'}
+                onLoginSuccess={() => window.location.href = '/'}
                 loginType="company"
               />
             </AuthPageWrapper>
@@ -121,7 +167,6 @@ const App: React.FC = () => {
               <CompanyRegisterPage />
             </AuthPageWrapper>
           } />
-          {/* ... other auth routes ... */}
           <Route path="company/reset-password" element={
             <AuthPageWrapper title="Empresa">
               <ResetPasswordForm
@@ -132,22 +177,14 @@ const App: React.FC = () => {
           } />
         </Route>
 
-        {/* Company App Routes */}
-        <Route path="/company" element={<CompanyLayout />}>
-          <Route path="dashboard" element={<CompanyDashboard />} />
-          <Route path="onboarding" element={<OnboardingPage />} />
-
-          {/* Jobs Management */}
-          <Route path="jobs" element={<JobsListPage />} />
-          <Route path="jobs/new" element={<CreateJobPage />} />
-          <Route path="jobs/:id" element={<JobCandidatesPage />} />
-        </Route>
-
-        <Route path="/app" element={<CandidateLayout />}>
+        {/* Candidate Routes */}
+        <Route path="/app" element={
+          <ProtectedRoute allowedRoles={['candidate']}>
+            <CandidateLayout />
+          </ProtectedRoute>
+        }>
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="jobs" element={<JobsPage onNavigate={() => { }} />} />
-          {/* Note: JobsPage and others still expect props, we need to clean them up. 
-               For now passing empty func to satisfy TS until we refactor them. */}
           <Route path="my-jobs" element={<MyJobsPage onNavigate={() => { }} />} />
           <Route path="profile" element={<ProfilePage onNavigate={() => { }} />} />
           <Route path="behavioral-test" element={<BehavioralTestPage onNavigate={() => { }} />} />
@@ -159,17 +196,40 @@ const App: React.FC = () => {
         </Route>
 
         {/* Company Routes */}
-        <Route path="/company" element={<CompanyLayout />}>
+        <Route path="/company" element={
+          <ProtectedRoute allowedRoles={['company_admin', 'company_user']}>
+            <CompanyLayout />
+          </ProtectedRoute>
+        }>
           <Route path="dashboard" element={<CompanyDashboard />} />
+          <Route path="onboarding" element={<OnboardingPage />} />
+          <Route path="jobs" element={<JobsListPage />} />
+          <Route path="jobs/new" element={<CreateJobPage />} />
+          <Route path="jobs/:id" element={<JobCandidatesPage />} />
         </Route>
 
+        {/* Public Jobs Route */}
+        <Route path="/vagas" element={<JobsPage />} />
+
         {/* Admin Routes */}
-        <Route path="/admin" element={<AdminLayout />}>
+        <Route path="/admin" element={
+          <ProtectedRoute allowedRoles={['super_admin']}>
+            <AdminLayout />
+          </ProtectedRoute>
+        }>
           <Route path="dashboard" element={<AdminDashboard />} />
         </Route>
 
       </Routes>
     </BrowserRouter>
+  );
+}
+
+const App: React.FC = () => {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 };
 

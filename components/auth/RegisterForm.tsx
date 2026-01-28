@@ -5,7 +5,9 @@ import { GoogleIcon } from '../ui/Icons';
 import { formatCPF, isValidCPF, formatPhone } from '../../utils/validators';
 import StatusModal from '../modals/StatusModal';
 import ConfirmModal from '../modals/ConfirmModal';
+import PasswordStrengthMeter from '../ui/PasswordStrengthMeter'; // NEW
 import { useAuth } from '../../src/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface RegisterFormProps {
   onBack: () => void;
@@ -16,12 +18,18 @@ interface RegisterFormProps {
 
 const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegisterComplete, onRecoverAccess }) => {
   const { signUp, signInWithGoogle } = useAuth();
+  const navigate = useNavigate(); // Used for redirection
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+
+  // MODAL Visibility States
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showError, setShowError] = useState(false); // Generic Error Modal
+  const [errorMessage, setErrorMessage] = useState('');
   const [showAlreadyRegistered, setShowAlreadyRegistered] = useState(false);
+
   const [showPass, setShowPass] = useState({ pass: false, confirm: false });
-  const [validationErrors, setValidationErrors] = useState({ cpf: '', password: '' });
+  const [validationErrors, setValidationErrors] = useState({ cpf: '', password: '', email: '', phone: '' }); // Added email/phone errors
   const [isStep1Valid, setIsStep1Valid] = useState(false);
   const [isStep2Valid, setIsStep2Valid] = useState(false);
 
@@ -37,42 +45,63 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
   // Real-time validation for Step 1
   useEffect(() => {
     if (step === 1) {
+      // 1. Validate CPF
       const isCpfValid = isValidCPF(formData.cpf);
-      // PRD: Min 8 chars, 1 uppercase, 1 special char
+
+      // 2. Validate Password Complexity
       const hasMinLen = formData.password.length >= 8;
       const hasUpper = /[A-Z]/.test(formData.password);
+      const hasLower = /[a-z]/.test(formData.password);
+      const hasNumber = /[0-9]/.test(formData.password);
       const hasSpecial = /[\W_]/.test(formData.password);
-      const isPasswordComplex = hasMinLen && hasUpper && hasSpecial;
+      const isPasswordComplex = hasMinLen && hasUpper && hasLower && hasNumber && hasSpecial;
+
+      // 3. Match Passwords
       const doPasswordsMatch = formData.password === formData.confirmPassword;
 
-      // Update password error message in real-time
-      if (formData.confirmPassword && !doPasswordsMatch) {
-        setValidationErrors(prev => ({ ...prev, password: 'As senhas não coincidem' }));
-      } else {
-        setValidationErrors(prev => ({ ...prev, password: '' }));
-      }
+      // Update Errors
+      setValidationErrors(prev => ({
+        ...prev,
+        cpf: (formData.cpf.length > 0 && !isCpfValid) ? 'CPF Inválido' : '',
+        password: (formData.confirmPassword && !doPasswordsMatch) ? 'As senhas não coincidem' : ''
+      }));
 
+      // Overall Validity
       setIsStep1Valid(isCpfValid && isPasswordComplex && doPasswordsMatch);
+
     } else if (step === 2) {
-      // Step 2 Validation: All fields required, email format
+      // Step 2 Validation
       const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
       const isNameFilled = formData.name.trim().length > 2;
-      const isPhoneFilled = formData.phone.replace(/\D/g, '').length >= 10;
 
-      setIsStep2Valid(isEmailValid && isNameFilled && isPhoneFilled);
+      // Phone Mask Check: (00) 0 0000-0000 -> 11 digits + formatting
+      // Clean phone should have 11 digits
+      const cleanPhone = formData.phone.replace(/\D/g, '');
+      const isPhoneValid = cleanPhone.length === 11;
+
+      setIsStep2Valid(isEmailValid && isNameFilled && isPhoneValid);
     }
   }, [formData, step]);
 
   const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({ ...prev, cpf: formatCPF(e.target.value) }));
-    if (validationErrors.cpf) {
-      setValidationErrors(prev => ({ ...prev, cpf: '' }));
+    // Only allow numbers
+    const rawValue = e.target.value.replace(/\D/g, '');
+    const formatted = formatCPF(rawValue);
+    setFormData(prev => ({ ...prev, cpf: formatted }));
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Mask: (00) 0 0000-0000
+    const formatted = formatPhone(e.target.value);
+    // Strictly limit to mask length (16 chars: "(11) 9 1234-5678")
+    if (formatted.length <= 16) {
+      setFormData(p => ({ ...p, phone: formatted }));
     }
   };
 
   const handleStep1 = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isStep1Valid) return; // Prevent submission if invalid
+    if (!isStep1Valid) return;
     setStep(2);
   };
 
@@ -84,21 +113,22 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
       await signUp(formData.email, formData.password, {
         name: formData.name,
         phone: formData.phone,
-        cpf: formData.cpf, // Storing CPF in metadata for now
+        cpf: formData.cpf,
         role: 'candidate'
       });
+      // Explicitly show modal logic
+      console.log("Registration success!"); // Debug
       setShowSuccess(true);
     } catch (error: any) {
       console.error(error);
-      if (error.message.includes("already registered") || error.code === '400') {
+      if (error.message.includes("already registered") || error.code === '409') { // 409 Conflict
         setShowAlreadyRegistered(true);
+      } else if (error.message.includes("CPF already exists")) {
+        setErrorMessage("Este CPF já está sendo utilizado.");
+        setShowError(true);
       } else {
-        // Generic error handling as per PRD
-        if (error.message.includes('API Key') || error.message.includes('Failed to fetch')) {
-          alert("Erro ao finalizar o cadastro. Tente novamente em instantes.");
-        } else {
-          alert("Erro ao cadastrar: " + error.message);
-        }
+        setErrorMessage("Erro ao cadastrar: " + error.message);
+        setShowError(true);
       }
     } finally {
       setLoading(false);
@@ -108,7 +138,9 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
   const inputClasses = "w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-[#F04E23] focus:ring-2 focus:ring-[#F04E23]/10 outline-none transition-all text-[15px]";
 
   return (
-    <div className="w-full max-w-[450px] mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="w-full max-w-[450px] mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 relative z-0">
+      {/* SUCCESS MODAL TRIGGERED AT END OF FILE */}
+
       <div className="bg-white px-10 py-12 rounded-[32px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50 relative">
         <button
           onClick={step === 1 ? onBack : () => setStep(1)}
@@ -132,10 +164,11 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
               <label className="block text-[11px] font-bold text-gray-400 mb-2 uppercase tracking-wider">CPF</label>
               <input
                 type="text"
-                placeholder="Digite seu CPF (apenas números)"
+                placeholder="000.000.000-00"
                 value={formData.cpf}
                 onChange={handleCpfChange}
-                className={inputClasses}
+                maxLength={14}
+                className={`${inputClasses} ${validationErrors.cpf ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : ''}`}
                 required
               />
               {validationErrors.cpf && (
@@ -156,11 +189,12 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
                   className={inputClasses}
                   required
                 />
-                <button type="button" onClick={() => setShowPass(p => ({ ...p, pass: !p.pass }))} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+                <button type="button" onClick={() => setShowPass(p => ({ ...p, pass: !p.pass }))} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                   {showPass.pass ? <Eye size={20} /> : <EyeOff size={20} />}
                 </button>
               </div>
-              <p className="text-[11px] text-gray-400 mt-2">Mínimo 8 caracteres, 1 maiúscula e 1 caractere especial</p>
+              {/* PASSWORD STRENGTH METER */}
+              <PasswordStrengthMeter password={formData.password} />
             </div>
 
             <div>
@@ -174,7 +208,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
                   className={inputClasses}
                   required
                 />
-                <button type="button" onClick={() => setShowPass(p => ({ ...p, confirm: !p.confirm }))} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+                <button type="button" onClick={() => setShowPass(p => ({ ...p, confirm: !p.confirm }))} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                   {showPass.confirm ? <Eye size={20} /> : <EyeOff size={20} />}
                 </button>
               </div>
@@ -189,8 +223,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
               type="submit"
               disabled={loading || !isStep1Valid}
               className={`w-full py-4 font-bold rounded-2xl transition-all shadow-lg text-[16px] ${isStep1Valid
-                ? 'bg-[#F04E23] hover:bg-[#E03E13] text-white shadow-orange-100'
-                : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
+                ? 'bg-[#F04E23] hover:bg-[#E03E13] text-white shadow-orange-100 transform hover:-translate-y-1 active:translate-y-0'
+                : 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none'
                 }`}
             >
               {loading ? 'Processando...' : 'Continuar'}
@@ -226,20 +260,22 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
               <label className="block text-[11px] font-bold text-gray-400 mb-2 uppercase tracking-wider">Telefone</label>
               <input
                 type="tel"
-                placeholder="+55 00 000000000"
+                placeholder="(00) 00000-0000"
                 value={formData.phone}
-                onChange={(e) => setFormData(p => ({ ...p, phone: formatPhone(e.target.value) }))}
+                onChange={handlePhoneChange}
+                maxLength={15} // (11) 91234-5678 is 15 chars
                 className={inputClasses}
                 required
               />
+              <p className="text-[11px] text-gray-400 mt-1">Formato: (99) 99999-9999</p>
             </div>
 
             <button
               type="submit"
               disabled={loading || !isStep2Valid}
               className={`w-full py-4 font-bold rounded-2xl transition-all shadow-lg text-[16px] ${isStep2Valid
-                ? 'bg-[#F04E23] hover:bg-[#E03E13] text-white shadow-orange-100'
-                : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
+                ? 'bg-[#F04E23] hover:bg-[#E03E13] text-white shadow-orange-100 transform hover:-translate-y-1 active:translate-y-0'
+                : 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none'
                 }`}
             >
               {loading ? 'Finalizando...' : 'Finalizar cadastro'}
@@ -258,7 +294,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
             <button
               type="button"
               onClick={signInWithGoogle}
-              className="w-full flex items-center justify-center gap-3 px-4 py-4 border border-gray-200 bg-white rounded-2xl hover:bg-gray-50 transition-all font-bold text-gray-700 text-[14px] shadow-sm"
+              className="w-full flex items-center justify-center gap-3 px-4 py-4 border border-gray-200 bg-white rounded-2xl hover:bg-gray-50 transition-all font-bold text-gray-700 text-[14px] shadow-sm transform hover:-translate-y-1 active:translate-y-0"
             >
               <GoogleIcon />
               Entrar com Google
@@ -272,11 +308,22 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
           type="success"
           title="Cadastro concluído!"
           message="Agora você já pode entrar na sua conta e aproveitar nossas melhores funcionalidades!"
-          buttonText="Ir para login"
+          buttonText="Acessar agora"
           onConfirm={() => {
             setShowSuccess(false);
-            onRegisterComplete();
+            onRegisterComplete(); // Notify parent
+            navigate('/');
           }}
+        />
+      )}
+
+      {showError && (
+        <StatusModal
+          type="error"
+          title="Algo deu errado"
+          message={errorMessage}
+          buttonText="Tentar novamente"
+          onConfirm={() => setShowError(false)}
         />
       )}
 
@@ -284,7 +331,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
         <ConfirmModal
           type="warning"
           title="Conta já cadastrada!"
-          message="Você já possui um cadastro com esse e-mail. Tente recuperar sua conta para acessar nossa plataforma!"
+          message="Você já possui um cadastro com esse e-mail ou CPF. Tente recuperar sua conta para acessar nossa plataforma!"
           confirmText="Recuperar acesso"
           cancelText="Voltar"
           onConfirm={() => {

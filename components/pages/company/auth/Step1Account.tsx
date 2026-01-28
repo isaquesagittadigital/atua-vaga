@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { Logo } from '../../../ui/Icons';
@@ -5,9 +6,11 @@ import { Logo } from '../../../ui/Icons';
 interface Step1Props {
     onNext: () => void;
     onGoogleLogin: () => void;
+    data: any;
+    updateData: (data: any) => void;
 }
 
-const Step1Account: React.FC<Step1Props> = ({ onNext, onGoogleLogin }) => {
+const Step1Account: React.FC<Step1Props> = ({ onNext, onGoogleLogin, data, updateData }) => {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -24,7 +27,9 @@ const Step1Account: React.FC<Step1Props> = ({ onNext, onGoogleLogin }) => {
                     <div className="relative">
                         <input
                             type="email"
-                            defaultValue="samuel@sagittadigital.com.br"
+                            value={data.email}
+                            onChange={(e) => updateData({ email: e.target.value })}
+                            placeholder="seu@email.com"
                             className="w-full px-4 py-3.5 rounded-xl border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-[#F04E23] focus:ring-2 focus:ring-[#F04E23]/10 outline-none transition-all font-medium"
                         />
                     </div>
@@ -35,7 +40,9 @@ const Step1Account: React.FC<Step1Props> = ({ onNext, onGoogleLogin }) => {
                     <div className="relative">
                         <input
                             type={showPassword ? "text" : "password"}
-                            defaultValue="**********"
+                            value={data.password}
+                            onChange={(e) => updateData({ password: e.target.value })}
+                            placeholder="**********"
                             className="w-full px-4 py-3.5 rounded-xl border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-[#F04E23] focus:ring-2 focus:ring-[#F04E23]/10 outline-none transition-all font-medium pr-12"
                         />
                         <button
@@ -53,7 +60,9 @@ const Step1Account: React.FC<Step1Props> = ({ onNext, onGoogleLogin }) => {
                     <div className="relative">
                         <input
                             type={showConfirmPassword ? "text" : "password"}
-                            defaultValue="**********"
+                            value={data.confirmPassword}
+                            onChange={(e) => updateData({ confirmPassword: e.target.value })}
+                            placeholder="**********"
                             className="w-full px-4 py-3.5 rounded-xl border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-[#F04E23] focus:ring-2 focus:ring-[#F04E23]/10 outline-none transition-all font-medium pr-12"
                         />
                         <button

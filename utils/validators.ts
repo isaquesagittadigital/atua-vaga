@@ -32,12 +32,25 @@ export const isValidCPF = (cpf: string): boolean => {
 };
 
 export const formatPhone = (value: string): string => {
-  const cleanValue = value.replace(/\D/g, '');
-  const match = cleanValue.match(/^(\d{0,2})(\d{0,5})(\d{0,4})$/);
-  if (match) {
-    if (match[2]) return `(${match[1]}) ${match[2]}${match[3] ? '-' + match[3] : ''}`;
-    if (match[1]) return `(${match[1]}`;
+  const cleanValue = value.replace(/\D/g, '').substring(0, 11); // Limit to 11 digits
+
+  // (00) 00000-0000 (11 digits)
+  if (cleanValue.length > 10) {
+    return cleanValue
+      .replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
   }
+
+  // (00) 0000-0000 (10 digits)
+  if (cleanValue.length > 2) {
+    return cleanValue
+      .replace(/^(\d{2})(\d{4})(\d{0,4})$/, '($1) $2-$3')
+      .replace(/-$/, ''); // Remove trailing dash if incomplete
+  }
+
+  if (cleanValue.length > 0) {
+    return `(${cleanValue}`;
+  }
+
   return value;
 };
 

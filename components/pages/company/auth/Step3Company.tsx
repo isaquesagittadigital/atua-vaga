@@ -1,12 +1,15 @@
+
 import React from 'react';
 import { ChevronLeft } from 'lucide-react';
 
 interface Step3Props {
     onComplete: () => void;
     onBack: () => void;
+    data: any;
+    updateData: (data: any) => void;
 }
 
-const Step3Company: React.FC<Step3Props> = ({ onComplete, onBack }) => {
+const Step3Company: React.FC<Step3Props> = ({ onComplete, onBack, data, updateData }) => {
     return (
         <div className="w-full max-w-[400px] animate-in fade-in slide-in-from-right-8 duration-500">
             <button
@@ -26,7 +29,9 @@ const Step3Company: React.FC<Step3Props> = ({ onComplete, onBack }) => {
                     <label className="block text-sm font-bold text-gray-600 mb-2">Nome da empresa</label>
                     <input
                         type="text"
-                        defaultValue="Talent Management"
+                        value={data.companyName}
+                        onChange={(e) => updateData({ companyName: e.target.value })}
+                        placeholder="Talent Management"
                         className="w-full px-4 py-3.5 rounded-xl border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-[#F04E23] focus:ring-2 focus:ring-[#F04E23]/10 outline-none transition-all font-medium"
                     />
                 </div>
@@ -35,7 +40,9 @@ const Step3Company: React.FC<Step3Props> = ({ onComplete, onBack }) => {
                     <label className="block text-sm font-bold text-gray-600 mb-2">CNPJ</label>
                     <input
                         type="text"
-                        defaultValue="93.332.603/0001-71"
+                        value={data.document}
+                        onChange={(e) => updateData({ document: e.target.value })}
+                        placeholder="93.332.603/0001-71"
                         className="w-full px-4 py-3.5 rounded-xl border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-[#F04E23] focus:ring-2 focus:ring-[#F04E23]/10 outline-none transition-all font-medium"
                     />
                 </div>
