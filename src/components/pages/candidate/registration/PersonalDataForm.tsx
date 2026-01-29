@@ -2,15 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatCPF, formatPhone } from '@/utils/validators';
+import { Pencil } from 'lucide-react';
 
 interface PersonalDataFormProps {
     onNext: () => void;
     readOnly?: boolean;
+    canEdit?: boolean;
+    hideSkip?: boolean;
 }
 
-const PersonalDataForm: React.FC<PersonalDataFormProps> = ({ onNext, readOnly = false }) => {
-    const { user, profile } = useAuth();
+const PersonalDataForm: React.FC<PersonalDataFormProps> = ({ onNext, readOnly = false, canEdit = false, hideSkip = false }) => {
+    const { user, profile, refreshUser } = useAuth();
     const [loading, setLoading] = useState(false);
+    const [isEditing, setIsEditing] = useState(!canEdit); // If canEdit is false, we are in normal flow (editing allowed). If true, start disabled.
     const [formData, setFormData] = useState({
         full_name: '',
         cpf: '',
@@ -61,7 +65,14 @@ const PersonalDataForm: React.FC<PersonalDataFormProps> = ({ onNext, readOnly = 
                 .eq('id', user.id);
 
             if (error) throw error;
-            onNext();
+
+            await refreshUser(); // Update context with new data
+
+            if (canEdit) {
+                setIsEditing(false);
+            } else {
+                onNext();
+            }
         } catch (error) {
             console.error('Error saving personal data:', error);
             alert('Erro ao salvar dados pessoais. Tente novamente.');
@@ -85,11 +96,22 @@ const PersonalDataForm: React.FC<PersonalDataFormProps> = ({ onNext, readOnly = 
 
     return (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Dados pessoais</h2>
+            <div className="flex justify-between items-center mb-2">
+                <h2 className="text-2xl font-bold text-gray-900">Dados pessoais</h2>
+                {canEdit && !isEditing && !readOnly && (
+                    <button
+                        type="button"
+                        onClick={() => setIsEditing(true)}
+                        className="text-[#F04E23] flex gap-2 items-center font-bold hover:bg-orange-50 px-3 py-1 rounded-lg transition-colors"
+                    >
+                        <Pencil size={18} /> Editar
+                    </button>
+                )}
+            </div>
             <p className="text-gray-500 mb-8">Preencha o restante dos seus dados.</p>
 
             <form onSubmit={handleSave} className="space-y-6">
-                <fieldset disabled={readOnly} className="contents">
+                <fieldset disabled={readOnly || (canEdit && !isEditing)} className="contents">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Nome */}
                         <div>
@@ -146,6 +168,8 @@ const PersonalDataForm: React.FC<PersonalDataFormProps> = ({ onNext, readOnly = 
                                 type="date"
                                 value={formData.birth_date}
                                 onChange={(e) => handleChange('birth_date', e.target.value)}
+                                max={new Date().toISOString().split('T')[0]}
+                                onClick={(e) => e.currentTarget.showPicker()}
                                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#F04E23] focus:ring-2 focus:ring-[#F04E23]/10 outline-none"
                             />
                         </div>
@@ -222,19 +246,27 @@ const PersonalDataForm: React.FC<PersonalDataFormProps> = ({ onNext, readOnly = 
 
                 {!readOnly && (
                     <div className="flex justify-center mt-10 pt-6">
-                        <button
-                            type="button"
-                            onClick={onNext}
-                            className="text-gray-500 font-bold hover:text-gray-700 px-8 py-3"
-                        >
-                            Pular
-                        </button>
+                        {!hideSkip && (
+                            <button
+                                type="button"
+                                onClick={onNext}
+                                className="text-gray-500 font-bold hover:text-gray-700 px-8 py-3"
+                            >
+                                Pular
+                            </button>
+                        )}
                         <button
                             type="submit"
-                            disabled={loading}
-                            className="bg-[#F04E23] hover:bg-[#d63f15] text-white font-bold py-3 px-10 rounded-full shadow-lg shadow-orange-200 transition-all transform hover:-translate-y-1"
+                            disabled={loading || (canEdit && !isEditing)}
+                            className={`
+                                font-bold py-3 px-10 rounded-full shadow-lg transition-all transform 
+                                ${loading || (canEdit && !isEditing)
+                                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-none'
+                                    : 'bg-[#F04E23] hover:bg-[#d63f15] text-white shadow-orange-200 hover:-translate-y-1'
+                                }
+                            `}
                         >
-                            {loading ? 'Salvando...' : 'Salvar e continuar'}
+                            {loading ? 'Salvando...' : (canEdit ? 'Concluir edição' : 'Salvar e continuar')}
                         </button>
                     </div>
                 )}

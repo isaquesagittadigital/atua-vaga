@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
-import { Plus, Trash2 } from 'lucide-react';
-
+import { Plus, Trash2, Pencil } from 'lucide-react';
 interface ExperienceFormProps {
     onNext: () => void;
     readOnly?: boolean;
+    canEdit?: boolean;
+    hideSkip?: boolean;
 }
 
 interface Experience {
@@ -21,10 +22,11 @@ interface Experience {
     is_current: boolean;
 }
 
-const ExperienceForm: React.FC<ExperienceFormProps> = ({ onNext, readOnly = false }) => {
+const ExperienceForm: React.FC<ExperienceFormProps> = ({ onNext, readOnly = false, canEdit = false, hideSkip = false }) => {
     const { user } = useAuth();
     const [loading, setLoading] = useState(false);
     const [experiences, setExperiences] = useState<Experience[]>([]);
+    const [isEditing, setIsEditing] = useState(!canEdit);
 
     const [isAdding, setIsAdding] = useState(false);
     const [currentExp, setCurrentExp] = useState<Experience>({
@@ -98,7 +100,18 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ onNext, readOnly = fals
 
     return (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Experiências profissionais</h2>
+            <div className="flex justify-between items-center mb-2">
+                <h2 className="text-2xl font-bold text-gray-900">Experiências profissionais</h2>
+                {canEdit && !isEditing && !readOnly && (
+                    <button
+                        type="button"
+                        onClick={() => setIsEditing(true)}
+                        className="text-[#F04E23] flex gap-2 items-center font-bold hover:bg-orange-50 px-3 py-1 rounded-lg transition-colors"
+                    >
+                        <Pencil size={18} /> Editar
+                    </button>
+                )}
+            </div>
             <p className="text-gray-500 mb-8">Mostre aos recrutadores seu nível profissional adicionando suas experiências.</p>
 
             {/* List */}
@@ -113,7 +126,7 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ onNext, readOnly = fals
                                     {exp.start_date ? new Date(exp.start_date).getFullYear() : '?'} - {exp.is_current ? 'Atual' : (exp.end_date ? new Date(exp.end_date).getFullYear() : '?')}
                                 </p>
                             </div>
-                            {!readOnly && (
+                            {!readOnly && (!canEdit || isEditing) && (
                                 <button onClick={() => exp.id && handleDelete(exp.id)} className="text-red-500 hover:text-red-700 p-2">
                                     <Trash2 size={18} />
                                 </button>
@@ -121,7 +134,7 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ onNext, readOnly = fals
                         </div>
                     ))}
 
-                    {!readOnly && (
+                    {!readOnly && (!canEdit || isEditing) && (
                         <button
                             onClick={() => setIsAdding(true)}
                             className="flex items-center gap-2 text-[#F04E23] font-bold hover:underline"
@@ -250,17 +263,26 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ onNext, readOnly = fals
 
             {!isAdding && !readOnly && (
                 <div className="flex justify-center mt-10 pt-6 border-t border-gray-100">
+                    {!hideSkip && (
+                        <button
+                            onClick={onNext}
+                            className="text-gray-500 font-bold hover:text-gray-700 px-8 py-3"
+                        >
+                            Pular
+                        </button>
+                    )}
                     <button
-                        onClick={onNext}
-                        className="text-gray-500 font-bold hover:text-gray-700 px-8 py-3"
+                        onClick={canEdit ? () => setIsEditing(false) : onNext}
+                        disabled={canEdit && !isEditing}
+                        className={`
+                            font-bold py-3 px-10 rounded-full shadow-lg transition-all transform 
+                            ${(canEdit && !isEditing)
+                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-none'
+                                : 'bg-[#F04E23] hover:bg-[#d63f15] text-white shadow-orange-200 hover:-translate-y-1'
+                            }
+                        `}
                     >
-                        Pular
-                    </button>
-                    <button
-                        onClick={onNext}
-                        className="bg-[#F04E23] hover:bg-[#d63f15] text-white font-bold py-3 px-10 rounded-full shadow-lg shadow-orange-200 transition-all transform hover:-translate-y-1"
-                    >
-                        Salvar e continuar
+                        {canEdit ? 'Concluir edição' : 'Salvar e continuar'}
                     </button>
                 </div>
             )}

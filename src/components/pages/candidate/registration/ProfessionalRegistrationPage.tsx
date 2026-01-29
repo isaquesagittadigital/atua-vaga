@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { Trophy, User as UserIcon, Briefcase } from 'lucide-react';
 import PersonalDataForm from './PersonalDataForm';
 import EducationForm from './EducationForm';
 import ExperienceForm from './ExperienceForm';
 import SkillsForm from './SkillsForm';
 import SuccessStep from './SuccessStep';
+import BehavioralResults from './BehavioralResults';
 
 const ProfessionalRegistrationPage: React.FC = () => {
     const [currentStep, setCurrentStep] = useState(1);
@@ -27,10 +29,45 @@ const ProfessionalRegistrationPage: React.FC = () => {
         if (currentStep === 99) {
             return (
                 <div className="space-y-8">
-                    <PersonalDataForm onNext={() => { }} />
-                    <EducationForm onNext={() => { }} />
-                    <ExperienceForm onNext={() => { }} />
-                    <SkillsForm onNext={() => { }} />
+                    {/* Header Section */}
+                    {profile && (
+                        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col md:flex-row items-center gap-6 justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className="w-16 h-16 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center">
+                                    {/* Placeholder for Avatar */}
+                                    <UserIcon className="w-8 h-8 text-gray-400" />
+                                </div>
+                                <div>
+                                    <h1 className="text-xl font-bold text-gray-900">{profile.full_name || profile.name || 'Usuário'}</h1>
+                                    <p className="text-gray-500 flex items-center gap-2">
+                                        <Briefcase size={16} />
+                                        {profile.job_objective || 'Cargo não definido'}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex-1 w-full md:max-w-md">
+                                <div className="flex justify-between items-center mb-2">
+                                    <span className="font-bold text-gray-700">Progresso do perfil: <span className="text-gray-900">100% concluído</span></span>
+                                    <div className="bg-[#3B82F6] p-1 rounded-full text-white">
+                                        <Trophy size={16} />
+                                    </div>
+                                </div>
+                                <div className="h-2 w-full bg-blue-100 rounded-full overflow-hidden flex gap-0.5">
+                                    {/* Segmented Progress Bar */}
+                                    {[...Array(5)].map((_, i) => (
+                                        <div key={i} className="h-full bg-[#3B82F6] flex-1 first:rounded-l-full last:rounded-r-full" />
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    <PersonalDataForm onNext={() => { }} canEdit={true} hideSkip={true} />
+                    <EducationForm onNext={() => { }} canEdit={true} hideSkip={true} />
+                    <ExperienceForm onNext={() => { }} canEdit={true} hideSkip={true} />
+                    <SkillsForm onNext={() => { }} canEdit={true} hideSkip={true} />
+                    <BehavioralResults />
                 </div>
             );
         }
@@ -85,7 +122,7 @@ const ProfessionalRegistrationPage: React.FC = () => {
         <div className="min-h-screen bg-white">
             <main className="max-w-4xl mx-auto px-4 py-12">
                 {/* Header only for non-success steps to clean up UI behind modal */}
-                {currentStep <= totalSteps && (
+                {currentStep <= totalSteps && currentStep !== 99 && (
                     <div className="mb-10 text-center">
                         <h1 className="text-3xl font-bold text-gray-900 mb-4">Cadastro profissional</h1>
                         <p className="text-gray-500 max-w-lg mx-auto">

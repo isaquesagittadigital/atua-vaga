@@ -187,7 +187,7 @@ const AppContent: React.FC = () => {
           <Route path="jobs" element={<JobsPage onNavigate={() => { }} />} />
           <Route path="my-jobs" element={<MyJobsPage />} />
           <Route path="profile" element={<ProfilePage onNavigate={() => { }} />} />
-          <Route path="behavioral-test" element={<BehavioralTestPage onNavigate={() => { }} />} />
+          <Route path="behavioral-test/:testId" element={<BehavioralTestPage onNavigate={() => { }} />} />
           <Route path="behavioral-result" element={<BehavioralResultPage onNavigate={() => { }} />} />
           <Route path="notifications" element={<NotificationsPage />} />
           <Route path="faq" element={<FAQPage onNavigate={() => { }} />} />
