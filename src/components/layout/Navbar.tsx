@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Logo } from '../ui/Icons';
-import { Bell, User, HelpCircle, ThumbsUp, LogOut, Instagram, Facebook, Linkedin, X, Check, Trash2, UserCog } from 'lucide-react';
+import { Bell, User, HelpCircle, ThumbsUp, LogOut, Instagram, Facebook, Linkedin, X, Check, Trash2, UserCog, Menu } from 'lucide-react';
 
 import { useAuth } from '../../contexts/AuthContext';
 import { NotificationService, Notification } from '../../services/NotificationService';
@@ -15,6 +15,7 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage }) => {
   const { user, signOut } = useAuth();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showSocialModal, setShowSocialModal] = useState(false);
 
   // Notification States
@@ -89,7 +90,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage }) => {
   return (
     <>
       <nav className="sticky top-0 z-50 bg-white border-b border-gray-100 px-6 lg:px-12 py-3 flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-12">
+        <div className="flex items-center gap-4 md:gap-12">
+          {/* Mobile Menu Button */}
+          <button
+            className="md:hidden text-gray-500 hover:text-[#F04E23] transition-colors"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            <Menu size={24} />
+          </button>
+
           <Logo className="scale-75 origin-left cursor-pointer" onClick={() => onNavigate('dashboard')} />
           <div className="hidden md:flex items-center gap-8">
             <button onClick={() => onNavigate('dashboard')} className={`${currentPage === 'dashboard' ? 'text-[#F04E23] font-black border-b-2 border-[#F04E23]' : 'text-gray-500 font-bold hover:text-[#F04E23]'} pb-1 transition-colors`}>Início</button>
@@ -97,11 +106,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage }) => {
             <button onClick={() => onNavigate('my-jobs')} className={`${currentPage === 'my-jobs' ? 'text-[#F04E23] font-black border-b-2 border-[#F04E23]' : 'text-gray-500 font-bold hover:text-[#F04E23]'} pb-1 transition-colors`}>Minhas vagas</button>
           </div>
         </div>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-2 md:gap-6">
 
           <button
             onClick={() => onNavigate('professional-registration')}
-            className={`p-2 ${currentPage === 'professional-registration' ? 'text-[#F04E23] bg-orange-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'} rounded-lg transition-all`}
+            className={`p-2 hidden md:block ${currentPage === 'professional-registration' ? 'text-[#F04E23] bg-orange-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'} rounded-lg transition-all`}
             title="Cadastro Profissional"
           >
             <UserCog size={22} />
@@ -118,7 +127,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage }) => {
             </button>
           </div>
 
-          <div className="relative" ref={dropdownRef}>
+          <div className="relative hidden md:block" ref={dropdownRef}>
             <button
               onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
               className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#5AB7F7] focus:outline-none transition-transform active:scale-95 bg-blue-100 flex items-center justify-center text-[#1D4ED8] font-black"
@@ -188,6 +197,52 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage }) => {
           </div>
         </div>
       </nav>
+
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-40 bg-white md:hidden animate-in fade-in slide-in-from-left duration-200 flex flex-col">
+          <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+            <Logo className="scale-75 origin-left" />
+            <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-gray-500">
+              <X size={24} />
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            <div className="space-y-2">
+              <button onClick={() => { onNavigate('dashboard'); setIsMobileMenuOpen(false); }} className={`w-full text-left p-3 rounded-xl font-bold text-lg ${currentPage === 'dashboard' ? 'bg-orange-50 text-[#F04E23]' : 'text-gray-600'}`}>Início</button>
+              <button onClick={() => { onNavigate('jobs'); setIsMobileMenuOpen(false); }} className={`w-full text-left p-3 rounded-xl font-bold text-lg ${currentPage === 'jobs' ? 'bg-orange-50 text-[#F04E23]' : 'text-gray-600'}`}>Vagas</button>
+              <button onClick={() => { onNavigate('my-jobs'); setIsMobileMenuOpen(false); }} className={`w-full text-left p-3 rounded-xl font-bold text-lg ${currentPage === 'my-jobs' ? 'bg-orange-50 text-[#F04E23]' : 'text-gray-600'}`}>Minhas vagas</button>
+            </div>
+
+            <hr className="border-gray-100" />
+
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-xl">
+                <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#1D4ED8] font-black shadow-sm">
+                  {userInitial}
+                </div>
+                <div>
+                  <p className="font-bold text-gray-900">{userName}</p>
+                  <p className="text-xs text-gray-500">{userEmail}</p>
+                </div>
+              </div>
+
+              <button onClick={() => { onNavigate('profile'); setIsMobileMenuOpen(false); }} className="flex items-center gap-3 w-full p-3 text-gray-600 font-bold hover:bg-gray-50 rounded-xl">
+                <User size={20} /> Perfil
+              </button>
+              <button onClick={() => { onNavigate('professional-registration'); setIsMobileMenuOpen(false); }} className="flex items-center gap-3 w-full p-3 text-gray-600 font-bold hover:bg-gray-50 rounded-xl">
+                <UserCog size={20} /> Cadastro Profissional
+              </button>
+              <button onClick={() => { onNavigate('faq'); setIsMobileMenuOpen(false); }} className="flex items-center gap-3 w-full p-3 text-gray-600 font-bold hover:bg-gray-50 rounded-xl">
+                <HelpCircle size={20} /> Suporte
+              </button>
+              <button onClick={handleLogout} className="flex items-center gap-3 w-full p-3 text-red-500 font-bold hover:bg-red-50 rounded-xl">
+                <LogOut size={20} /> Sair
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Social Media Modal */}
       {showSocialModal && (

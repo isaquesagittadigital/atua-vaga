@@ -164,16 +164,16 @@ const BehavioralTestPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans flex flex-col">
-      <main className="flex-1 max-w-[1200px] w-full mx-auto px-6 py-12">
+      <main className="flex-1 max-w-[1200px] w-full mx-auto px-4 md:px-6 py-8 md:py-12">
         <button onClick={() => navigate('/app/professional-registration')} className="flex items-center gap-2 text-gray-800 font-black mb-10 hover:text-[#F04E23] transition-colors">
           <ChevronLeft size={20} strokeWidth={3} /> Voltar
         </button>
 
-        <div className="bg-white border border-gray-100 rounded-[40px] shadow-sm p-12 md:p-20 relative">
+        <div className="bg-white border border-gray-100 rounded-[32px] md:rounded-[40px] shadow-sm p-6 md:p-20 relative">
           {/* Header & Progress Indicator */}
-          <div className="flex justify-between items-start mb-16">
+          <div className="flex flex-col-reverse md:flex-row justify-between items-start mb-10 md:mb-16 gap-8 md:gap-0">
             <div className="max-w-[700px]">
-              <h1 className="text-4xl font-black text-gray-900 mb-6">{testTitle}</h1>
+              <h1 className="text-2xl md:text-4xl font-black text-gray-900 mb-4 md:mb-6">{testTitle}</h1>
               <p className="text-gray-500 font-bold text-lg leading-relaxed">
                 Responda as perguntas abaixo para obter o seu resultado. Caso não tenha tempo para
                 responder todas as perguntas, não se preocupe! Todas as respostas são salvas
@@ -240,18 +240,18 @@ const BehavioralTestPage: React.FC = () => {
             ))}
           </div>
 
-          <div className="flex items-center justify-center gap-6 mt-20">
-            <button onClick={handleBack} className="px-20 py-4 border-2 border-gray-100 text-gray-400 font-black rounded-2xl hover:bg-gray-50 transition-all text-lg">
+          <div className="flex flex-col-reverse md:flex-row items-center justify-center gap-4 md:gap-6 mt-12 md:mt-20">
+            <button onClick={handleBack} className="w-full md:w-auto px-8 md:px-20 py-4 border-2 border-gray-100 text-gray-400 font-black rounded-2xl hover:bg-gray-50 transition-all text-lg">
               Voltar
             </button>
-            <button onClick={handleContinue} className="px-20 py-4 bg-[#F04E23] text-white font-black rounded-2xl hover:bg-[#E03E13] transition-all shadow-lg shadow-orange-100 text-lg">
+            <button onClick={handleContinue} className="w-full md:w-auto px-8 md:px-20 py-4 bg-[#F04E23] text-white font-black rounded-2xl hover:bg-[#E03E13] transition-all shadow-lg shadow-orange-100 text-lg">
               Continuar
             </button>
           </div>
         </div>
       </main>
 
-      <footer className="w-full py-10 px-12 border-t border-gray-100 bg-white text-[13px] text-gray-400 font-bold flex flex-col md:flex-row items-center justify-between shrink-0">
+      <footer className="w-full py-6 md:py-10 px-6 md:px-12 border-t border-gray-100 bg-white text-[13px] text-gray-400 font-bold flex flex-col md:flex-row items-center justify-between shrink-0 gap-4 md:gap-0 text-center md:text-left">
         <p>©atua vaga. Todos os direitos reservados.</p>
         <div className="flex items-center gap-10 mt-6 md:mt-0">
           <a href="#" className="hover:text-gray-900 transition-colors">Termos e Condições de Uso</a>

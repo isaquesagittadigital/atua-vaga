@@ -65,11 +65,11 @@ const Dashboard: React.FC = () => {
   );
 
   return (
-    <div className="max-w-[1400px] w-full mx-auto px-6 py-12">
+    <div className="max-w-[1400px] w-full mx-auto px-4 md:px-6 py-8 md:py-12">
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Sidebar Left */}
         <aside className="w-full lg:w-[320px] xl:w-[360px] space-y-6">
-          <div className="bg-white rounded-[32px] p-10 shadow-sm border border-gray-50 text-center cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/app/profile')}>
+          <div className="bg-white rounded-[32px] p-5 md:p-10 shadow-sm border border-gray-50 text-center cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/app/profile')}>
             <div className="w-24 h-24 rounded-3xl overflow-hidden mb-6 border-4 border-[#F8FAFC] mx-auto bg-blue-100 flex items-center justify-center text-4xl font-black text-[#1D4ED8]">
               {user?.user_metadata?.full_name?.charAt(0).toUpperCase() || 'U'}
             </div>
@@ -83,7 +83,7 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-[32px] p-10 shadow-sm border border-gray-50">
+          <div className="bg-white rounded-[32px] p-5 md:p-10 shadow-sm border border-gray-50">
             <h4 className="font-bold text-gray-700 mb-6 text-[15px]">Progresso do perfil: <span className="font-black text-gray-900">100% concluído</span></h4>
             <div className="flex items-center gap-3 mb-8">
               <div className="flex-1 h-3.5 flex gap-1">
@@ -110,7 +110,7 @@ const Dashboard: React.FC = () => {
           {/* Test Results Card */}
           <button
             onClick={() => navigate('/app/behavioral-test')}
-            className="w-full bg-white rounded-[24px] p-8 shadow-sm border border-gray-50 flex items-center justify-between group hover:border-[#F04E23] transition-all"
+            className="w-full bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-50 flex items-center justify-between group hover:border-[#F04E23] transition-all"
           >
             <div className="flex items-center gap-5">
               <div className="p-3 bg-orange-50 text-[#F04E23] rounded-2xl">
@@ -124,7 +124,7 @@ const Dashboard: React.FC = () => {
 
         {/* Main Content Area */}
         <section className="flex-1 space-y-10">
-          <div className="bg-white rounded-[32px] p-10 shadow-sm border border-gray-50">
+          <div className="bg-white rounded-[32px] p-5 md:p-10 shadow-sm border border-gray-50">
             <div className="flex items-center justify-between mb-10">
               <h2 className="text-3xl font-black text-gray-900">Recomendadas para você</h2>
               <button onClick={() => navigate('/app/jobs')} className="text-gray-400 font-bold hover:text-[#F04E23] transition-colors flex items-center gap-1">Ver todas <ChevronRight size={18} /></button>
@@ -146,7 +146,7 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-[#1D4ED8] rounded-[32px] p-12 text-white relative overflow-hidden group">
+          <div className="bg-[#1D4ED8] rounded-[32px] p-6 md:p-12 text-white relative overflow-hidden group">
             <div className="relative z-10 max-w-[400px]">
               <h3 className="text-3xl font-black mb-4">Sua vaga ideal está a um clique de distância.</h3>
               <p className="text-blue-100 font-bold mb-8 opacity-80">Explore centenas de oportunidades personalizadas para o seu perfil profissional.</p>
