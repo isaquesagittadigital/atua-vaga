@@ -9,6 +9,22 @@ interface UserProfile {
     email: string;
     role: 'candidate' | 'company_admin' | 'company_user' | 'super_admin';
     full_name: string;
+    cpf?: string;
+    phone?: string;
+    birth_date?: string;
+    civil_status?: string;
+    // Address fields
+    cep?: string;
+    city?: string;
+    state?: string;
+    street?: string;
+    number?: string;
+    neighborhood?: string;
+    address?: string; // Legacy
+    cnh?: boolean;
+    // Other fields
+    bio?: string;
+    name?: string;
 }
 
 interface Company {

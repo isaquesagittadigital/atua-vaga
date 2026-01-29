@@ -22,8 +22,6 @@ const PersonalDataForm: React.FC<PersonalDataFormProps> = ({ onNext, readOnly = 
         phone: '',
         birth_date: '',
         civil_status: '',
-        address: '',
-        cnh: false
     });
 
     useEffect(() => {
@@ -35,8 +33,6 @@ const PersonalDataForm: React.FC<PersonalDataFormProps> = ({ onNext, readOnly = 
                 phone: profile.phone || '',
                 birth_date: profile.birth_date || '',
                 civil_status: profile.civil_status || '',
-                address: profile.address || '',
-                cnh: profile.cnh || false
             });
         }
     }, [profile]);
@@ -59,8 +55,6 @@ const PersonalDataForm: React.FC<PersonalDataFormProps> = ({ onNext, readOnly = 
                     phone: formData.phone,
                     birth_date: formData.birth_date || null,
                     civil_status: formData.civil_status,
-                    address: formData.address,
-                    cnh: formData.cnh
                 })
                 .eq('id', user.id);
 
@@ -202,51 +196,12 @@ const PersonalDataForm: React.FC<PersonalDataFormProps> = ({ onNext, readOnly = 
                                 <option value="União Estável">União Estável</option>
                             </select>
                         </div>
-
-                        {/* Endereço */}
-                        <div>
-                            <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">Endereço completo</label>
-                            <input
-                                type="text"
-                                value={formData.address}
-                                onChange={(e) => handleChange('address', e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#F04E23] focus:ring-2 focus:ring-[#F04E23]/10 outline-none"
-                                placeholder="Rua, número, bairro, cidade - UF"
-                            />
-                        </div>
-                    </div>
-
-                    {/* Possui CNH */}
-                    <div>
-                        <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">Possui CNH?</label>
-                        <div className="flex items-center gap-6 mt-2">
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="cnh"
-                                    checked={formData.cnh === true}
-                                    onChange={() => handleChange('cnh', true)}
-                                    className="w-5 h-5 text-[#F04E23] focus:ring-[#F04E23]"
-                                />
-                                <span className="text-gray-700 font-medium">Sim</span>
-                            </label>
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="cnh"
-                                    checked={formData.cnh === false}
-                                    onChange={() => handleChange('cnh', false)}
-                                    className="w-5 h-5 text-[#F04E23] focus:ring-[#F04E23]"
-                                />
-                                <span className="text-gray-700 font-medium">Não</span>
-                            </label>
-                        </div>
                     </div>
                 </fieldset>
 
                 {!readOnly && (
                     <div className="flex justify-center mt-10 pt-6">
-                        {!hideSkip && (
+                        {!hideSkip && !canEdit && (
                             <button
                                 type="button"
                                 onClick={onNext}
@@ -270,8 +225,6 @@ const PersonalDataForm: React.FC<PersonalDataFormProps> = ({ onNext, readOnly = 
                         </button>
                     </div>
                 )}
-
-
             </form>
         </div>
     );

@@ -8,9 +8,11 @@ import SkillsForm from './SkillsForm';
 import SuccessStep from './SuccessStep';
 import BehavioralResults from './BehavioralResults';
 
+import AddressForm from './AddressForm';
+
 const ProfessionalRegistrationPage: React.FC = () => {
     const [currentStep, setCurrentStep] = useState(1);
-    const totalSteps = 4; // Excluding SuccessStep
+    const totalSteps = 5; // Updated to 5 (Personal, Address, Education, Experience, Skills)
 
     const nextStep = () => setCurrentStep(prev => prev + 1);
     const prevStep = () => setCurrentStep(prev => prev - 1);
@@ -64,6 +66,7 @@ const ProfessionalRegistrationPage: React.FC = () => {
                     )}
 
                     <PersonalDataForm onNext={() => { }} canEdit={true} hideSkip={true} />
+                    <AddressForm onNext={() => { }} canEdit={true} hideSkip={true} />
                     <EducationForm onNext={() => { }} canEdit={true} hideSkip={true} />
                     <ExperienceForm onNext={() => { }} canEdit={true} hideSkip={true} />
                     <SkillsForm onNext={() => { }} canEdit={true} hideSkip={true} />
@@ -72,7 +75,7 @@ const ProfessionalRegistrationPage: React.FC = () => {
             );
         }
 
-        if (currentStep === 5) {
+        if (currentStep === 6) {
             return (
                 <div className="relative">
                     {/* Review Banner */}
@@ -91,6 +94,7 @@ const ProfessionalRegistrationPage: React.FC = () => {
 
                     <div className="space-y-8 opacity-50 pointer-events-none select-none grayscale-[0.5]">
                         <PersonalDataForm onNext={() => { }} readOnly={true} />
+                        <AddressForm onNext={() => { }} readOnly={true} />
                         <EducationForm onNext={() => { }} readOnly={true} />
                         <ExperienceForm onNext={() => { }} readOnly={true} />
                         <SkillsForm onNext={() => { }} readOnly={true} />
@@ -108,10 +112,12 @@ const ProfessionalRegistrationPage: React.FC = () => {
             case 1:
                 return <PersonalDataForm onNext={nextStep} />;
             case 2:
-                return <EducationForm onNext={nextStep} onBack={prevStep} />;
+                return <AddressForm onNext={nextStep} onBack={prevStep} />;
             case 3:
-                return <ExperienceForm onNext={nextStep} />;
+                return <EducationForm onNext={nextStep} onBack={prevStep} />;
             case 4:
+                return <ExperienceForm onNext={nextStep} />;
+            case 5:
                 return <SkillsForm onNext={nextStep} />;
             default:
                 return <PersonalDataForm onNext={nextStep} />;
