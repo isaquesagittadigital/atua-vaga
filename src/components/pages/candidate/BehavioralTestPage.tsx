@@ -10,7 +10,7 @@ type Question = Database['public']['Tables']['test_questions']['Row'];
 
 const QUESTIONS_PER_PAGE = 5;
 
-const BehavioralTestPage: React.FC = () => {
+const BehavioralTestPage: React.FC<{ onNavigate?: () => void }> = ({ onNavigate }) => {
   const { testId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -124,27 +124,35 @@ const BehavioralTestPage: React.FC = () => {
   };
 
   const calculateAndFinish = async () => {
-    // Here we would implement scoring logic based on categories.
-    // For now, I'll just save and show success.
-    // Mock scoring: Random or simple sum
-    const scores: Record<string, number> = {
-      'Confiança': 80,
-      'Fraqueza': 20,
-      'Altruísmo': 90
-    };
+    try {
+      if (!testId || !resultId) return;
 
-    if (resultId) {
-      await supabase
-        .from('candidate_test_results')
-        .update({
-          responses: responses,
-          scores: scores,
-          completed_at: new Date().toISOString()
+      const { data: { session } } = await supabase.auth.getSession();
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/tests/calculate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify({
+          testId,
+          responses
         })
-        .eq('id', resultId);
-    }
+      });
 
-    setSuccessModalOpen(true);
+      if (!response.ok) {
+        throw new Error('Erro ao calcular resultados no servidor');
+      }
+
+      const data = await response.json();
+      console.log('Resultados processados:', data.scores);
+
+      setSuccessModalOpen(true);
+    } catch (error) {
+      console.error('Error finishing test:', error);
+      alert('Houve um erro ao processar seus resultados. Tente novamente.');
+    }
   };
 
   const handleBack = () => {

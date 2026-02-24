@@ -7,6 +7,7 @@ import { isValidCPF, isValidPassword } from './utils/validators';
 
 
 import { validateRegistration, register, login } from './controllers/authController';
+import { calculateBehavioralScore } from './controllers/testController';
 
 dotenv.config();
 
@@ -22,6 +23,9 @@ app.use(express.json());
 app.post('/api/auth/validate', validateRegistration);
 app.post('/api/auth/register', register);
 app.post('/api/auth/login', login);
+
+// Protected Test Routes
+app.post('/api/tests/calculate', requireAuth, calculateBehavioralScore);
 
 app.post('/api/jobs', requireAuth, async (req, res) => {
     try {

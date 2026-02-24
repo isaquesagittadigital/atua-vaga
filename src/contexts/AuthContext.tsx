@@ -7,7 +7,7 @@ import { supabase } from '../lib/supabase';
 interface UserProfile {
     id: string;
     email: string;
-    role: 'candidate' | 'company_admin' | 'company_user' | 'super_admin';
+    role: 'candidate' | 'company' | 'company_admin' | 'company_user' | 'admin' | 'super_admin';
     full_name: string;
     cpf?: string;
     phone?: string;

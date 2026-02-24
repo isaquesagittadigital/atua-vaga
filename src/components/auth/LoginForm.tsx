@@ -43,37 +43,32 @@ const LoginForm: React.FC<LoginFormProps> = ({ onForgotPassword, onRegister, onL
     setErrors({});
 
     try {
-      if (loginType === 'candidate' && formData.cpf) {
-        // TODO: Implement CPF to Email lookup or change to Email login for candidates
-        // For now, we assume candidates provide email if we change the UI, OR we throw error
-        // Since I cannot change the UI design without request, I will treat CPF as a placeholder for now
-        // OR better: I will try to sign in using the Email field if it exists, but the UI conditionally renders CPF.
+      await signInWithPassword(formData.email, formData.password);
 
-        // EMERGENCY FIX: changing the logic to require Email for now even for candidates in terms of logic, 
-        // but wait, the form ONLY shows CPF for candidates.
-        // Real world fix: Search profile by CPF.
-        // MVP fix: Alert user "Login com CPF indisponível, use Email" or temporarily show Email field for candidates too.
+      // Fetch profile to determine redirect destination
+      const { data: { user } } = await (await import('@/lib/supabase')).supabase.auth.getUser();
+      if (user) {
+        const { data: profileData } = await (await import('@/lib/supabase')).supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
 
-        // Let's prompt the user to use Email for now by making the field generic or assuming they use email?
-        // No, the UI explicitly asks for CPF. 
-
-        // Valid Strategy: 
-        // Since I don't have CPF lookup yet, I will fail if they try CPF, BUT I will enable Email input for candidates too, or change the label.
-        // Let's modify the JSX below to ask for "E-mail ou CPF" and treat it as email if it has @.
+        if (profileData) {
+          const role = profileData.role;
+          if (role === 'admin' || role === 'super_admin') {
+            window.location.href = '/admin/dashboard';
+            return;
+          }
+          if (role === 'company' || role === 'company_admin' || role === 'company_user') {
+            window.location.href = '/company/dashboard';
+            return;
+          }
+        }
       }
 
-      // We will assume email is being passed for now or adapt the form.
-      // Let's assume the user enters EMAIL in the "CPF" field if we change the placeholder, 
-      // or we just switch the Candidate form to use Email for this "Supabase Migration".
-
-      const emailToUse = loginType === 'company' ? formData.email : formData.email;
-      // Wait, Candidate UI *hides* email.
-
-      // I will update the Candidate UI part to ask for Email instead of CPF for this version.
-      // Ideally I would ask the user, but "Execute" mode.
-
-      await signInWithPassword(formData.email, formData.password);
-      onLoginSuccess();
+      // Default: candidate
+      window.location.href = '/app/dashboard';
     } catch (err: any) {
       console.error(err);
       setErrors({ general: 'Falha no login. Verifique suas credenciais.' });

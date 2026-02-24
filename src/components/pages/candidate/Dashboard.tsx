@@ -14,10 +14,21 @@ const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [recentJobs, setRecentJobs] = useState<any[]>([]);
+  const [testId, setTestId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchRecentJobs();
+    fetchBigFiveTestId();
   }, []);
+
+  const fetchBigFiveTestId = async () => {
+    const { data } = await supabase
+      .from('behavioral_tests')
+      .select('id')
+      .eq('title', 'Mapeamento de Perfil Comportamental (Big Five)')
+      .single();
+    if (data) setTestId(data.id);
+  };
 
   const fetchRecentJobs = async () => {
     const { data } = await supabase
@@ -109,7 +120,7 @@ const Dashboard: React.FC = () => {
 
           {/* Test Results Card */}
           <button
-            onClick={() => navigate('/app/behavioral-test')}
+            onClick={() => navigate(testId ? `/app/behavioral-test/${testId}` : '/app/behavioral-test')}
             className="w-full bg-white rounded-[24px] p-6 md:p-8 shadow-sm border border-gray-50 flex items-center justify-between group hover:border-[#F04E23] transition-all"
           >
             <div className="flex items-center gap-5">

@@ -1,0 +1,211 @@
+========================================================
+  ATUA VAGA - Documentação de Desenvolvimento
+  Data: 24/02/2026
+========================================================
+
+CREDENCIAIS DE TESTE
+--------------------
+🟠 Admin      | atualzadmin@gmail.com     | 123456789 | Admin Atua Vaga
+🔵 Empresa    | atualzempresa@gmail.com   | 123456789 | Empresa Atua Vaga
+🟢 Candidato  | atualzdev@gmail.com       | 123456789 | Atualz Dev
+
+
+========================================================
+1. TESTE COMPORTAMENTAL BIG FIVE
+========================================================
+
+Backend psicométrico implementado com 30 facetas de personalidade.
+
+Arquivos criados/modificados:
+- server/routes/behavioral-test.ts  → API para calcular resultados Big Five
+- src/components/pages/candidate/BehavioralTestPage.tsx → Página do teste
+- src/components/pages/candidate/TestSuccessModal.tsx → Modal de sucesso
+
+Tabelas Supabase:
+- behavioral_tests → Testes cadastrados
+- test_questions → 30 perguntas Big Five (seed)
+- candidate_test_results → Respostas e scores dos candidatos
+
+Fluxo:
+1. Candidato acessa Dashboard → clica "Fazer teste comportamental"
+2. Sistema busca o ID do teste Big Five automaticamente
+3. Candidato responde 30 questões em escala Likert
+4. Progresso é salvo em tempo real no Supabase
+5. Ao finalizar, backend processa as 30 fórmulas matemáticas
+6. Modal de sucesso exibe o resultado
+
+
+========================================================
+2. PAINEL ADMIN - DASHBOARD
+========================================================
+
+Arquivo: src/components/pages/admin/Dashboard.tsx
+
+Seções implementadas:
+- Indicadores: 7 cards com sparklines (Vagas ativas, fechadas, Contratados, etc.)
+- Planos: 3 cards comparativos (Comece, Acelere, Evolua)
+- Gráficos históricos: 4 gráficos de barras (Recharts)
+  • % Vagas cadastradas vs Contratados
+  • Empresas cadastradas vs Empresas ativas
+  • Candidatos cadastrados vs Candidatos ativos
+  • Vagas fechadas vs Contratados
+
+
+========================================================
+3. LAYOUT ADMIN - TOP NAVIGATION
+========================================================
+
+Arquivo: src/components/layouts/AdminLayout.tsx
+
+- Navegação superior com 3 itens: Dashboard, Financeiro, Gerenciamento
+- Perfil do usuário + botão de notificações à direita
+- Footer com links para Termos, Privacidade e Ajuda
+
+
+========================================================
+4. PAINEL ADMIN - FINANCEIRO
+========================================================
+
+Arquivo: src/components/pages/admin/FinanceiroPage.tsx
+
+Seções:
+- Indicadores: 6 cards métricos com sparklines
+- Percentuais de pagamento: Pagos (50%), A vencer (30%), Vencidos (20%)
+- Valores unitários: Valor pago, a vencer e vencido
+- Tabela de Empresas:
+  • Filtros: Status, Plano, Período
+  • Exportação: XLSX + PDF
+  • Colunas: Empresa, Responsável, Telefone, Plano, Valor, Status, Total Pago, Total a Vencer
+  • Paginação numérica
+
+
+========================================================
+5. PAINEL ADMIN - GERENCIAMENTO
+========================================================
+
+Arquivo principal: src/components/pages/admin/GerenciamentoPage.tsx
+
+5 Abas implementadas:
+
+a) EMPRESAS (tabs/EmpresasTab.tsx)
+   - Tabela: Empresa, Responsável, Telefone, Última atualização, Aplicações, Último acesso
+   - Link "Ver detalhes" → página de detalhes
+
+b) CANDIDATOS (tabs/CandidatosTab.tsx)
+   - Tabela: Candidato, Telefone, Última atualização, Aplicações, Último acesso
+   - Link "Ver detalhes" → página de detalhes
+
+c) CARGOS (tabs/CargosTab.tsx)
+   - CRUD completo (criar, editar, excluir)
+   - Campo de busca por palavra-chave
+   - Colunas: Cargo, Faceta
+   - Modal para cadastro/edição
+   - Conectado à tabela admin_roles do Supabase
+
+d) PLANOS (tabs/PlanosTab.tsx)
+   - CRUD completo (criar, editar, excluir)
+   - Colunas: Plano, Preço, Max Vagas, Max Usuários
+   - Modal para cadastro/edição
+   - Conectado à tabela admin_plans do Supabase
+
+e) ADMINS (tabs/AdminsTab.tsx)
+   - Listagem de administradores
+   - Colunas: Admin, E-mail, Nível, Criado em
+   - Conectado à tabela profiles (role = admin/super_admin)
+
+
+========================================================
+6. PÁGINA DE DETALHES - EMPRESA
+========================================================
+
+Arquivo: src/components/pages/admin/CompanyDetailPage.tsx
+Rota: /admin/gerenciamento/empresa/:id
+
+Seções:
+- Header: Logo, nome, indústria, último acesso, plano
+- Dados pessoais: Nome do responsável, e-mail, telefone, CPF, senha
+- Empresa: Nome, CNPJ, áreas de atuação, "Quem somos"
+- Fit cultural: Cards de testes em PDF
+- Vagas: Cards de vagas cadastradas pela empresa
+
+
+========================================================
+7. PÁGINA DE DETALHES - CANDIDATO
+========================================================
+
+Arquivo: src/components/pages/admin/CandidateDetailPage.tsx
+Rota: /admin/gerenciamento/candidato/:id
+
+Seções:
+- Header: Avatar, nome, cargo, último acesso
+- Quem sou eu: Bio do candidato
+- Dados pessoais: Nome, CPF, e-mail, telefone, nascimento, estado civil, endereço, CNH
+- Formação Acadêmica: Nível, instituição, datas, status
+- Experiências profissionais: Empresa, cargo, salário, período
+- Habilidades: Tags de skills, redes sociais, objetivo, diversidade, disponibilidades
+- Resultado comportamental: Cards de testes Big Five em PDF
+- Vagas: Cards de vagas com barra de % de aderência
+
+
+========================================================
+8. TABELAS CRIADAS NO SUPABASE
+========================================================
+
+a) admin_roles
+   - id (uuid PK)
+   - name (text)
+   - facet (text)
+   - created_at (timestamptz)
+   Seed: 7 cargos iniciais (Gerente de Projetos, Desenvolvedor, etc.)
+
+b) admin_plans
+   - id (uuid PK)
+   - name (text)
+   - price (numeric)
+   - max_jobs (int)
+   - max_users (int)
+   - features (jsonb)
+   - created_at (timestamptz)
+   Seed: 3 planos (Comece R$50, Acelere R$150, Evolua R$300)
+
+
+========================================================
+9. ROTAS ADMIN
+========================================================
+
+Arquivo: src/routes/AdminRoutes.tsx
+
+/admin/dashboard           → Dashboard
+/admin/financeiro          → FinanceiroPage
+/admin/gerenciamento       → GerenciamentoPage (5 abas)
+/admin/gerenciamento/empresa/:id    → CompanyDetailPage
+/admin/gerenciamento/candidato/:id  → CandidateDetailPage
+
+
+========================================================
+10. BIBLIOTECAS INSTALADAS
+========================================================
+
+- recharts → Gráficos de barras e sparklines
+
+
+========================================================
+RESUMO DE ARQUIVOS CRIADOS/MODIFICADOS
+========================================================
+
+CRIADOS:
+  src/components/pages/admin/FinanceiroPage.tsx
+  src/components/pages/admin/GerenciamentoPage.tsx
+  src/components/pages/admin/CompanyDetailPage.tsx
+  src/components/pages/admin/CandidateDetailPage.tsx
+  src/components/pages/admin/tabs/EmpresasTab.tsx
+  src/components/pages/admin/tabs/CandidatosTab.tsx
+  src/components/pages/admin/tabs/CargosTab.tsx
+  src/components/pages/admin/tabs/PlanosTab.tsx
+  src/components/pages/admin/tabs/AdminsTab.tsx
+
+MODIFICADOS:
+  src/components/layouts/AdminLayout.tsx  (sidebar → top nav)
+  src/routes/AdminRoutes.tsx  (novas rotas)
+  src/App.tsx  (role 'admin' no ProtectedRoute)
+  src/components/pages/admin/Dashboard.tsx  (redesign premium)
