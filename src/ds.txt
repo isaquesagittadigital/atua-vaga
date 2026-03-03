@@ -1,0 +1,3 @@
+🟠 Admin	atualzadmin@gmail.com	123456789	Admin Atua Vaga
+🔵 Empresa	atualzempresa@gmail.com	123456789	Empresa Atua Vaga
+🟢 Candidato	atualzdev@gmail.com	123456789	Atualz Dev

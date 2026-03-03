@@ -8,6 +8,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { NotificationService, Notification } from '../../../services/NotificationService';
 import NotificationDetailModal from '../../modals/NotificationDetailModal';
 import { candidateNavigation } from '../../../config/navigation';
+import { ProfileDropdown } from '../ProfileDropdown';
 
 export const CandidateHeader: React.FC = () => {
     const { user, signOut } = useAuth();
@@ -131,57 +132,8 @@ export const CandidateHeader: React.FC = () => {
                         </Link>
                     </div>
 
-                    <div className="relative hidden md:block" ref={dropdownRef}>
-                        <button
-                            onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                            className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#5AB7F7] focus:outline-none transition-transform active:scale-95 bg-blue-100 flex items-center justify-center text-[#1D4ED8] font-black"
-                        >
-                            {userInitial}
-                        </button>
-
-                        {isProfileMenuOpen && (
-                            <div className="absolute right-0 top-full mt-3 w-72 bg-white rounded-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.1)] border border-gray-100 py-2 z-50 animate-in fade-in zoom-in-95 duration-100 origin-top-right">
-                                <div className="px-5 py-4 flex items-center gap-3 border-b border-gray-100">
-                                    <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-blue-100 flex items-center justify-center text-[#1D4ED8] font-black">
-                                        {userInitial}
-                                    </div>
-                                    <div className="flex flex-col overflow-hidden">
-                                        <span className="font-semibold text-gray-900 text-sm truncate">{userName}</span>
-                                        <span className="text-xs text-gray-500 truncate">{userEmail}</span>
-                                    </div>
-                                </div>
-
-                                <div className="py-2 border-b border-gray-100">
-                                    {candidateNavigation.user.map((item) => (
-                                        <button
-                                            key={item.label}
-                                            onClick={() => {
-                                                setIsProfileMenuOpen(false);
-                                                if (item.action === 'modal') {
-                                                    setShowSocialModal(true);
-                                                } else {
-                                                    navigate(item.path);
-                                                }
-                                            }}
-                                            className="w-full px-5 py-2.5 flex items-center gap-3 text-sm text-gray-600 hover:bg-gray-50 hover:text-[#F04E23] transition-colors text-left"
-                                        >
-                                            <item.icon size={18} />
-                                            <span>{item.label}</span>
-                                        </button>
-                                    ))}
-                                </div>
-
-                                <div className="py-2">
-                                    <button
-                                        onClick={handleLogout}
-                                        className="w-full px-5 py-2.5 flex items-center gap-3 text-sm text-gray-600 hover:bg-gray-50 hover:text-[#F04E23] transition-colors text-left"
-                                    >
-                                        <LogOut size={18} />
-                                        <span>Deslogar</span>
-                                    </button>
-                                </div>
-                            </div>
-                        )}
+                    <div className="hidden md:block">
+                        <ProfileDropdown />
                     </div>
                 </div>
             </nav>

@@ -70,7 +70,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 setProfile(profileData);
 
                 // If company user/admin, fetch Company
-                if (profileData.role === 'company_admin' || profileData.role === 'company_user') {
+                if (profileData.role === 'company' || profileData.role === 'company_admin' || profileData.role === 'company_user') {
                     const { data: memberData, error: memberError } = await supabase
                         .from('company_members')
                         .select('companies(*)')

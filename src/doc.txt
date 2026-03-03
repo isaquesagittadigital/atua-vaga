@@ -170,20 +170,70 @@ b) admin_plans
 
 
 ========================================================
-9. ROTAS ADMIN
+9. PAINEL ADMIN - NOTIFICAÇÕES
+========================================================
+
+Arquivos:
+- src/components/pages/admin/NotificacoesPage.tsx
+- src/components/pages/admin/NotificacoesEnviadasPage.tsx
+
+Seções implementadas:
+- Lista de Empresas: Seleção em lote, envio individual/lote, modal de disparo.
+- Histórico de Enviadas: Log de disparos divididos por Candidato/Empresa, opção de reenviar.
+- Modais:
+  • Modal de envio/edição de mensagem.
+  • Modal de sucesso (Notificação reenviada).
+
+Banco de Dados (`notifications`):
+- Adicionadas colunas na migração: `category` (Candidato/Empresa), `sent_by` (uuid), `company_id` (uuid).
+
+
+========================================================
+10. PAINEL ADMIN - SUPORTE / FAQ
+========================================================
+
+Arquivo: src/components/pages/admin/SuportePage.tsx
+
+Seções implementadas:
+- Abas "Candidato" e "Empresa" para filtrar dúvidas.
+- CRUD Completo de Dúvidas (Criar, Editar, Excluir).
+- Modais de formulário para criar/editar.
+- Modal de confirmação de deleção (Aviso de irreversibilidade).
+- Seção CTA "Ainda precisa de ajuda?".
+
+Banco de Dados (`faq`):
+- Tabela `faq` criada com `question`, `answer`, `category`, `sort_order`. Seed de 8 dúvidas.
+
+
+========================================================
+11. FIXES DE AUTENTICAÇÃO E ROTAS
+========================================================
+
+- App.tsx e AuthContext:
+  • Desenvolvido `RoleBasedRedirect` na rota `/` (raiz) para redirecionar corretamente Admin, Empresa e Candidato, resolvendo o bug de flicker na página do candidato.
+  • Adicionados papéis 'admin' e 'company' em `UserProfile`.
+- LoginForm.tsx: 
+  • O login agora busca a role em `profiles` após sucesso na autenticação do Supabase e executa redirecionamento direto, contornando reloads desnecessários.
+
+
+========================================================
+12. ROTAS ADMIN
 ========================================================
 
 Arquivo: src/routes/AdminRoutes.tsx
 
-/admin/dashboard           → Dashboard
-/admin/financeiro          → FinanceiroPage
-/admin/gerenciamento       → GerenciamentoPage (5 abas)
+/admin/dashboard                    → Dashboard
+/admin/financeiro                   → FinanceiroPage
+/admin/gerenciamento                → GerenciamentoPage (5 abas)
 /admin/gerenciamento/empresa/:id    → CompanyDetailPage
 /admin/gerenciamento/candidato/:id  → CandidateDetailPage
+/admin/notificacoes                 → NotificacoesPage
+/admin/notificacoes/enviadas        → NotificacoesEnviadasPage
+/admin/suporte                      → SuportePage
 
 
 ========================================================
-10. BIBLIOTECAS INSTALADAS
+13. BIBLIOTECAS INSTALADAS
 ========================================================
 
 - recharts → Gráficos de barras e sparklines
@@ -198,6 +248,9 @@ CRIADOS:
   src/components/pages/admin/GerenciamentoPage.tsx
   src/components/pages/admin/CompanyDetailPage.tsx
   src/components/pages/admin/CandidateDetailPage.tsx
+  src/components/pages/admin/NotificacoesPage.tsx
+  src/components/pages/admin/NotificacoesEnviadasPage.tsx
+  src/components/pages/admin/SuportePage.tsx
   src/components/pages/admin/tabs/EmpresasTab.tsx
   src/components/pages/admin/tabs/CandidatosTab.tsx
   src/components/pages/admin/tabs/CargosTab.tsx
@@ -205,7 +258,9 @@ CRIADOS:
   src/components/pages/admin/tabs/AdminsTab.tsx
 
 MODIFICADOS:
-  src/components/layouts/AdminLayout.tsx  (sidebar → top nav)
+  src/components/layouts/AdminLayout.tsx  (sidebar → top nav + link sino/ajuda)
   src/routes/AdminRoutes.tsx  (novas rotas)
-  src/App.tsx  (role 'admin' no ProtectedRoute)
+  src/App.tsx  (RoleBasedRedirect)
+  src/components/auth/LoginForm.tsx (Redirect dinâmico pós-login)
+  src/contexts/AuthContext.tsx (Adição de roles)
   src/components/pages/admin/Dashboard.tsx  (redesign premium)

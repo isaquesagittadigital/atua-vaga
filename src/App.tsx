@@ -27,7 +27,7 @@ const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode,
   if (allowedRoles && profile && !allowedRoles.includes(profile.role)) {
     // Redirect based on actual role
     if (profile.role === 'candidate') return <Navigate to="/app/dashboard" replace />;
-    if (profile.role === 'company_admin' || profile.role === 'company_user') return <Navigate to="/company/dashboard" replace />;
+    if (profile.role === 'company' || profile.role === 'company_admin' || profile.role === 'company_user') return <Navigate to="/company/dashboard" replace />;
     if (profile.role === 'super_admin' || profile.role === 'admin') return <Navigate to="/admin/dashboard" replace />;
     return <Navigate to="/auth/login" replace />; // Fallback
   }
@@ -79,7 +79,7 @@ const AppContent: React.FC = () => {
 
         {/* Company Module Routes */}
         <Route path="/company/*" element={
-          <ProtectedRoute allowedRoles={['company_admin', 'company_user']}>
+          <ProtectedRoute allowedRoles={['company', 'company_admin', 'company_user']}>
             <CompanyLayout />
           </ProtectedRoute>
         }>

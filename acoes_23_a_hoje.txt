@@ -1,0 +1,23 @@
+Relatório de Ações - 23 de Fevereiro até Hoje (25 de Fevereiro)
+================================================================
+
+Este documento lista todas as principais atividades, desenvolvimentos e correções realizadas no projeto neste período.
+
+--- Dia 23 de Fevereiro ---
+1. Tradução de Rotas Admin: Tradução de todas as rotas em inglês do painel de administração para Português, atualizando App.tsx, Sidebar.tsx e Templates.tsx.
+2. Visualizador de PDF de Contrato: Implementação e integração da visualização de contratos em PDF (assinados local ou via Clicksign) e comprovantes no painel admin.
+3. Fix e Ajustes nos Modais de Contrato: Ajustes do modal de detalhes do contrato do consultor para refletir o mesmo layout e funções presentes no do cliente.
+4. Ajuste Visual em Ícones: Correção para exibir permanentemente os botões de ação (Visualizar, Editar, Excluir) dos contratos sem depender do efeito "hover".
+5. Sincronização e Commits: Múltiplas atualizações enviadas ao repositório no GitHub.
+
+--- Dia 24 de Fevereiro ---
+6. Gestão de Notificações (Admin): Implementação do fluxo de notificações no painel administrativo, permitindo listagem de perfis, disparo de notificações e visualizações.
+7. Comitê do GitHub: Configuração e organização de comitê no repositório fisionline.
+8. Correção de Erros na Home: Diagnóstico e correção do "blank screen error" na Home Page (Home.tsx), além de melhoria de layouts e animações.
+9. Inicialização Docker: Configuração inicial e files necessários para rodar a aplicação através de container em Docker.
+10. Correções na Vercel: Diagnóstico e resolução das falhas no processo de build e deployment contínuo na plataforma Vercel (questões de config do Git e links do projeto).
+11. Planejamento de Relatórios: Planejamento inicial para implementação dos novos relatórios dos consultores (Carteira detalhada, Comissões e Informes de rendimento).
+
+--- Dia 25 de Fevereiro ---
+12. Execução Local: Inicialização do projeto localmente para testes e verificações de integridade de ponta a ponta.
+13. Continuação de Relatórios (Consultores): Refinamento contínuo das rotas e visualizações relacionadas aos relatórios de carteiras e fechamentos.

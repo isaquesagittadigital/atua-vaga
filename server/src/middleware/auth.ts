@@ -30,7 +30,7 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
         }
 
         let companyMember = null;
-        if (profile?.role === 'company_admin' || profile?.role === 'company_user') {
+        if (profile?.role === 'company' || profile?.role === 'company_admin' || profile?.role === 'company_user') {
             const { data: member } = await supabaseAdmin
                 .from('company_members')
                 .select('*, companies(*)')

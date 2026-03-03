@@ -2,6 +2,7 @@ import React from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Bell, FileText, LogOut } from 'lucide-react';
 import { Logo } from '../ui/Icons';
+import { ProfileDropdown } from '../layout/ProfileDropdown';
 
 export const CompanyLayout: React.FC = () => {
     const navigate = useNavigate();
@@ -48,16 +49,7 @@ export const CompanyLayout: React.FC = () => {
 
                     <div className="h-8 w-[1px] bg-gray-100"></div>
 
-                    {/* Profile Dropdown Trigger (Mock) */}
-                    <div className="flex items-center gap-3 cursor-pointer group">
-                        <div className="w-10 h-10 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center overflow-hidden">
-                            <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=150" alt="Profile" className="w-full h-full object-cover" />
-                        </div>
-                        <div className="hidden lg:block">
-                            <p className="text-sm font-bold text-gray-700 group-hover:text-[#F04E23] transition-colors">Recursos Humanos</p>
-                            <p className="text-xs text-gray-400 font-medium">Digital Marketing</p>
-                        </div>
-                    </div>
+                    <ProfileDropdown />
                 </div>
             </header>
 

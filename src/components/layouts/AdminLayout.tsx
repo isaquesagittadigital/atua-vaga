@@ -3,6 +3,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Bell, User } from 'lucide-react';
 import { Logo } from '../ui/Icons';
 import { useAuth } from '@/contexts/AuthContext';
+import { ProfileDropdown } from '../layout/ProfileDropdown';
 
 export const AdminLayout: React.FC = () => {
     const navigate = useNavigate();
@@ -47,21 +48,8 @@ export const AdminLayout: React.FC = () => {
                         <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
                     </button>
 
-                    <div className="flex items-center gap-3 pl-6 border-l border-gray-100">
-                        <div className="text-right hidden sm:block">
-                            <p className="text-sm font-bold text-gray-900">{profile?.full_name || 'Administrador'}</p>
-                            <p className="text-xs text-gray-400 capitalize">{profile?.role}</p>
-                        </div>
-                        <button
-                            onClick={() => signOut()}
-                            className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-all overflow-hidden"
-                        >
-                            {profile?.avatar_url ? (
-                                <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
-                            ) : (
-                                <User size={20} />
-                            )}
-                        </button>
+                    <div className="pl-6 border-l border-gray-100">
+                        <ProfileDropdown />
                     </div>
                 </div>
             </header>
