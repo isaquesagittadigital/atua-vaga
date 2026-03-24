@@ -1,0 +1,100 @@
+========================================================
+SISTEMA ATUA VAGA - RECURSOS, USUÁRIOS, REGRAS E BANCO
+Data de Criação: 03/03/2026
+========================================================
+
+--------------------------------------------------------
+1. USUÁRIOS DISPONÍVEIS (CREDENCIAIS DE TESTE)
+--------------------------------------------------------
+O sistema possui 3 níveis de acesso principais. As credenciais de teste são:
+
+🟠 Admin (Super Admin)
+   E-mail: atualzadmin@gmail.com
+   Senha:  123456789
+   Nome:   Admin Atua Vaga
+
+🔵 Empresa (Company)
+   E-mail: atualzempresa@gmail.com
+   Senha:  123456789
+   Nome:   Empresa Atua Vaga
+
+🟢 Candidato (Candidate)
+   E-mail: atualzdev@gmail.com
+   Senha:  123456789
+   Nome:   Atualz Dev
+
+
+--------------------------------------------------------
+2. RECURSOS DO SISTEMA
+--------------------------------------------------------
+O sistema é uma plataforma de empregabilidade (React Frontend + Node.js/Express Backend + Supabase) com os seguintes módulos:
+
+👤 Módulo do Candidato
+- Autenticação: Login (Email/Senha, Google), Cadastro Simplificado, Recuperação de Senha.
+- Dashboard: Visão geral de candidaturas e status.
+- Gestão de Perfil: Edição de dados pessoais, currículo, formação acadêmica, experiências e habilidades.
+- Vagas: Listagem de vagas, inscrição em vagas e tela de "Minhas Vagas".
+- Teste Comportamental: Avaliação Big Five com 30 facetas de personalidade (com feedback em formato PDF).
+- Outro(s): FAQ, Notificações.
+
+🏢 Módulo da Empresa
+- Cadastro Corporativo: Fluxo em etapas (Conta, Responsável, Dados da Empresa).
+- Dashboard: Métricas de vagas ativas e fechadas, além de candidatos em processos seletivos.
+- Gestão de Vagas: Criação detalhada de vagas (requisitos, salário, etc) e listagem das ofertas da empresa.
+- Gestão de Candidatos: Ranking de candidatos aplicados com "Match" (percentual de compatibilidade/aderência).
+- Onboarding: Configuração inicial da conta corporativa e fit cultural.
+
+🧤 Módulo do Administrador (Super Admin)
+- Dashboard Premium: Layout com sparklines, planos comparativos e gráficos históricos (Recharts).
+- Financeiro: Controle de pagamentos (status de faturamento), tabelas de empresas filtráveis (exportação PDF/XLSX).
+- Gerenciamento Geral (5 abas):
+  * Empresas: Listagem, último acesso, detalhes profundos da empresa.
+  * Candidatos: Listagem, aplicações, perfil detalhado do candidato.
+  * Cargos: CRUD completo dos tipos de cargos e áreas.
+  * Planos: CRUD de planos de assinaturas (ex: Comece, Acelere, Evolua) com limite de permissões.
+  * Admins: Gestão de outros administradores na plataforma.
+- Comunicação/Notificações: Envio em lote ou individual de notificações para empresas ou candidatos (com log de disparo).
+- Suporte/FAQ: CRUD completo para a seção de ajuda dos usuários (Empresa vs Candidatos).
+
+
+--------------------------------------------------------
+3. REGRAS DE NEGÓCIO
+--------------------------------------------------------
+1. Controle de Acesso Baseado em Papéis (RBAC):
+   Existem três papéis (roles) definidos ('candidate', 'company', 'admin' / 'super_admin').
+   O acesso a páginas e endpoints é estritamente restrito por Middlewares JWT no backend, e por redirecionamento condicional de rotas (RoleBasedRedirect) no frontend.
+
+2. Isolamento de Dados (Multi-tenancy):
+   A API filtra e retorna os dados de forma segura com base na empresa logada. Uma empresa X nunca pode visualizar os dados gerados pela empresa Y.
+
+3. Sistema de "Match" de Vagas:
+   Cálculo de compatibilidade que avalia as competências técnicas e facetas comportamentais do perfil do candidato frente aos requisitos preenchidos no cadastro da vaga.
+
+4. Teste Comportamental (Big Five):
+   Avaliação obrigatória ou sugerida que gera 30 facetas da personalidade de um candidato, baseadas em algoritmos psicométricos cujos resultados não podem ser alterados pelo usuário.
+
+
+--------------------------------------------------------
+4. BANCO DE DADOS (ARQUITETURA)
+--------------------------------------------------------
+Sistema hospedado no Supabase com banco em PostgreSQL. Principais tabelas mapeadas:
+
+Tabelas Auth / Usuários
+- auth.users: Controle interno do Supabase, contendo senhas criptografadas e e-mails.
+- public.profiles: Perfis de usuários expandidos (user details) atrelados a um 'role' específico.
+- public.company_members: Ponto de relacionamento N:N ou 1:N conectando os usuários à empresa.
+
+Tabelas do Negócio (Core)
+- public.companies: Informações jurídicas, descrição corporativa, logotipos, status de assinaturas.
+- public.jobs: Armazenamento das vagas de emprego cadastradas pelas empresas.
+
+Tabelas do Teste Comportamental / Psicométrico
+- behavioral_tests: Configuração e ID de testes psicológicos gerais cadastrados (Big Five/Disc).
+- test_questions: Dezenas de perguntas com métricas variadas de respostas do tipo Likert (Seed).
+- candidate_test_results: Resultados finais gerados e preenchidos pelos candidatos.
+
+Tabelas Administrativas
+- admin_roles: Gestão global e categorização dos tipos de cargos.
+- admin_plans: Planos de assinatura (preço, máximo usuários, limite de vagas).
+- faq: Base de conhecimento e suporte classificada por tipo de usuário.
+- notifications: Central de histórico e envio de alertas de sistema, trackeando quem enviou e para qual empresa/candidato o alerta foi emitido.

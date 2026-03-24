@@ -33,11 +33,13 @@ export const CompanyLayout: React.FC = () => {
                     />
                     <NavItem
                         label="Candidatos"
-                        onClick={() => { }}
+                        active={isActive('/candidates')}
+                        onClick={() => navigate('/company/candidates')}
                     />
                     <NavItem
                         label="Seleção"
-                        onClick={() => { }}
+                        active={isActive('/selection')}
+                        onClick={() => navigate('/company/selection')}
                     />
                 </nav>
 

@@ -37,12 +37,14 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ userName, user
     }, []);
 
     const handleLogout = async () => {
+        setIsOpen(false);
         try {
             await signOut();
-            setIsOpen(false);
-            navigate('/auth/login');
         } catch (error) {
             console.error('Logout error:', error);
+        } finally {
+            // Garante redirecionamento mesmo em caso de erro
+            window.location.href = '/auth/login';
         }
     };
 
