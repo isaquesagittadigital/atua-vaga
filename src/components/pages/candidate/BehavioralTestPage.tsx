@@ -115,7 +115,8 @@ const BehavioralTestPage: React.FC = () => {
 
   const handleContinue = async () => {
     if (!resultId) return;
-    await supabase.from('candidate_test_results').update({ responses: responses, updated_at: new Date().toISOString() }).eq('id', resultId);
+    // Removed updated_at as it might not exist in the database schema yet
+    await supabase.from('candidate_test_results').update({ responses: responses }).eq('id', resultId);
 
     const totalPages = Math.ceil(questions.length / QUESTIONS_PER_PAGE);
     if (page < totalPages - 1) {
@@ -129,8 +130,16 @@ const BehavioralTestPage: React.FC = () => {
   const calculateAndFinish = async () => {
     try {
       if (!activeTestId || !resultId) return;
+      const apiUrl = import.meta.env.VITE_API_URL;
+      
+      if (!apiUrl) {
+        console.error('VITE_API_URL is not defined in environment variables.');
+        alert('Configuração de servidor ausente. Por favor, verifique as variáveis de ambiente (VITE_API_URL).');
+        return;
+      }
+
       const { data: { session } } = await supabase.auth.getSession();
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/tests/calculate`, {
+      const response = await fetch(`${apiUrl}/tests/calculate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
         body: JSON.stringify({ testId: activeTestId, responses })
@@ -139,7 +148,7 @@ const BehavioralTestPage: React.FC = () => {
       setSuccessModalOpen(true);
     } catch (error) {
       console.error(error);
-      alert('Houve um erro ao processar seus resultados.');
+      alert('Houve um erro ao processar seus resultados. Verifique se o servidor backend está rodando.');
     }
   };
 
@@ -159,6 +168,8 @@ const BehavioralTestPage: React.FC = () => {
 
   const progressPercentage = Math.round((Object.keys(responses).length / (questions.length || 1)) * 100);
   const currentQuestions = questions.slice(page * QUESTIONS_PER_PAGE, (page + 1) * QUESTIONS_PER_PAGE);
+
+  const allQuestionsOnPageAnswered = currentQuestions.every(q => !!responses[q.id]);
 
   const formatTitle = (title: string) => {
     if (!title) return '';
@@ -257,11 +268,11 @@ const BehavioralTestPage: React.FC = () => {
               <ChevronLeft size={18} strokeWidth={3} /> Sair do teste
             </button>
 
-            <div className="bg-white border border-gray-100 rounded-[40px] shadow-sm p-6 md:p-16 relative">
-              <div className="flex flex-col-reverse md:flex-row justify-between items-start mb-12 gap-8">
+            <div className="bg-white border border-gray-100 rounded-[40px] shadow-sm p-6 md:p-12 relative">
+              <div className="flex flex-col-reverse md:flex-row justify-between items-start mb-10 gap-8">
                 <div className="max-w-[700px]">
-                  <h1 className="text-xl md:text-3xl font-black text-gray-900 mb-4 tracking-tight">{formatTitle(testTitle)}</h1>
-                  <p className="text-gray-400 font-bold text-base leading-relaxed">
+                  <h1 className="text-lg md:text-2xl font-black text-gray-900 mb-3 tracking-tight">{formatTitle(testTitle)}</h1>
+                  <p className="text-gray-400 font-bold text-sm leading-relaxed">
                     Responda as perguntas abaixo da maneira mais sincera possível. Não existem respostas certas ou erradas, apenas o seu perfil.
                   </p>
                 </div>
@@ -283,11 +294,11 @@ const BehavioralTestPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="space-y-16">
+              <div className="space-y-12">
                 {currentQuestions.map((q, i) => (
                   <div key={q.id}>
-                    <h3 className="text-xl md:text-2xl font-black text-gray-900 mb-8 leading-tight">{q.question_text}</h3>
-                    <div className="flex flex-col md:flex-row gap-6 justify-between items-start md:items-center w-full bg-gray-50/50 p-8 rounded-3xl border border-gray-50">
+                    <h3 className="text-base md:text-lg font-black text-gray-900 mb-6 leading-tight">{q.question_text}</h3>
+                    <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center w-full bg-gray-50/50 p-6 rounded-3xl border border-gray-50">
                       <TestOption label="Discordo totalmente" value={1} isSelected={responses[q.id] === 1} onChange={() => handleOptionChange(q.id, 1)} />
                       <TestOption label="Discordo" value={2} isSelected={responses[q.id] === 2} onChange={() => handleOptionChange(q.id, 2)} />
                       <TestOption label="Neutro" value={3} isSelected={responses[q.id] === 3} onChange={() => handleOptionChange(q.id, 3)} />
@@ -298,11 +309,19 @@ const BehavioralTestPage: React.FC = () => {
                 ))}
               </div>
 
-              <div className="flex flex-col-reverse md:flex-row items-center justify-center gap-6 mt-20">
-                <button onClick={handleBack} className="w-full md:w-auto px-16 py-5 border-2 border-gray-100 text-gray-400 font-black rounded-2xl hover:bg-gray-50 transition-all text-sm">
+              <div className="flex flex-col-reverse md:flex-row items-center justify-center gap-6 mt-16">
+                <button onClick={handleBack} className="w-full md:w-auto px-12 py-4 border-2 border-gray-100 text-gray-400 font-black rounded-2xl hover:bg-gray-50 transition-all text-sm">
                   Voltar
                 </button>
-                <button onClick={handleContinue} className="w-full md:w-auto px-16 py-5 bg-[#F04E23] text-white font-black rounded-2xl hover:bg-[#E03E13] transition-all shadow-xl shadow-orange-100 text-sm">
+                <button 
+                  onClick={() => allQuestionsOnPageAnswered && handleContinue()} 
+                  disabled={!allQuestionsOnPageAnswered}
+                  className={`w-full md:w-auto px-12 py-4 font-black rounded-2xl transition-all shadow-xl text-sm ${
+                    allQuestionsOnPageAnswered 
+                      ? 'bg-[#F04E23] text-white hover:bg-[#E03E13] shadow-orange-100' 
+                      : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
+                  }`}
+                >
                   Continuar
                 </button>
               </div>
@@ -318,11 +337,11 @@ const BehavioralTestPage: React.FC = () => {
 
 const TestOption: React.FC<{ label: string, value: number, isSelected: boolean, onChange: () => void }> = ({ label, value, isSelected, onChange }) => (
   <label className="flex items-center gap-4 cursor-pointer group">
-    <div className={`w-10 h-10 rounded-full border-4 flex items-center justify-center transition-all ${isSelected ? 'border-[#F04E23] bg-[#F04E23]' : 'border-gray-200 bg-white group-hover:border-[#F04E23]/30'}`}>
-        {isSelected && <div className="w-3 h-3 bg-white rounded-full" />}
+    <div className={`w-8 h-8 rounded-full border-[3px] flex items-center justify-center transition-all ${isSelected ? 'border-[#F04E23] bg-[#F04E23]' : 'border-gray-200 bg-white group-hover:border-[#F04E23]/30'}`}>
+        {isSelected && <div className="w-2.5 h-2.5 bg-white rounded-full" />}
     </div>
     <input type="radio" checked={isSelected} onChange={onChange} className="hidden" />
-    <span className={`font-black text-sm tracking-tight transition-colors ${isSelected ? 'text-[#F04E23]' : 'text-gray-500 group-hover:text-gray-900'}`}>
+    <span className={`font-black text-xs tracking-tight transition-colors ${isSelected ? 'text-[#F04E23]' : 'text-gray-500 group-hover:text-gray-900'}`}>
       {label}
     </span>
   </label>
