@@ -96,8 +96,8 @@ const MyJobsPage: React.FC = () => {
   const activeJobs = activeTab === 'applied' ? appliedJobs : savedJobs;
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
-      <div className="max-w-[1600px] mx-auto p-6 md:p-8">
+    <div className="flex-1">
+      <div className="max-w-[1480px] mx-auto p-6 md:p-8">
         {/* Header */}
         <div className="mb-8 flex justify-between items-end">
           <div>

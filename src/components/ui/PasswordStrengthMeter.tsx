@@ -17,7 +17,7 @@ const PasswordStrengthMeter: React.FC<PasswordStrengthMeterProps> = ({ password 
 
     return (
         <div className="mt-3 bg-gray-50/50 p-3 rounded-lg border border-gray-100">
-            <p className="text-[11px] font-bold text-gray-500 mb-2 uppercase tracking-wide">
+            <p className="text-[11px] font-bold text-gray-500 mb-2 tracking-wide">
                 Requisitos da senha:
             </p>
             <div className="space-y-1.5">

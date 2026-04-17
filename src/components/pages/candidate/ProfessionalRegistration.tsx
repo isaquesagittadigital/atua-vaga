@@ -307,8 +307,8 @@ const ProfessionalRegistration: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white font-sans flex flex-col">
-      <main className="flex-1 bg-[#F8FAFC] py-16 px-6">
+    <div className="flex-1 font-sans flex flex-col">
+      <main className="flex-1 py-16 px-6">
         <div className="max-w-[1000px] mx-auto">
           {step === 1 && (
             <div className="mb-12">
@@ -338,14 +338,6 @@ const ProfessionalRegistration: React.FC = () => {
         </div>
       </main>
 
-      <footer className="w-full py-10 px-12 border-t border-gray-100 bg-white text-[13px] text-gray-400 font-bold flex flex-col md:flex-row items-center justify-between">
-        <p>©atua vaga. Todos os direitos reservados.</p>
-        <div className="flex items-center gap-10 mt-6 md:mt-0">
-          <a href="#" className="hover:text-gray-900 transition-colors">Termos e Condições de Uso</a>
-          <a href="#" className="hover:text-gray-900 transition-colors">Política de Privacidade</a>
-          <a href="#" className="hover:text-gray-900 transition-colors">Ajuda</a>
-        </div>
-      </footer>
 
       {showFinalModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-gray-900/60 backdrop-blur-sm animate-in fade-in duration-300">

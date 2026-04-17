@@ -54,3 +54,38 @@ export const formatPhone = (value: string): string => {
   return value;
 };
 
+export const formatDate = (value: string): string => {
+  return value
+    .replace(/\D/g, '') // Remove non-digits
+    .replace(/(\d{2})(\d)/, '$1/$2') // Add first slash
+    .replace(/(\d{2})(\d)/, '$1/$2') // Add second slash
+    .replace(/(\d{4})\d+?$/, '$1'); // Limit to 8 digits (DD/MM/YYYY)
+};
+
+export const formatCEP = (value: string): string => {
+  return value
+    .replace(/\D/g, '') // Remove non-digits
+    .replace(/(\d{5})(\d)/, '$1-$2') // Add dash
+    .replace(/(-\d{3})\d+?$/, '$1'); // Limit to 8 digits
+};
+
+export const parseDateToISO = (dateStr: string): string | null => {
+  if (!dateStr) return null;
+  const [day, month, year] = dateStr.split("/");
+  if (day && month && year && year.length === 4) {
+    return `${year}-${month}-${day}`;
+  }
+  return null;
+};
+
+export const formatDateToLocale = (isoDate: string): string => {
+  if (!isoDate) return "";
+  if (isoDate.includes("/")) return isoDate;
+  // Handle cases like "2023-10-25T00:00:00"
+  const cleanDate = isoDate.split("T")[0];
+  const [year, month, day] = cleanDate.split("-");
+  if (day && month && year) {
+    return `${day}/${month}/${year}`;
+  }
+  return isoDate;
+};

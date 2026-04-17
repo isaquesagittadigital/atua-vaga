@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Trophy, User as UserIcon, Briefcase } from 'lucide-react';
 import PersonalDataForm from './PersonalDataForm';
@@ -33,7 +33,7 @@ const ProfessionalRegistrationPage: React.FC = () => {
                 <div className="space-y-8">
                     {/* Header Section */}
                     {profile && (
-                        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col md:flex-row items-center gap-6 justify-between">
+                        <div className="bg-white rounded-2xl p-6 border border-gray-300 shadow-sm flex flex-col md:flex-row items-center gap-6 justify-between">
                             <div className="flex items-center gap-4">
                                 <div className="w-16 h-16 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center">
                                     {/* Placeholder for Avatar */}
@@ -125,8 +125,8 @@ const ProfessionalRegistrationPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-white">
-            <main className="max-w-4xl mx-auto px-4 py-12">
+        <div className="flex-1">
+            <main className="max-w-[1480px] mx-auto px-4 py-12">
                 {/* Header only for non-success steps to clean up UI behind modal */}
                 {currentStep <= totalSteps && currentStep !== 99 && (
                     <div className="mb-10 text-center">

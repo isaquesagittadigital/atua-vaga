@@ -3,6 +3,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Bell, FileText, LogOut } from 'lucide-react';
 import { Logo } from '../ui/Icons';
 import { ProfileDropdown } from '../layout/ProfileDropdown';
+import { CandidateFooter } from '../layout/candidate/CandidateFooter';
 
 export const CompanyLayout: React.FC = () => {
     const navigate = useNavigate();
@@ -59,6 +60,7 @@ export const CompanyLayout: React.FC = () => {
             <main className="flex-1 w-full max-w-[1600px] mx-auto min-w-0 overflow-y-auto">
                 <Outlet />
             </main>
+            <CandidateFooter />
         </div>
     );
 };

@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
-import { Plus, Trash2, Pencil } from 'lucide-react';
+import { PlusCircle, Trash2, Pencil } from 'lucide-react';
+import { formatDate, parseDateToISO, formatDateToLocale } from '@/utils/validators';
+
 interface EducationFormProps {
     onNext: () => void;
     onBack?: () => void;
@@ -14,10 +16,10 @@ interface Education {
     id?: string;
     level: string;
     institution: string;
-    course: string; // Not in image explicitly but good to have, mapped to "Tipo de formação" maybe? No, "Tipo" is level.
+    course: string;
     start_date: string;
     end_date: string;
-    status: string; // Concluído, Cursando, Não finalizado
+    status: string;
 }
 
 const EducationForm: React.FC<EducationFormProps> = ({ onNext, readOnly = false, canEdit = false, hideSkip = false }) => {
@@ -25,31 +27,29 @@ const EducationForm: React.FC<EducationFormProps> = ({ onNext, readOnly = false,
     const [loading, setLoading] = useState(false);
     const [educations, setEducations] = useState<Education[]>([]);
     const [isEditing, setIsEditing] = useState(!canEdit);
-
-    // Form state for new/editing entry
     const [isAdding, setIsAdding] = useState(false);
     const [currentEducation, setCurrentEducation] = useState<Education>({
-        level: '',
-        institution: '',
-        course: '',
-        start_date: '',
-        end_date: '',
-        status: 'Concluído'
+        level: '', institution: '', course: '', start_date: '', end_date: '', status: 'Concluído'
     });
-
-    useEffect(() => {
-        fetchEducation();
-    }, [user]);
 
     const fetchEducation = async () => {
         if (!user) return;
-        const { data, error } = await supabase
+        const { data } = await supabase
             .from('academic_education')
             .select('*')
-            .eq('user_id', user.id);
+            .eq('user_id', user.id)
+            .order('start_date', { ascending: false });
 
-        if (data) setEducations(data as any); // Type assertion needed until full refresh
+        if (data) {
+            setEducations((data as any[]).map(edu => ({
+                ...edu,
+                start_date: formatDateToLocale(edu.start_date || ''),
+                end_date: formatDateToLocale(edu.end_date || '')
+            })));
+        }
     };
+
+    useEffect(() => { fetchEducation(); }, [user]);
 
     const handleDelete = async (id: string) => {
         if (!confirm('Tem certeza que deseja excluir esta formação?')) return;
@@ -59,30 +59,27 @@ const EducationForm: React.FC<EducationFormProps> = ({ onNext, readOnly = false,
 
     const handleSaveCurrent = async () => {
         if (!user) return;
-        // Basic validation
         if (!currentEducation.level || !currentEducation.institution) {
             alert('Preencha os campos obrigatórios.');
             return;
         }
-
         setLoading(true);
         try {
             const { error } = await supabase.from('academic_education').insert({
                 user_id: user.id,
                 level: currentEducation.level,
                 institution: currentEducation.institution,
-                course: currentEducation.course, // Optional?
-                start_date: currentEducation.start_date || null,
-                end_date: currentEducation.end_date || null,
+                course: currentEducation.course,
+                start_date: parseDateToISO(currentEducation.start_date),
+                end_date: parseDateToISO(currentEducation.end_date),
                 status: currentEducation.status
             });
-
             if (error) throw error;
             setIsAdding(false);
             setCurrentEducation({ level: '', institution: '', course: '', start_date: '', end_date: '', status: 'Concluído' });
             fetchEducation();
-        } catch (error) {
-            console.error(error);
+        } catch (err) {
+            console.error(err);
             alert('Erro ao salvar formação.');
         } finally {
             setLoading(false);
@@ -90,147 +87,192 @@ const EducationForm: React.FC<EducationFormProps> = ({ onNext, readOnly = false,
     };
 
     return (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-            <div className="flex justify-between items-center mb-2">
-                <h2 className="text-2xl font-bold text-gray-900">Formação Acadêmica</h2>
-                {canEdit && !isEditing && !readOnly && (
-                    <button
-                        type="button"
-                        onClick={() => setIsEditing(true)}
-                        className="text-[#F04E23] flex gap-2 items-center font-bold hover:bg-orange-50 px-3 py-1 rounded-lg transition-colors"
-                    >
-                        <Pencil size={18} /> Editar
-                    </button>
-                )}
-            </div>
-            <p className="text-gray-500 mb-8">Mostre aos recrutadores seu nível educacional adicionando sua escolaridade.</p>
-
-            {/* List of Educations */}
-            {!isAdding && (
-                <div className="space-y-4 mb-8">
-                    {educations.map(edu => (
-                        <div key={edu.id} className="p-4 border border-gray-100 rounded-xl bg-gray-50 flex justify-between items-start">
-                            <div>
-                                <h3 className="font-bold text-gray-900">{edu.institution}</h3>
-                                <p className="text-sm text-gray-500">{edu.level} • {edu.status}</p>
-                                <p className="text-xs text-gray-400 mt-1">
-                                    {edu.start_date ? new Date(edu.start_date).getFullYear() : '?'} - {edu.end_date ? new Date(edu.end_date).getFullYear() : 'Atual'}
-                                </p>
-                            </div>
-                            {!readOnly && (!canEdit || isEditing) && (
-                                <button onClick={() => edu.id && handleDelete(edu.id)} className="text-red-500 hover:text-red-700 p-2">
-                                    <Trash2 size={18} />
-                                </button>
-                            )}
-                        </div>
-                    ))}
-
-                    {!readOnly && (!canEdit || isEditing) && (
+        <div className="bg-white">
+            {/* ── Header ─────────────────────────────────────────────── */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-2 gap-4">
+                <div>
+                    <h2 className="text-2xl font-black text-gray-900 tracking-tight">Formação acadêmica</h2>
+                    <p className="text-gray-400 font-bold mt-1 text-sm">
+                        Mostre aos recrutadores seu nível educacional adicionando sua escolaridade.
+                    </p>
+                </div>
+                <div className="flex items-center gap-4 shrink-0">
+                    {/* Edit toggle (canEdit mode) */}
+                    {canEdit && !isEditing && !readOnly && (
+                        <button
+                            type="button"
+                            onClick={() => setIsEditing(true)}
+                            className="text-[#F04E23] flex gap-2 items-center font-black hover:bg-orange-50 px-3 py-1 rounded-lg transition-colors text-sm"
+                        >
+                            <Pencil size={16} /> Editar
+                        </button>
+                    )}
+                    {/* Add button — always visible while editing */}
+                    {!readOnly && isEditing && (
                         <button
                             onClick={() => setIsAdding(true)}
-                            className="flex items-center gap-2 text-[#F04E23] font-bold hover:underline"
+                            className="flex items-center gap-2 text-[#1D4ED8] font-bold text-sm hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-all"
                         >
-                            <Plus size={20} />
-                            Adicionar formação
+                            <PlusCircle size={18} /> Adicionar formação
                         </button>
                     )}
                 </div>
-            )}
+            </div>
 
-            {/* Add Form */}
-            {isAdding && !readOnly && (
-                <div className="animate-in fade-in slide-in-from-top-4 duration-300 border-t border-gray-100 pt-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div className="space-y-4 mt-8">
+                {/* ── List of all education entries ────────────────────── */}
+                {educations.length > 0 && (
+                    <div className="space-y-3">
+                        {educations.map(edu => (
+                            <div
+                                key={edu.id}
+                                className="relative group grid grid-cols-1 md:grid-cols-3 gap-4 p-5 rounded-2xl border border-gray-300 bg-gray-50/40 hover:border-gray-200 transition-all animate-in fade-in duration-300"
+                            >
+                                <div>
+                                    <label className="block text-[11px] font-black text-gray-400 mb-1.5">Tipo de formação</label>
+                                    <div className="px-4 py-3 rounded-xl border border-gray-300 bg-white text-gray-800 font-medium text-sm">{edu.level}</div>
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-black text-gray-400 mb-1.5">Instituição</label>
+                                    <div className="px-4 py-3 rounded-xl border border-gray-300 bg-white text-gray-800 font-medium text-sm">{edu.institution}</div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="block text-[11px] font-black text-gray-400 mb-1.5">Início</label>
+                                        <div className="px-4 py-3 rounded-xl border border-gray-300 bg-white text-gray-800 font-medium text-sm">{edu.start_date || '—'}</div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-[11px] font-black text-gray-400 mb-1.5">Conclusão</label>
+                                        <div className="px-4 py-3 rounded-xl border border-gray-300 bg-white text-gray-800 font-medium text-sm">
+                                            {edu.status === 'Cursando' ? 'Cursando' : edu.end_date || 'Concluído'}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Per-item delete — appears on hover */}
+                                {!readOnly && isEditing && edu.id && (
+                                    <button
+                                        onClick={() => handleDelete(edu.id!)}
+                                        className="absolute top-4 right-4 flex items-center gap-1.5 text-red-400 font-bold text-xs hover:text-red-600 hover:bg-red-50 px-2.5 py-1 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                                    >
+                                        <Trash2 size={13} /> Excluir
+                                    </button>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {/* ── Empty state ───────────────────────────────────────── */}
+                {educations.length === 0 && !isAdding && (
+                    <div className="text-center py-10 text-gray-400 font-bold text-sm border-2 border-dashed border-gray-100 rounded-2xl">
+                        Nenhuma formação cadastrada ainda.
+                    </div>
+                )}
+
+                {/* ── Add Form ──────────────────────────────────────────── */}
+                {isAdding && (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6 rounded-2xl border-2 border-dashed border-blue-100 bg-blue-50/20 animate-in slide-in-from-top-4 duration-300">
                         <div>
-                            <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">Tipo de formação</label>
+                            <label className="block text-[11px] font-black text-gray-400 mb-2">Tipo de formação</label>
                             <select
                                 value={currentEducation.level}
                                 onChange={(e) => setCurrentEducation({ ...currentEducation, level: e.target.value })}
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#F04E23] focus:ring-2 focus:ring-[#F04E23]/10 outline-none bg-white"
+                                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-[#F04E23] outline-none bg-white text-gray-800 font-medium"
                             >
-                                <option value="">Selecione</option>
-                                <option value="Ensino Fundamental">Ensino Fundamental</option>
+                                <option value="">Selecionar</option>
                                 <option value="Ensino Médio">Ensino Médio</option>
                                 <option value="Ensino Superior">Ensino Superior</option>
                                 <option value="Pós-graduação">Pós-graduação</option>
-                                <option value="Mestrado">Mestrado</option>
-                                <option value="Doutorado">Doutorado</option>
-                                <option value="Curso Técnico">Curso Técnico</option>
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">Instituição</label>
+                            <label className="block text-[11px] font-black text-gray-400 mb-2">Instituição</label>
                             <input
                                 type="text"
                                 value={currentEducation.institution}
                                 onChange={(e) => setCurrentEducation({ ...currentEducation, institution: e.target.value })}
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#F04E23] focus:ring-2 focus:ring-[#F04E23]/10 outline-none"
+                                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-[#F04E23] outline-none text-gray-800 font-medium"
+                                placeholder="Nome da instituição"
                             />
                         </div>
-                        <div>
-                            <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">Data de início</label>
-                            <input
-                                type="date"
-                                value={currentEducation.start_date}
-                                onChange={(e) => setCurrentEducation({ ...currentEducation, start_date: e.target.value })}
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#F04E23] focus:ring-2 focus:ring-[#F04E23]/10 outline-none"
-                            />
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-[11px] font-black text-gray-400 mb-2">Data de início</label>
+                                <input
+                                    type="text"
+                                    value={currentEducation.start_date}
+                                    onChange={(e) => setCurrentEducation({ ...currentEducation, start_date: formatDate(e.target.value) })}
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-[#F04E23] outline-none text-gray-800 font-medium"
+                                    placeholder="DD/MM/AAAA"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[11px] font-black text-gray-400 mb-2">Data de conclusão</label>
+                                <input
+                                    type="text"
+                                    value={currentEducation.end_date}
+                                    onChange={(e) => setCurrentEducation({ ...currentEducation, end_date: formatDate(e.target.value) })}
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-[#F04E23] outline-none text-gray-800 font-medium"
+                                    placeholder="DD/MM/AAAA"
+                                />
+                            </div>
                         </div>
-                        <div>
-                            <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">Data de conclusão</label>
-                            <input
-                                type="date"
-                                value={currentEducation.end_date}
-                                onChange={(e) => setCurrentEducation({ ...currentEducation, end_date: e.target.value })}
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200"
-                            />
-                        </div>
-                    </div>
 
-                    <div className="flex gap-6 mb-8">
-                        <label className="flex items-center gap-2">
-                            <input type="radio" checked={currentEducation.status === 'Concluído'} onChange={() => setCurrentEducation({ ...currentEducation, status: 'Concluído' })} />
-                            <span>Concluído</span>
-                        </label>
-                        <label className="flex items-center gap-2">
-                            <input type="radio" checked={currentEducation.status === 'Cursando'} onChange={() => setCurrentEducation({ ...currentEducation, status: 'Cursando' })} />
-                            <span>Cursando</span>
-                        </label>
-                        <label className="flex items-center gap-2">
-                            <input type="radio" checked={currentEducation.status === 'Não finalizado'} onChange={() => setCurrentEducation({ ...currentEducation, status: 'Não finalizado' })} />
-                            <span>Não finalizado</span>
-                        </label>
-                    </div>
+                        <div className="md:col-span-3 flex items-center gap-8 py-1">
+                            {['Concluído', 'Cursando', 'Não finalizado'].map(status => (
+                                <label key={status} className="flex items-center gap-2 cursor-pointer group">
+                                    <input
+                                        type="radio"
+                                        name="edu-status"
+                                        checked={currentEducation.status === status}
+                                        onChange={() => setCurrentEducation({ ...currentEducation, status })}
+                                        className="w-4 h-4 text-[#F04E23] border-gray-300 focus:ring-[#F04E23]"
+                                    />
+                                    <span className="text-sm font-bold text-gray-500 group-hover:text-gray-900 transition-colors">{status}</span>
+                                </label>
+                            ))}
+                        </div>
 
-                    <div className="flex justify-end gap-4">
-                        <button onClick={() => setIsAdding(false)} className="px-4 py-2 text-gray-500 font-bold">Cancelar</button>
-                        <button onClick={handleSaveCurrent} className="px-6 py-2 bg-[#F04E23] text-white rounded-full font-bold">Adicionar</button>
+                        <div className="md:col-span-3 flex justify-end gap-4 pt-2 border-t border-blue-100">
+                            <button
+                                onClick={() => setIsAdding(false)}
+                                className="px-6 py-2 text-gray-400 font-bold text-sm hover:text-gray-600 transition-colors"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={handleSaveCurrent}
+                                disabled={loading}
+                                className="px-8 py-3 bg-[#F04E23] text-white rounded-xl font-black text-sm hover:bg-[#d63e19] transition-colors disabled:opacity-50 shadow-lg shadow-orange-100"
+                            >
+                                {loading ? 'Salvando...' : 'Gravar formação'}
+                            </button>
+                        </div>
                     </div>
+                )}
+            </div>
+
+            {/* ── Finish editing button ────────────────────────────────── */}
+            {!isAdding && !readOnly && isEditing && canEdit && (
+                <div className="flex justify-center mt-10">
+                    <button
+                        onClick={() => setIsEditing(false)}
+                        className="font-black py-4 px-12 rounded-2xl bg-[#F04E23] text-white shadow-xl shadow-orange-100 hover:-translate-y-1 transition-all"
+                    >
+                        Concluir edição
+                    </button>
                 </div>
             )}
 
-            {!isAdding && !readOnly && (
-                <div className="flex justify-center mt-10 pt-6 border-t border-gray-100">
-                    {!hideSkip && (
-                        <button
-                            onClick={onNext}
-                            className="text-gray-500 font-bold hover:text-gray-700 px-8 py-3"
-                        >
-                            Pular
-                        </button>
-                    )}
+            {/* ── Wizard next button ───────────────────────────────────── */}
+            {!readOnly && !canEdit && !isAdding && (
+                <div className="flex justify-center mt-10">
                     <button
-                        onClick={canEdit ? () => setIsEditing(false) : onNext}
-                        disabled={canEdit && !isEditing}
-                        className={`
-                            font-bold py-3 px-10 rounded-full shadow-lg transition-all transform 
-                            ${(canEdit && !isEditing)
-                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-none'
-                                : 'bg-[#F04E23] hover:bg-[#d63f15] text-white shadow-orange-200 hover:-translate-y-1'
-                            }
-                        `}
+                        onClick={onNext}
+                        className="font-black py-4 px-12 rounded-2xl bg-[#F04E23] text-white shadow-xl shadow-orange-100 hover:-translate-y-1 transition-all"
                     >
-                        {canEdit ? 'Concluir edição' : 'Salvar e continuar'}
+                        Continuar
                     </button>
                 </div>
             )}

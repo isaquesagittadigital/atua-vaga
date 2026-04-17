@@ -1,23 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import { FileText, ChevronRight } from 'lucide-react';
+﻿import React, { useEffect, useState } from 'react';
+import { FileText, ChevronRight, PieChart, ClipboardCheck, ArrowUpRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Database } from '@/types/supabase';
-import TestResultModal from '../TestResultModal';
 
 type BehavioralTest = Database['public']['Tables']['behavioral_tests']['Row'];
-type TestResult = Database['public']['Tables']['candidate_test_results']['Row'];
+type TestResult = Database['public']['Tables']['candidate_test_results']['Row'] & {
+    behavioral_tests: BehavioralTest | null;
+};
 
 const BehavioralResults: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
-    const [tests, setTests] = useState<BehavioralTest[]>([]);
-    const [results, setResults] = useState<Record<string, TestResult>>({});
+    const [resultsData, setResultsData] = useState<TestResult[]>([]);
     const [loading, setLoading] = useState(true);
-
-    // Modal State
-    const [selectedReaction, setSelectedReaction] = useState<{ test: BehavioralTest, result: TestResult } | null>(null);
 
     useEffect(() => {
         if (user) fetchTestsAndResults();
@@ -25,96 +22,132 @@ const BehavioralResults: React.FC = () => {
 
     const fetchTestsAndResults = async () => {
         try {
-            // Fetch Tests
-            const { data: testData, error: testError } = await supabase
-                .from('behavioral_tests')
-                .select('*')
-                .order('title');
-
-            if (testError) throw testError;
-
-            // Fetch User Results
-            const { data: resData, error: resError } = await supabase
+            setLoading(true);
+            const { data, error } = await supabase
                 .from('candidate_test_results')
-                .select('*')
-                .eq('user_id', user!.id);
+                .select(`
+                    *,
+                    behavioral_tests (*)
+                `)
+                .eq('user_id', user!.id)
+                .order('completed_at', { ascending: false });
 
-            if (resError) throw resError;
+            if (error) throw error;
 
-            // Map results by test_id
-            const resultsMap: Record<string, TestResult> = {};
-            resData?.forEach(res => {
-                if (res.test_id) resultsMap[res.test_id] = res;
-            });
+            const validResults = (data || []).map(res => ({
+                ...res,
+                behavioral_tests: res.behavioral_tests as unknown as BehavioralTest
+            })).filter(res => 
+                res.behavioral_tests && 
+                res.scores && 
+                typeof res.scores === 'object' && 
+                Object.keys(res.scores as object).length > 0
+            );
 
-            setTests(testData || []);
-            setResults(resultsMap);
+            // Deduplicate: group by test_id and keep the most recent result
+            const dedupedResults = validResults.reduce((acc: TestResult[], current) => {
+                const existingIndex = acc.findIndex(item => item.test_id === current.test_id);
+                if (existingIndex === -1) {
+                    acc.push(current as TestResult);
+                } else {
+                    // If current is newer than existing, replace it
+                    const existingDate = new Date(acc[existingIndex].completed_at || 0).getTime();
+                    const currentDate = new Date(current.completed_at || 0).getTime();
+                    if (currentDate > existingDate) {
+                        acc[existingIndex] = current as TestResult;
+                    }
+                }
+                return acc;
+            }, []);
+
+            setResultsData(dedupedResults);
         } catch (error) {
-            console.error('Error fetching tests:', error);
+            console.error('Error fetching behavioral results:', error);
         } finally {
             setLoading(false);
         }
     };
 
-    const handleCardClick = (test: BehavioralTest) => {
-        const result = results[test.id];
-        if (result && result.scores) {
-            // Test completed (or at least has scores)
-            setSelectedReaction({ test, result });
-        } else {
-            // Start or continue test
-            navigate(`/app/behavioral-test/${test.id}`);
-        }
+    const formatTitle = (title: string) => {
+        if (!title) return '';
+        const lower = title.toLowerCase();
+        return lower.charAt(0).toUpperCase() + lower.slice(1);
     };
 
-    if (loading) return <div className="p-8 text-center text-gray-400">Carregando avaliação...</div>;
+    if (loading) return (
+        <div className="flex justify-center p-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#F04E23]"></div>
+        </div>
+    );
+
+    const completedResults = resultsData;
 
     return (
-        <>
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Resultado comportamental</h2>
-                <p className="text-gray-500 mb-8">Mostre aos recrutadores seu nível profissional respondendo os testes.</p>
+        <div className="space-y-12">
+            <div>
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2">
+                    <h2 className="text-2xl font-black text-gray-900 tracking-tight">Resultado comportamental</h2>
+                    {completedResults.length > 0 && (
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-600 rounded-xl text-[10px] font-black border border-green-100">
+                           <ClipboardCheck size={14} />
+                           {completedResults.length} {completedResults.length === 1 ? 'concluído' : 'concluídos'}
+                        </div>
+                    )}
+                </div>
+                <p className="text-gray-400 font-bold mb-10 text-sm">Confira o seu desempenho detalhado nas avaliações realizadas.</p>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {tests.map(test => {
-                        const hasResult = !!results[test.id]?.scores;
+                {completedResults.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {completedResults.map(result => {
+                            const test = result.behavioral_tests!;
+                            const scoreValues = Object.values(result.scores as Record<string, number> || {});
+                            const avg = scoreValues.length > 0 ? Math.round(scoreValues.reduce((a, b) => a + b, 0) / scoreValues.length) : 0;
 
-                        return (
-                            <div
-                                key={test.id}
-                                className="border border-blue-100 bg-blue-50/50 rounded-xl p-4 flex items-center justify-between cursor-pointer hover:bg-blue-50 transition-colors group"
-                                onClick={() => handleCardClick(test)}
-                            >
-                                <div className="flex items-center gap-4">
-                                    <div className={`p-2.5 rounded-lg text-white transition-colors ${hasResult ? 'bg-blue-500 group-hover:bg-blue-600' : 'bg-orange-500 group-hover:bg-orange-600'}`}>
-                                        <FileText size={24} />
+                            return (
+                                <div
+                                    key={result.id}
+                                    className="group relative border border-gray-300 bg-white rounded-3xl p-8 cursor-pointer hover:border-blue-500 hover:shadow-xl hover:shadow-blue-50 transition-all duration-300"
+                                    onClick={() => navigate(`/app/behavioral-result/${result.id}`)}
+                                >
+                                    <div className="flex items-start justify-between mb-8">
+                                        <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-blue-50 group-hover:scale-110 transition-transform">
+                                            <PieChart size={28} />
+                                        </div>
+                                        <div className="text-right">
+                                            <span className="block text-[10px] font-black text-gray-400 tracking-tight mb-1">Status</span>
+                                            <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-[9px] font-black">Verificado</span>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h3 className="font-bold text-gray-900 text-sm">{test.title}</h3>
-                                        <p className="text-xs text-gray-500 mt-1">
-                                            {hasResult
-                                                ? `PDF • ${new Date(results[test.id].completed_at || Date.now()).toLocaleDateString()} • ${test.file_size || '200 KB'}`
-                                                : 'Clique para iniciar'
-                                            }
-                                        </p>
+
+                                    <h3 className="font-black text-gray-900 text-lg mb-2 leading-tight group-hover:text-blue-600 transition-colors truncate">{formatTitle(test.title)}</h3>
+                                    
+                                    <div className="flex items-center gap-2 text-xs font-bold text-gray-400">
+                                        <FileText size={14} />
+                                        <span>PDF • {new Date(result.completed_at || Date.now()).toLocaleDateString('pt-BR')}</span>
+                                    </div>
+
+                                    <div className="mt-8 flex items-center justify-between border-t border-gray-50 pt-6">
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] font-black text-gray-400 tracking-tight">Aderência global</span>
+                                            <span className="text-xl font-black text-gray-900">{avg}%</span>
+                                        </div>
+                                        <div className="w-9 h-9 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                                            <ArrowUpRight size={18} />
+                                        </div>
                                     </div>
                                 </div>
-                                <ChevronRight className="text-blue-400 group-hover:text-blue-600 transition-colors" size={20} />
-                            </div>
-                        );
-                    })}
-                </div>
+                            );
+                        })}
+                    </div>
+                ) : (
+                    <div className="bg-gray-50/50 rounded-3xl p-12 text-center border border-gray-300">
+                        <FileText className="text-gray-300 mx-auto mb-4" size={32} />
+                        <h3 className="text-lg font-black text-gray-900">Nenhum teste concluído</h3>
+                        <p className="text-gray-400 font-bold text-sm mt-1">Conclua avaliações para ver seus insights aqui.</p>
+                    </div>
+                )}
             </div>
-
-            {selectedReaction && (
-                <TestResultModal
-                    isOpen={!!selectedReaction}
-                    onClose={() => setSelectedReaction(null)}
-                    testTitle={selectedReaction.test.title}
-                    scores={selectedReaction.result.scores as Record<string, number> || {}}
-                />
-            )}
-        </>
+        </div>
     );
 };
 

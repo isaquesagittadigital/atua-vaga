@@ -60,14 +60,12 @@ export const AdminLayout: React.FC = () => {
             </main>
 
             {/* Footer */}
-            <footer className="px-12 py-8 border-t border-gray-50 flex flex-col md:flex-row justify-between items-center text-[10px] text-gray-400 font-medium">
-                <div className="mb-4 md:mb-0">
-                    ©atua vaga. Todos os direitos reservados.
-                </div>
-                <div className="flex gap-6 uppercase tracking-wider">
-                    <a href="#" className="hover:text-gray-600 transition-colors">Termos e Condições de Uso</a>
-                    <a href="#" className="hover:text-gray-600 transition-colors">Política de Privacidade</a>
-                    <a href="/admin/suporte" className="hover:text-gray-600 transition-colors">Ajuda</a>
+            <footer className="w-full py-8 md:py-12 px-6 lg:px-24 border-t border-gray-100 bg-[#FBFBFB] text-[13px] text-gray-500 flex flex-col md:flex-row items-center justify-between shrink-0 gap-4 md:gap-0 text-center md:text-left">
+                <p className="font-normal opacity-80">©atua vaga. Todos os direitos reservados.</p>
+                <div className="flex items-center gap-12 mt-6 md:mt-0">
+                    <a href="#" className="hover:text-gray-900 transition-colors font-medium">Termos e Condições de Uso</a>
+                    <a href="#" className="hover:text-gray-900 transition-colors font-medium">Política de Privacidade</a>
+                    <a href="/admin/suporte" className="hover:text-gray-900 transition-colors font-medium">Ajuda</a>
                 </div>
             </footer>
         </div>

@@ -69,10 +69,8 @@ const NotificationsPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-white">
-
-
-            <div className="max-w-5xl mx-auto px-6 py-8">
+        <div className="flex-1">
+            <div className="max-w-[1480px] mx-auto px-6 py-8">
 
                 {/* Banner Section */}
                 {!alertsActive ? (
@@ -125,7 +123,7 @@ const NotificationsPage: React.FC = () => {
                             className="flex items-center gap-2 text-gray-500 font-bold hover:text-[#F04E23] transition-colors"
                         >
                             <Settings size={20} />
-                            <span>Alerta de vagas</span>
+                            <span>Escolha quais vagas você quer receber</span>
                         </button>
                     )}
                 </div>

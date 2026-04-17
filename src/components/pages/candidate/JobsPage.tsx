@@ -245,8 +245,8 @@ const JobsPage: React.FC = () => {
 
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <main className="flex-1 w-full max-w-[1400px] mx-auto px-4 py-8">
+    <div className="flex-1">
+      <main className="flex-1 w-full max-w-[1480px] mx-auto px-4 py-8">
 
         {/* Hero Section */}
         <div className="text-center mb-10">

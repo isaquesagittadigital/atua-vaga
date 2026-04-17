@@ -99,18 +99,27 @@ CREATE POLICY "Users manage own skills" ON public.candidate_skills
 FOR ALL USING (user_id = auth.uid());
 
 -- ==============================================================================
--- STORAGE POLICIES (If using Supabase Storage)
+-- 1. Ensure Table Columns exist
 -- ==============================================================================
--- Ensure you have a bucket named 'resumes' or 'avatars'
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS avatar_url TEXT;
 
--- Example for Avatars:
--- INSERT INTO storage.buckets (id, name, public) VALUES ('avatars', 'avatars', true);
+-- ==============================================================================
+-- STORAGE POLICIES (Supabase Storage)
+-- ==============================================================================
+
+-- 1. Create the bucket if it doesn't exist (This must be done via Dashboard or Admin API)
+-- INSERT INTO storage.buckets (id, name, public) VALUES ('avatars', 'avatars', true) ON CONFLICT (id) DO NOTHING;
 
 -- Policy: Anyone can view avatars
--- DROP POLICY IF EXISTS "Avatar Public View" ON storage.objects;
--- CREATE POLICY "Avatar Public View" ON storage.objects FOR SELECT USING ( bucket_id = 'avatars' );
+DROP POLICY IF EXISTS "Avatar Public View" ON storage.objects;
+CREATE POLICY "Avatar Public View" ON storage.objects FOR SELECT USING ( bucket_id = 'avatars' );
 
 -- Policy: Users can only upload/update their own avatar
--- DROP POLICY IF EXISTS "User Avatar Upload" ON storage.objects;
--- CREATE POLICY "User Avatar Upload" ON storage.objects FOR INSERT 
--- WITH CHECK ( bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1] );
+DROP POLICY IF EXISTS "User Avatar Upload" ON storage.objects;
+CREATE POLICY "User Avatar Upload" ON storage.objects FOR INSERT 
+WITH CHECK ( bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1] );
+
+-- Policy: Users can update their own avatar
+DROP POLICY IF EXISTS "User Avatar Update" ON storage.objects;
+CREATE POLICY "User Avatar Update" ON storage.objects FOR UPDATE
+WITH CHECK ( bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1] );

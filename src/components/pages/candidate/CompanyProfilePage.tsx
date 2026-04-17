@@ -62,17 +62,17 @@ const CompanyProfilePage: React.FC = () => {
                         <div className="bg-[#F8FAFC] p-6 rounded-2xl text-center border border-gray-100">
                             <Users className="mx-auto text-[#1D4ED8] mb-2" size={24} />
                             <p className="text-2xl font-black text-gray-900">51</p>
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wide">Seguidores</p>
+                            <p className="text-xs font-bold text-gray-400 tracking-wide">Seguidores</p>
                         </div>
                         <div className="bg-[#F8FAFC] p-6 rounded-2xl text-center border border-gray-100">
                             <FileText className="mx-auto text-[#1D4ED8] mb-2" size={24} />
                             <p className="text-2xl font-black text-gray-900">48</p>
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wide">Publicações</p>
+                            <p className="text-xs font-bold text-gray-400 tracking-wide">Publicações</p>
                         </div>
                         <div className="bg-[#F8FAFC] p-6 rounded-2xl text-center border border-gray-100">
                             <Briefcase className="mx-auto text-[#1D4ED8] mb-2" size={24} />
                             <p className="text-2xl font-black text-gray-900">5</p>
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wide">Vagas abertas</p>
+                            <p className="text-xs font-bold text-gray-400 tracking-wide">Vagas abertas</p>
                         </div>
                     </div>
                 </div>

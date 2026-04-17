@@ -31,7 +31,7 @@ const FAQPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#F8FAFC] font-sans flex flex-col">
+        <div className="flex-1 font-sans flex flex-col">
             <main className="flex-1 max-w-[800px] mx-auto w-full p-6 lg:p-12">
                 <button onClick={() => navigate('/app/dashboard')} className="flex items-center gap-2 text-gray-500 font-bold hover:text-[#F04E23] mb-8 transition-colors">
                     <ChevronLeft size={20} />
@@ -83,17 +83,6 @@ const FAQPage: React.FC = () => {
                 </div>
             </main>
 
-            {/* Footer */}
-            <footer className="w-full border-t border-gray-100 bg-white py-8 mt-auto">
-                <div className="max-w-[1400px] mx-auto px-6 lg:px-12 flex flex-col md:flex-row items-center justify-between gap-4 text-[13px] text-gray-500 font-medium">
-                    <p>©atua vaga. Todos os direitos reservados.</p>
-                    <div className="flex items-center gap-6">
-                        <button className="hover:text-[#F04E23] transition-colors">Termos e Condições de Uso</button>
-                        <button className="hover:text-[#F04E23] transition-colors">Política de Privacidade</button>
-                        <button className="hover:text-[#F04E23] transition-colors text-[#F04E23] font-bold">Ajuda</button>
-                    </div>
-                </div>
-            </footer>
 
             {/* Contact Modal */}
             {showContactModal && (

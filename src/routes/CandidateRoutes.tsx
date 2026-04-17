@@ -20,8 +20,9 @@ const CandidateRoutes: React.FC = () => {
             <Route path="jobs" element={<JobsPage onNavigate={() => { }} />} />
             <Route path="my-jobs" element={<MyJobsPage />} />
             <Route path="profile" element={<ProfilePage onNavigate={() => { }} />} />
+            <Route path="behavioral-test" element={<BehavioralTestPage onNavigate={() => { }} />} />
             <Route path="behavioral-test/:testId" element={<BehavioralTestPage onNavigate={() => { }} />} />
-            <Route path="behavioral-result" element={<BehavioralResultPage onNavigate={() => { }} />} />
+            <Route path="behavioral-result/:resultId" element={<BehavioralResultPage />} />
             <Route path="notifications" element={<NotificationsPage />} />
             <Route path="faq" element={<FAQPage onNavigate={() => { }} />} />
             <Route path="company-profile" element={<CompanyProfilePage onNavigate={() => { }} />} />

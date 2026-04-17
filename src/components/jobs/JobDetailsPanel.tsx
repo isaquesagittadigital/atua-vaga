@@ -150,31 +150,43 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
                         </div>
                     </div>
 
-                    {/* Quick Info Grid - Image 2 Style */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-8 text-[15px] text-gray-600 mb-8 border-b border-gray-50 pb-8">
-                        {/* Left Column */}
-                        <div className="space-y-3">
-                            <div className="flex items-center gap-3">
-                                <Briefcase size={20} className="text-[#5AB7F7]" />
-                                <span className="font-medium text-gray-700">{job.type === 'onsite' ? 'Presencial' : job.type}</span>
+                    {/* Quick Info - All stacked on the left as requested */}
+                    <div className="flex flex-col gap-3 text-[15px] text-gray-600 mb-8 border-b border-gray-50 pb-8">
+                        <div className="flex flex-wrap gap-x-12 gap-y-3">
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-3">
+                                    <Briefcase size={20} className="text-[#5AB7F7]" />
+                                    <span className="font-medium text-gray-700">{job.type === 'onsite' ? 'Presencial' : job.type}</span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <Clock size={20} className="text-[#5AB7F7]" />
+                                    <span>Período flexível</span>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-3">
-                                <Clock size={20} className="text-[#5AB7F7]" />
-                                <span>Período flexível</span>
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-3">
+                                    <DollarSign size={20} className="text-[#5AB7F7]" />
+                                    <span className="font-bold text-gray-900">{formatSalary(job.salary_min, job.salary_max)}</span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <MapPin size={20} className="text-[#5AB7F7]" />
+                                    <span>{job.location}</span>
+                                </div>
                             </div>
                         </div>
+                    </div>
 
-                        {/* Right Column */}
-                        <div className="space-y-3 md:text-right">
-                            <div className="flex items-center gap-3 md:justify-end">
-                                <DollarSign size={20} className="text-[#5AB7F7]" />
-                                <span className="font-bold text-gray-900">{formatSalary(job.salary_min, job.salary_max)}</span>
-                            </div>
-                            <div className="flex items-center gap-3 md:justify-end">
-                                <MapPin size={20} className="text-[#5AB7F7]" />
-                                <span>{job.location}</span>
-                            </div>
+                    {/* Match Score Badge */}
+                    <div className="flex items-center gap-2 mb-8 -mt-4 animate-in fade-in slide-in-from-left-4 duration-500">
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 border border-orange-100 rounded-full">
+                            <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+                            <span className="text-xs font-black text-orange-600 whitespace-nowrap">
+                                {matchScore}% de aderência
+                            </span>
                         </div>
+                        <p className="text-[11px] text-gray-400 font-bold leading-none translate-y-[1px]">
+                            com o cargo baseado no seu teste comportamental
+                        </p>
                     </div>
 
                     {/* Action Buttons - Image 2 Style */}

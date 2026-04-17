@@ -1,5 +1,5 @@
 
-import { LayoutDashboard, Briefcase, Bookmark, User, HelpCircle, ThumbsUp } from 'lucide-react';
+import { LayoutDashboard, Briefcase, Bookmark, User, HelpCircle, ThumbsUp, FileText } from 'lucide-react';
 
 export const candidateNavigation = {
     main: [
@@ -20,6 +20,12 @@ export const candidateNavigation = {
             path: '/app/my-jobs',
             icon: Bookmark,
             id: 'my-jobs'
+        },
+        {
+            label: 'Testes',
+            path: '/app/behavioral-test',
+            icon: FileText,
+            id: 'tests'
         },
     ],
     user: [

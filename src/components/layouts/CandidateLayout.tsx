@@ -6,7 +6,7 @@ import { CandidateFooter } from '../layout/candidate/CandidateFooter';
 
 export const CandidateLayout: React.FC = () => {
     return (
-        <div className="min-h-screen bg-[#F8FAFC] font-sans flex flex-col">
+        <div className="min-h-screen bg-[#F4F6F9] font-sans flex flex-col">
             <CandidateHeader />
             <Outlet />
             <CandidateFooter />

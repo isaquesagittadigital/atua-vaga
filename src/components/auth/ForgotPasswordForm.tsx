@@ -44,7 +44,7 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBack, onCodeS
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-[11px] font-bold text-gray-400 mb-2 uppercase tracking-wider">E-mail</label>
+            <label className="block text-[11px] font-bold text-gray-400 mb-2">E-mail</label>
             <input 
               type="email"
               placeholder="exemplo@email.com"

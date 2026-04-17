@@ -94,7 +94,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onForgotPassword, onRegister, onL
         <form onSubmit={handleLogin} className="space-y-6">
           {/* Email Field (Unified for now for Supabase simplicity) */}
           <div>
-            <label className="block text-[11px] font-bold text-gray-400 mb-2 uppercase tracking-wider">E-mail</label>
+            <label className="block text-[11px] font-bold text-gray-400 mb-2">E-mail</label>
             <input
               type="email"
               placeholder={loginType === 'candidate' ? "seu@email.com" : "empresa@sagittadigital.com.br"}
@@ -108,7 +108,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onForgotPassword, onRegister, onL
 
           {/* Password Field */}
           <div>
-            <label className="block text-[11px] font-bold text-gray-400 mb-2 uppercase tracking-wider">Senha</label>
+            <label className="block text-[11px] font-bold text-gray-400 mb-2">Senha</label>
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}

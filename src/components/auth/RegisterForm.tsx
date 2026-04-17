@@ -152,7 +152,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
 
         <div className="flex justify-between items-start mb-2">
           <h2 className="text-3xl font-black text-gray-900">Cadastrar</h2>
-          <span className="text-[11px] font-black text-[#5AB7F7] uppercase tracking-widest mt-2">Etapa {step} de 2</span>
+          <span className="text-[11px] font-black text-[#5AB7F7] mt-2">Etapa {step} de 2</span>
         </div>
         <p className="text-gray-500 text-[14px] leading-relaxed mb-8 font-medium">
           Insira suas informações para realizar o cadastro. Levará menos de 1 minuto!
@@ -161,7 +161,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
         {step === 1 ? (
           <form onSubmit={handleStep1} className="space-y-6">
             <div>
-              <label className="block text-[11px] font-bold text-gray-400 mb-2 uppercase tracking-wider">CPF</label>
+              <label className="block text-[11px] font-bold text-gray-400 mb-2">CPF</label>
               <input
                 type="text"
                 placeholder="000.000.000-00"
@@ -179,7 +179,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold text-gray-400 mb-2 uppercase tracking-wider">Senha</label>
+              <label className="block text-[11px] font-bold text-gray-400 mb-2">Senha</label>
               <div className="relative">
                 <input
                   type={showPass.pass ? 'text' : 'password'}
@@ -198,7 +198,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold text-gray-400 mb-2 uppercase tracking-wider">Confirmar senha</label>
+              <label className="block text-[11px] font-bold text-gray-400 mb-2">Confirmar senha</label>
               <div className="relative">
                 <input
                   type={showPass.confirm ? 'text' : 'password'}
@@ -233,7 +233,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
         ) : (
           <form onSubmit={handleStep2} className="space-y-6">
             <div>
-              <label className="block text-[11px] font-bold text-gray-400 mb-2 uppercase tracking-wider">Nome</label>
+              <label className="block text-[11px] font-bold text-gray-400 mb-2">Nome</label>
               <input
                 type="text"
                 placeholder="Nome completo"
@@ -245,7 +245,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold text-gray-400 mb-2 uppercase tracking-wider">E-mail</label>
+              <label className="block text-[11px] font-bold text-gray-400 mb-2">E-mail</label>
               <input
                 type="email"
                 placeholder="exemplo@email.com"
@@ -257,7 +257,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold text-gray-400 mb-2 uppercase tracking-wider">Telefone</label>
+              <label className="block text-[11px] font-bold text-gray-400 mb-2">Telefone</label>
               <input
                 type="tel"
                 placeholder="(00) 00000-0000"

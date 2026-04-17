@@ -38,7 +38,7 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ onCancel, onReset
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* New Password */}
           <div>
-            <label className="block text-[11px] font-bold text-gray-400 mb-2 uppercase tracking-wider">Nova senha</label>
+            <label className="block text-[11px] font-bold text-gray-400 mb-2">Nova senha</label>
             <div className="relative">
               <input 
                 type={showPass.new ? 'text' : 'password'}
@@ -60,7 +60,7 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ onCancel, onReset
 
           {/* Confirm Password */}
           <div>
-            <label className="block text-[11px] font-bold text-gray-400 mb-2 uppercase tracking-wider">Confirmar senha</label>
+            <label className="block text-[11px] font-bold text-gray-400 mb-2">Confirmar senha</label>
             <div className="relative">
               <input 
                 type={showPass.confirm ? 'text' : 'password'}

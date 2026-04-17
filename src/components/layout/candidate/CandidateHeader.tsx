@@ -11,7 +11,7 @@ import { candidateNavigation } from '../../../config/navigation';
 import { ProfileDropdown } from '../ProfileDropdown';
 
 export const CandidateHeader: React.FC = () => {
-    const { user, signOut } = useAuth();
+    const { user, profile, signOut } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -76,29 +76,33 @@ export const CandidateHeader: React.FC = () => {
         }
     };
 
-    const userInitial = user?.user_metadata?.full_name?.charAt(0).toUpperCase() || 'U';
-    const userName = user?.user_metadata?.full_name || 'Usuário';
-    const userEmail = user?.email || 'email@exemplo.com';
+    const userInitial = profile?.full_name?.charAt(0).toUpperCase() || user?.user_metadata?.full_name?.charAt(0).toUpperCase() || 'U';
+    const userName = profile?.full_name || profile?.name || user?.user_metadata?.full_name || 'Usuário';
+    const userEmail = profile?.email || user?.email || 'email@exemplo.com';
+    const userAvatar = profile?.avatar_url || user?.user_metadata?.avatar_url;
 
     const isActive = (path: string) => location.pathname.includes(path);
 
     return (
         <>
-            <nav className="sticky top-0 z-50 bg-white border-b border-gray-100 px-6 lg:px-12 py-3 flex items-center justify-between shadow-sm">
-                <div className="flex items-center gap-4 md:gap-12">
-                    {/* Mobile Menu Button */}
-                    <button
-                        className="md:hidden text-gray-500 hover:text-[#F04E23] transition-colors"
-                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                    >
-                        <Menu size={24} />
-                    </button>
+            <nav className="sticky top-0 z-50 bg-white border-b border-gray-100 px-6 py-3 shadow-sm">
+                <div className="max-w-[1480px] w-full mx-auto flex items-center justify-between">
+                    {/* Left Section: Logo & Mobile Menu */}
+                    <div className="flex items-center gap-4 flex-1">
+                        <button
+                            className="md:hidden text-gray-500 hover:text-[#F04E23] transition-colors"
+                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                        >
+                            <Menu size={24} />
+                        </button>
 
-                    <Link to="/app/dashboard">
-                        <Logo className="scale-75 origin-left cursor-pointer" />
-                    </Link>
+                        <Link to="/app/dashboard">
+                            <Logo className="scale-75 origin-left cursor-pointer" />
+                        </Link>
+                    </div>
 
-                    <div className="hidden md:flex items-center gap-8">
+                    {/* Middle Section: Navigation Links (Centered) */}
+                    <div className="hidden md:flex flex-[2] items-center justify-center gap-8">
                         {candidateNavigation.main.map((item) => (
                             <Link
                                 key={item.path}
@@ -109,31 +113,34 @@ export const CandidateHeader: React.FC = () => {
                             </Link>
                         ))}
                     </div>
-                </div>
 
-                <div className="flex items-center gap-2 md:gap-6">
-                    <Link
-                        to="/app/professional-registration"
-                        className={`p-2 hidden md:block ${isActive('/app/professional-registration') ? 'text-[#F04E23] bg-orange-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'} rounded-lg transition-all`}
-                        title="Cadastro Profissional"
-                    >
-                        <UserCog size={22} />
-                    </Link>
+                    {/* Right Section: Actions */}
+                    <div className="flex items-center justify-end gap-2 md:gap-6 flex-1">
+                        <div className="relative" ref={notificationRef}>
+                            <Link
+                                to="/app/notifications"
+                                className={`p-2 block ${isActive('/app/notifications') ? 'text-[#F04E23] bg-orange-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'} rounded-lg transition-all relative`}
+                            >
+                                <Bell size={22} />
+                                {unreadCount > 0 && (
+                                    <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+                                )}
+                            </Link>
+                        </div>
 
-                    <div className="relative" ref={notificationRef}>
-                        <Link
-                            to="/app/notifications"
-                            className={`p-2 block ${isActive('/app/notifications') ? 'text-[#F04E23] bg-orange-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'} rounded-lg transition-all relative`}
-                        >
-                            <Bell size={22} />
-                            {unreadCount > 0 && (
-                                <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-                            )}
-                        </Link>
-                    </div>
-
-                    <div className="hidden md:block">
-                        <ProfileDropdown />
+                        <div className="hidden md:block">
+                            <ProfileDropdown>
+                                <div className="py-1 border-b border-gray-50 mb-1">
+                                    <Link
+                                        to="/app/profile"
+                                        className="w-full px-4 py-2 flex items-center gap-3 text-sm text-slate-600 font-medium hover:bg-slate-50 transition-colors text-left"
+                                    >
+                                        <User size={16} className="text-slate-400" />
+                                        <span>Perfil</span>
+                                    </Link>
+                                </div>
+                            </ProfileDropdown>
+                        </div>
                     </div>
                 </div>
             </nav>
@@ -164,8 +171,12 @@ export const CandidateHeader: React.FC = () => {
 
                         <div className="space-y-4">
                             <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-xl">
-                                <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#1D4ED8] font-black shadow-sm">
-                                    {userInitial}
+                                <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#1D4ED8] font-black shadow-sm overflow-hidden">
+                                    {userAvatar ? (
+                                        <img src={userAvatar} alt="Avatar" className="w-full h-full object-cover" />
+                                    ) : (
+                                        userInitial
+                                    )}
                                 </div>
                                 <div>
                                     <p className="font-bold text-gray-900">{userName}</p>
@@ -189,9 +200,6 @@ export const CandidateHeader: React.FC = () => {
                                 );
                             })}
 
-                            <button onClick={() => { navigate('/app/professional-registration'); setIsMobileMenuOpen(false); }} className="flex items-center gap-3 w-full p-3 text-gray-600 font-bold hover:bg-gray-50 rounded-xl">
-                                <UserCog size={20} /> Cadastro Profissional
-                            </button>
 
                             <button onClick={handleLogout} className="flex items-center gap-3 w-full p-3 text-red-500 font-bold hover:bg-red-50 rounded-xl">
                                 <LogOut size={20} /> Sair

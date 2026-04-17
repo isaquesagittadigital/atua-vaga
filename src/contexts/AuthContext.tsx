@@ -25,6 +25,7 @@ interface UserProfile {
     // Other fields
     bio?: string;
     name?: string;
+    avatar_url?: string;
 }
 
 interface Company {

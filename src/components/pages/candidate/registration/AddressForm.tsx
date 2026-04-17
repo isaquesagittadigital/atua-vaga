@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase'; // Adjust path if needed
 import { useAuth } from '@/contexts/AuthContext';
 import { Pencil } from 'lucide-react';
+import { formatCEP } from '@/utils/validators';
 
 interface AddressFormProps {
     onNext?: () => void;
@@ -105,7 +106,7 @@ const AddressForm: React.FC<AddressFormProps> = ({ onNext, onBack, readOnly = fa
     };
 
     return (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mt-8">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-300 p-8 mt-8">
             <div className="flex justify-between items-center mb-2">
                 <h2 className="text-2xl font-bold text-gray-900">Endereço</h2>
                 {canEdit && !isEditing && !readOnly && (
@@ -125,11 +126,11 @@ const AddressForm: React.FC<AddressFormProps> = ({ onNext, onBack, readOnly = fa
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {/* CEP */}
                         <div>
-                            <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">CEP</label>
+                            <label className="block text-xs font-bold text-gray-400 mb-2">CEP</label>
                             <input
                                 type="text"
                                 value={formData.cep}
-                                onChange={(e) => handleChange('cep', e.target.value)}
+                                onChange={(e) => handleChange('cep', formatCEP(e.target.value))}
                                 onBlur={handleCepBlur}
                                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#F04E23] focus:ring-2 focus:ring-[#F04E23]/10 outline-none"
                                 placeholder="00000-000"
@@ -139,7 +140,7 @@ const AddressForm: React.FC<AddressFormProps> = ({ onNext, onBack, readOnly = fa
 
                         {/* Cidade */}
                         <div>
-                            <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">Cidade</label>
+                            <label className="block text-xs font-bold text-gray-400 mb-2">Cidade</label>
                             <input
                                 type="text"
                                 value={formData.city}
@@ -151,7 +152,7 @@ const AddressForm: React.FC<AddressFormProps> = ({ onNext, onBack, readOnly = fa
 
                         {/* Estado */}
                         <div>
-                            <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">Estado</label>
+                            <label className="block text-xs font-bold text-gray-400 mb-2">Estado</label>
                             <input
                                 type="text"
                                 value={formData.state}
@@ -163,7 +164,7 @@ const AddressForm: React.FC<AddressFormProps> = ({ onNext, onBack, readOnly = fa
 
                         {/* Rua */}
                         <div className="md:col-span-2">
-                            <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">Rua</label>
+                            <label className="block text-xs font-bold text-gray-400 mb-2">Rua</label>
                             <input
                                 type="text"
                                 value={formData.street}
@@ -175,7 +176,7 @@ const AddressForm: React.FC<AddressFormProps> = ({ onNext, onBack, readOnly = fa
 
                         {/* Número */}
                         <div>
-                            <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">Número</label>
+                            <label className="block text-xs font-bold text-gray-400 mb-2">Número</label>
                             <input
                                 type="text"
                                 value={formData.number}
@@ -187,7 +188,7 @@ const AddressForm: React.FC<AddressFormProps> = ({ onNext, onBack, readOnly = fa
 
                         {/* Bairro */}
                         <div className="md:col-span-3">
-                            <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">Bairro</label>
+                            <label className="block text-xs font-bold text-gray-400 mb-2">Bairro</label>
                             <input
                                 type="text"
                                 value={formData.neighborhood}
