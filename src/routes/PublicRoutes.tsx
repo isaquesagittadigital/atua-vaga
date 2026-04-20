@@ -12,6 +12,7 @@ import { Logo } from '../components/ui/Icons';
 import JobsPage from '../components/pages/candidate/JobsPage';
 import TermsOfUse from '../components/pages/public/TermsOfUse';
 import PrivacyPolicy from '../components/pages/public/PrivacyPolicy';
+import HelpPage from '../components/pages/public/HelpPage';
 
 // Wrapper for Auth Pages to keep the visual style (Side Hero)
 const AuthPageWrapper: React.FC<{ children: React.ReactNode, title?: string }> = ({ children, title = "Candidato" }) => (
@@ -112,6 +113,7 @@ const PublicRoutes: React.FC = () => {
             {/* Pages and Terms */}
             <Route path="termos" element={<TermsOfUse />} />
             <Route path="privacidade" element={<PrivacyPolicy />} />
+            <Route path="ajuda" element={<HelpPage />} />
             <Route path="vagas" element={<JobsPage />} />
         </Routes>
     );
