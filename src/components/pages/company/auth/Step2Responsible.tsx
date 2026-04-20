@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChevronLeft } from 'lucide-react';
+import { formatCPF, formatPhone } from '@/utils/validators';
 
 interface Step2Props {
     onNext: () => void;
@@ -43,9 +44,10 @@ const Step2Responsible: React.FC<Step2Props> = ({ onNext, onBack, data, updateDa
                     <input
                         type="text"
                         value={data.cpf}
-                        onChange={(e) => updateData({ cpf: e.target.value })}
+                        onChange={(e) => updateData({ cpf: formatCPF(e.target.value) })}
                         placeholder="000.000.000-00"
                         className={inputClasses}
+                        maxLength={14}
                     />
                 </div>
 
@@ -54,9 +56,10 @@ const Step2Responsible: React.FC<Step2Props> = ({ onNext, onBack, data, updateDa
                     <input
                         type="tel"
                         value={data.responsiblePhone}
-                        onChange={(e) => updateData({ responsiblePhone: e.target.value })}
+                        onChange={(e) => updateData({ responsiblePhone: formatPhone(e.target.value) })}
                         placeholder="(11) 99999-9999"
                         className={inputClasses}
+                        maxLength={15}
                     />
                 </div>
 

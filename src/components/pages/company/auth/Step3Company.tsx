@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChevronLeft } from 'lucide-react';
+import { formatCNPJ } from '@/utils/validators';
 
 interface Step3Props {
     onComplete: () => void;
@@ -43,9 +44,10 @@ const Step3Company: React.FC<Step3Props> = ({ onComplete, onBack, data, updateDa
                     <input
                         type="text"
                         value={data.document}
-                        onChange={(e) => updateData({ document: e.target.value })}
+                        onChange={(e) => updateData({ document: formatCNPJ(e.target.value) })}
                         placeholder="00.000.000/0001-00"
                         className={inputClasses}
+                        maxLength={18}
                     />
                 </div>
 

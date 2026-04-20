@@ -8,6 +8,16 @@ export const formatCPF = (value: string): string => {
     .replace(/(-\d{2})\d+?$/, '$1'); // Limit to 11 digits
 };
 
+export const formatCNPJ = (value: string): string => {
+  return value
+    .replace(/\D/g, '') // Remove non-digits
+    .replace(/(\d{2})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1/$2')
+    .replace(/(\d{4})(\d)/, '$1-$2')
+    .replace(/(-\d{2})\d+?$/, '$1'); // Limit to 14 digits
+};
+
 
 export const isValidCPF = (cpf: string): boolean => {
   const cleanCPF = cpf.replace(/\D/g, '');
