@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ChevronLeft } from 'lucide-react';
 
@@ -10,67 +9,67 @@ interface Step2Props {
 }
 
 const Step2Responsible: React.FC<Step2Props> = ({ onNext, onBack, data, updateData }) => {
+    const inputClasses = "w-full px-4 py-3.5 rounded-xl border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-[#F04E23] focus:ring-2 focus:ring-[#F04E23]/10 outline-none transition-all font-medium text-[15px]";
+    const labelClasses = "block text-[11px] font-bold text-gray-400 mb-2 uppercase tracking-wider";
+
     return (
-        <div className="w-full max-w-[400px] animate-in fade-in slide-in-from-right-8 duration-500">
+        <div className="animate-in fade-in slide-in-from-right-8 duration-500">
             <button
                 onClick={onBack}
-                className="flex items-center gap-1 text-gray-500 font-bold text-sm mb-8 hover:text-[#F04E23] transition-colors"
+                className="flex items-center gap-2 text-gray-800 font-black mb-8 hover:text-[#F04E23] transition-colors text-xs"
             >
-                <ChevronLeft size={18} /> Voltar
+                <ChevronLeft size={18} strokeWidth={3} /> Voltar
             </button>
 
-            <div className="mb-8">
-                <h2 className="text-3xl font-black text-gray-900 mb-2">Cadastrar</h2>
-                <p className="text-gray-500 font-medium text-sm">Insira suas informações para realizar o cadastro.<br />Levará menos de 1 minuto!</p>
+            <div className="mb-10">
+                <h2 className="text-3xl font-black text-gray-900 mb-2">Responsável</h2>
+                <p className="text-gray-500 font-bold text-[13px] leading-relaxed">Precisamos saber quem será o ponto de contato principal da empresa.</p>
             </div>
 
-            <div className="space-y-5">
+            <div className="space-y-6">
                 <div>
-                    <label className="block text-sm font-bold text-gray-600 mb-2">Nome do responsável</label>
+                    <label className={labelClasses}>Nome completo</label>
                     <input
                         type="text"
                         value={data.responsibleName}
                         onChange={(e) => updateData({ responsibleName: e.target.value })}
-                        placeholder="José de Alencar"
-                        className="w-full px-4 py-3.5 rounded-xl border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-[#F04E23] focus:ring-2 focus:ring-[#F04E23]/10 outline-none transition-all font-medium"
+                        placeholder="Ex: José da Silva"
+                        className={inputClasses}
                     />
                 </div>
 
                 <div>
-                    <label className="block text-sm font-bold text-gray-600 mb-2">CPF</label>
+                    <label className={labelClasses}>CPF do responsável</label>
                     <input
                         type="text"
-                        value={data.document} // Assuming CPF or asking for CNPJ later? In code I used 'document' for CNPJ. Let's use specific field for CPF or map it if needed.
-                        // Wait, Step 3 asks for CNPJ ("document"). Step 2 asks for "CPF" (of responsible?)
-                        // My backend register logic expects 'cpf' for the User metadata/profile.
-                        // So I should map this input to 'cpf' in formData.
+                        value={data.cpf}
                         onChange={(e) => updateData({ cpf: e.target.value })}
-                        placeholder="123.456.789-10"
-                        className="w-full px-4 py-3.5 rounded-xl border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-[#F04E23] focus:ring-2 focus:ring-[#F04E23]/10 outline-none transition-all font-medium"
+                        placeholder="000.000.000-00"
+                        className={inputClasses}
                     />
                 </div>
 
                 <div>
-                    <label className="block text-sm font-bold text-gray-600 mb-2">Telefone</label>
+                    <label className={labelClasses}>Telefone de contato</label>
                     <input
                         type="tel"
                         value={data.responsiblePhone}
                         onChange={(e) => updateData({ responsiblePhone: e.target.value })}
-                        placeholder="+55 11 99239192"
-                        className="w-full px-4 py-3.5 rounded-xl border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-[#F04E23] focus:ring-2 focus:ring-[#F04E23]/10 outline-none transition-all font-medium"
+                        placeholder="(11) 99999-9999"
+                        className={inputClasses}
                     />
                 </div>
 
                 <button
                     onClick={onNext}
-                    className="w-full py-4 bg-[#F04E23] hover:bg-[#E03E13] text-white font-black rounded-xl transition-all shadow-lg shadow-orange-500/20 text-[15px] mt-4"
+                    className="w-full py-4 bg-[#F04E23] hover:bg-[#E03E13] text-white font-black rounded-2xl transition-all shadow-lg shadow-orange-100 text-[16px] transform hover:-translate-y-1 active:translate-y-0 mt-4"
                 >
                     Continuar
                 </button>
 
-                <div className="text-center mt-2">
-                    <p className="text-sm font-bold text-gray-500">
-                        Já tem uma conta? <a href="/auth/login" className="text-gray-900 hover:text-[#F04E23] transition-colors">Entre agora!</a>
+                <div className="text-center mt-6">
+                    <p className="text-[13px] text-gray-500 font-medium">
+                        Já tem uma conta? <a href="/auth/company/login" className="text-gray-900 font-black hover:underline underline-offset-4 transition-all">Entre agora!</a>
                     </p>
                 </div>
             </div>

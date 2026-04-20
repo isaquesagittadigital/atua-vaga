@@ -205,16 +205,36 @@ CREATE POLICY "Company view applications" ON public.job_applications FOR SELECT 
 -- Auto-create profile on signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
+DECLARE
+  new_company_id UUID;
 BEGIN
-  INSERT INTO public.profiles (id, email, full_name, role)
+  -- 1. Insert into public profiles with all metadata
+  INSERT INTO public.profiles (id, email, full_name, role, cpf, phone)
   VALUES (
     NEW.id,
     NEW.email,
-    COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name', 'Usuário'),
-    COALESCE(NEW.raw_user_meta_data->>'role', 'candidate')
+    COALESCE(NEW.raw_user_meta_data->>'name', NEW.raw_user_meta_data->>'full_name', 'Usuário'),
+    COALESCE(NEW.raw_user_meta_data->>'role', 'candidate'),
+    NEW.raw_user_meta_data->>'cpf',
+    NEW.raw_user_meta_data->>'phone'
   );
-  -- Also init notification settings
+
+  -- 2. If it's a company admin, create the company and the link
+  IF (NEW.raw_user_meta_data->>'role' = 'company_admin') THEN
+    INSERT INTO public.companies (name, document)
+    VALUES (
+      COALESCE(NEW.raw_user_meta_data->>'companyName', 'Minha Empresa'),
+      COALESCE(NEW.raw_user_meta_data->>'document', '00.000.000/0000-00')
+    )
+    RETURNING id INTO new_company_id;
+
+    INSERT INTO public.company_members (company_id, user_id, role)
+    VALUES (new_company_id, NEW.id, 'company_admin');
+  END IF;
+
+  -- 3. Init notification settings
   INSERT INTO public.notification_settings (user_id, is_active) VALUES (NEW.id, true) ON CONFLICT DO NOTHING;
+  
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

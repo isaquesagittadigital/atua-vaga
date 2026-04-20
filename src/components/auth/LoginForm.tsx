@@ -104,12 +104,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ onForgotPassword, onRegister, onL
         )}
 
         <form onSubmit={handleLogin} className="space-y-6">
-          {/* CPF Field */}
+          {/* Email Field */}
           <div>
-            <label className="block text-[11px] font-bold text-gray-400 mb-2 uppercase tracking-wider">CPF</label>
+            <label className="block text-[11px] font-bold text-gray-400 mb-2 uppercase tracking-wider">E-mail</label>
             <input
-              type="text"
-              placeholder="Informe somente o número"
+              type="email"
+              placeholder="seu@email.com"
               value={formData.email}
               onChange={handleEmailChange}
               className={inputClasses}

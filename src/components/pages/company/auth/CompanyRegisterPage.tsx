@@ -17,7 +17,8 @@ const CompanyRegisterPage: React.FC = () => {
         responsibleName: '',
         responsiblePhone: '',
         companyName: '',
-        document: '' // CNPJ
+        document: '', // CNPJ
+        cpf: ''
     });
 
     const updateFormData = (data: Partial<typeof formData>) => {
@@ -51,12 +52,14 @@ const CompanyRegisterPage: React.FC = () => {
     };
 
     return (
-        <div className="w-full flex justify-center">
-            <div className="w-full max-w-[400px]">
-                {/* Step Indicator (Top Right) */}
+        <div className="w-full max-w-[450px] mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="bg-white px-10 py-12 rounded-[32px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50 relative">
+                {/* Step Indicator (Refined) */}
                 {!showPaymentModal && (
-                    <div className="flex justify-end mb-4">
-                        <span className="text-xs font-bold text-gray-400">{stepText}</span>
+                    <div className="absolute top-8 right-10">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-[#F04E23] bg-orange-50 px-3 py-1 rounded-full border border-orange-100">
+                            {stepText}
+                        </span>
                     </div>
                 )}
 

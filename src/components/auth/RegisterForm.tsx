@@ -45,8 +45,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
   // Real-time validation for Step 1
   useEffect(() => {
     if (step === 1) {
-      // 1. Validate CPF
-      const isCpfValid = isValidCPF(formData.cpf);
+      // 1. Validate Email
+      const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
 
       // 2. Validate Password Complexity
       const hasMinLen = formData.password.length >= 8;
@@ -62,24 +62,21 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
       // Update Errors
       setValidationErrors(prev => ({
         ...prev,
-        cpf: (formData.cpf.length > 0 && !isCpfValid) ? 'CPF Inválido' : '',
+        email: (formData.email.length > 0 && !isEmailValid) ? 'E-mail Inválido' : '',
         password: (formData.confirmPassword && !doPasswordsMatch) ? 'As senhas não coincidem' : ''
       }));
 
       // Overall Validity
-      setIsStep1Valid(isCpfValid && isPasswordComplex && doPasswordsMatch);
+      setIsStep1Valid(isEmailValid && isPasswordComplex && doPasswordsMatch);
 
     } else if (step === 2) {
       // Step 2 Validation
-      const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
+      const isCpfValid = isValidCPF(formData.cpf);
       const isNameFilled = formData.name.trim().length > 2;
-
-      // Phone Mask Check: (00) 0 0000-0000 -> 11 digits + formatting
-      // Clean phone should have 11 digits
       const cleanPhone = formData.phone.replace(/\D/g, '');
       const isPhoneValid = cleanPhone.length === 11;
 
-      setIsStep2Valid(isEmailValid && isNameFilled && isPhoneValid);
+      setIsStep2Valid(isCpfValid && isNameFilled && isPhoneValid);
     }
   }, [formData, step]);
 
@@ -161,14 +158,13 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
         {step === 1 ? (
           <form onSubmit={handleStep1} className="space-y-6">
             <div>
-              <label className="block text-[11px] font-bold text-gray-400 mb-2">CPF</label>
+              <label className="block text-[11px] font-bold text-gray-400 mb-2">E-email</label>
               <input
-                type="text"
-                placeholder="000.000.000-00"
-                value={formData.cpf}
-                onChange={handleCpfChange}
-                maxLength={14}
-                className={`${inputClasses} ${validationErrors.cpf ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : ''}`}
+                type="email"
+                placeholder="seu@email.com"
+                value={formData.email}
+                onChange={(e) => setFormData(p => ({ ...p, email: e.target.value }))}
+                className={`${inputClasses} ${validationErrors.email ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : ''}`}
                 required
               />
               {validationErrors.cpf && (
@@ -245,12 +241,13 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold text-gray-400 mb-2">E-mail</label>
+              <label className="block text-[11px] font-bold text-gray-400 mb-2">CPF</label>
               <input
-                type="email"
-                placeholder="exemplo@email.com"
-                value={formData.email}
-                onChange={(e) => setFormData(p => ({ ...p, email: e.target.value }))}
+                type="text"
+                placeholder="000.000.000-00"
+                value={formData.cpf}
+                onChange={handleCpfChange}
+                maxLength={14}
                 className={inputClasses}
                 required
               />
