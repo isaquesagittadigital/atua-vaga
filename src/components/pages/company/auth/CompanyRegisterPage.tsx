@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Step1Account from './Step1Account';
 import Step2Responsible from './Step2Responsible';
 import Step3Company from './Step3Company';
@@ -8,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const CompanyRegisterPage: React.FC = () => {
     const { signUp } = useAuth();
+    const navigate = useNavigate();
     const [step, setStep] = useState(1);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [formData, setFormData] = useState({
@@ -42,9 +44,11 @@ const CompanyRegisterPage: React.FC = () => {
                 phone: formData.responsiblePhone,
                 companyName: formData.companyName,
                 document: formData.document,
-                cpf: formData.cpf || '00000000000' // Use collected CPF or placeholder
+                cpf: formData.cpf
             });
-            setShowPaymentModal(true);
+            
+            // Redirect to plans page instead of showing modal directly
+            navigate('/auth/company/plans');
         } catch (error) {
             console.error("Registration failed", error);
             alert("Erro ao registrar: " + error);

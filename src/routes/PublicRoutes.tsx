@@ -8,6 +8,7 @@ import ForgotPasswordForm from '../components/auth/ForgotPasswordForm';
 import ResetPasswordForm from '../components/auth/ResetPasswordForm';
 import RegisterForm from '../components/auth/RegisterForm';
 import CompanyRegisterPage from '../components/pages/company/auth/CompanyRegisterPage';
+import PlansPage from '../components/pages/company/auth/PlansPage';
 import { Logo } from '../components/ui/Icons';
 import JobsPage from '../components/pages/candidate/JobsPage';
 import TermsOfUse from '../components/pages/public/TermsOfUse';
@@ -92,6 +93,7 @@ const PublicRoutes: React.FC = () => {
                     <CompanyRegisterPage />
                 </AuthPageWrapper>
             } />
+            <Route path="company/plans" element={<PlansPage />} />
             <Route path="company/forgot-password" element={
                 <AuthPageWrapper title="Empresa">
                     <ForgotPasswordForm

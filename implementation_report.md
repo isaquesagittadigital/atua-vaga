@@ -39,4 +39,24 @@ Este relatório detalha todas as modernizações, melhorias de UX e atualizaçõ
 *   **Sincronização de Banco de Dados**: Identificada a discrepância entre o projeto de desenvolvimento e o projeto de produção (`lzl...` vs `atz...`). Fornecido script de alinhamento para garantir que a tabela `candidate_test_results` e `profiles` possuam todas as colunas necessárias para o funcionamento pleno da plataforma.
 
 ---
-**Status Final do Dia**: Projeto modernizado, backend estabilizado, fluxo de autenticação social totalmente operacional e bugs de integração resolvidos.
+## Atualizações de 20 de Abril - Modernização e Infraestrutura Final
+
+### 1. Modernização do Footer e Novas Páginas
+*   **Aparência Premium**: Criadas as páginas de **Ajuda (/ajuda)**, **Termos de Uso (/termos)** e **Privacidade (/privacidade)** com design moderno, ícones da Lucide e conformidade com LGPD.
+*   **Navegação Inteligente**: Links do rodapé (`CandidateFooter` e `AdminLayout`) atualizados para abrir em novas guias, garantindo uma melhor experiência de fluxo para o usuário.
+
+### 2. Estabilização de Backend em Produção (Vercel)
+*   **Resolução de Erro 404/500**: Identificado que o backend na Vercel estava rodando um projeto NestJS padrão. Migrado para a aplicação Express real através da criação do `server/vercel.json` e exportação do handler do app.
+*   **Configuração de Variáveis**: Injeção das credenciais do Supabase no ambiente de produção, removendo o crash "Missing Supabase environment variables".
+*   **Triggers Inteligentes**: Atualizada a trigger `handle_new_user` no Supabase para suportar o cadastro completo de Empresas, criando automaticamente a organização e vinculando o administrador.
+
+### 3. Melhorias no Fluxo de Cadastro e UX
+*   **Identificação por E-mail**: Alterado o identificador principal de Login e Cadastro de **CPF para E-mail** em toda a plataforma (Candidato e Empresa), simplificando o acesso.
+*   **Máscaras de Entrada**: Implementadas máscaras em tempo real para:
+    *   **CPF**: `000.000.000-00`
+    *   **CNPJ**: `00.000.000/0001-00`
+    *   **Telefone**: `(00) 00000-0000` (com ajuste automático para 8/9 dígitos).
+*   **Redesign de Cadastro de Empresa**: A tela de cadastro de empresas foi duplicada e estilizada para ser idêntica à tela de Login, utilizando o sistema de "Premium Cards" com sombras suaves e tipografia bold.
+
+---
+**Status de Testes**: Fluxo de cálculo de teste comportamental validado em produção. Cadastro de empresa validado localmente e estruturado no banco de dados.
