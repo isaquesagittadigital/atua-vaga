@@ -43,6 +43,7 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
         city?: string;
         salary?: number;
         yearsExp?: number;
+        languages?: { name: string, level: string }[];
         hasDegree?: boolean;
     }>({});
     const [isSaved, setIsSaved] = useState(false);
@@ -62,9 +63,9 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
         
         try {
             const [profileRes, eduRes, expRes, testRes] = await Promise.all([
-                supabase.from('profiles').select('full_name, cpf, phone').eq('id', user.id).single(),
-                supabase.from('academic_education').select('id').eq('user_id', user.id).limit(1),
-                supabase.from('professional_experience').select('id').eq('user_id', user.id).limit(1),
+                supabase.from('profiles').select('full_name, cpf, phone, address, salary_objective, languages').eq('id', user.id).single(),
+                supabase.from('academic_education').select('*').eq('user_id', user.id),
+                supabase.from('professional_experience').select('*').eq('user_id', user.id),
                 supabase.from('candidate_test_results').select('id').eq('user_id', user.id).not('completed_at', 'is', null).limit(1)
             ]);
 
@@ -100,6 +101,7 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
                 city,
                 salary,
                 yearsExp: Math.round(totalYears * 10) / 10,
+                languages: p?.languages as any || [],
                 hasDegree: eduRes.data && eduRes.data.length > 0
             });
         } catch (err) {
@@ -392,7 +394,7 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
                                 { 
                                     label: 'Pretensão salarial', 
                                     text: candidateData.salary 
-                                        ? `Sua pretensão é R$ ${candidateData.salary}. A média da vaga é R$ ${(job.salary_min || 0 + (job.salary_max || 0)) / 2}.`
+                                        ? `Sua pretensão é R$ ${candidateData.salary}. A média da vaga é R$ ${((job.salary_min || 0) + (job.salary_max || 0)) / 2}.`
                                         : 'Pretensão salarial não informada no perfil.', 
                                     pct: candidateData.salary && job.salary_max && candidateData.salary <= job.salary_max ? 90 : 30 
                                 },
@@ -413,8 +415,20 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
                                 },
                                 { 
                                     label: 'Idioma', 
-                                    text: candidateData.hasDegree ? 'Inglês Intermediário detectado em sua formação.' : 'Idiomas não detectados no currículo.', 
-                                    pct: candidateData.hasDegree ? 70 : 20 
+                                    text: (() => {
+                                        const mainLang = candidateData.languages?.find(l => l.name.toLowerCase().includes('inglês')) || candidateData.languages?.[0];
+                                        return mainLang 
+                                            ? `${mainLang.name} (${mainLang.level}) detectado no perfil.` 
+                                            : 'Nenhum idioma detectado no perfil.';
+                                    })(),
+                                    pct: (() => {
+                                        const mainLang = candidateData.languages?.find(l => l.name.toLowerCase().includes('inglês')) || candidateData.languages?.[0];
+                                        if (!mainLang) return 20;
+                                        if (['Fluente', 'Nativo'].includes(mainLang.level)) return 100;
+                                        if (mainLang.level === 'Avançado') return 85;
+                                        if (mainLang.level === 'Intermediário') return 60;
+                                        return 40;
+                                    })()
                                 },
                                 { 
                                     label: 'Tempo médio empregos anteriores', 
