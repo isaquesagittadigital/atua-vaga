@@ -215,16 +215,16 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ onNext, readOnly = fals
 
                                 {/* Actions */}
                                 {!readOnly && isEditing && exp.id && (
-                                    <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                                    <div className="absolute top-4 right-6 flex items-center gap-3 transition-all">
                                         <button
                                             onClick={() => handleEdit(exp)}
-                                            className="flex items-center gap-1.5 text-blue-500 font-bold text-xs hover:bg-blue-50 px-2.5 py-1.5 rounded-lg transition-all"
+                                            className="flex items-center gap-1.5 text-blue-500 font-bold text-xs hover:text-blue-700 transition-all"
                                         >
                                             <Pencil size={14} /> Editar
                                         </button>
                                         <button
                                             onClick={() => handleDelete(exp.id!)}
-                                            className="flex items-center gap-1.5 text-red-400 font-bold text-xs hover:text-red-600 hover:bg-red-50 px-2.5 py-1.5 rounded-lg transition-all"
+                                            className="flex items-center gap-1.5 text-red-400 font-bold text-xs hover:text-red-600 transition-all"
                                         >
                                             <Trash2 size={14} /> Excluir
                                         </button>
