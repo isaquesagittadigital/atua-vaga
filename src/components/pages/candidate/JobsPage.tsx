@@ -78,9 +78,14 @@ const JobsPage: React.FC = () => {
 
   // Calculate pagination for View All mode
   const sortedJobs = React.useMemo(() => {
-    if (!viewAllMode) return filteredJobs;
-    return [...filteredJobs].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-  }, [filteredJobs, viewAllMode]);
+    return [...filteredJobs].sort((a, b) => {
+        // First sort by match score (descending)
+        const matchDiff = (b.match_score || 0) - (a.match_score || 0);
+        if (matchDiff !== 0) return matchDiff;
+        // Then by date (descending)
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+  }, [filteredJobs]);
 
   const totalPages = Math.ceil(sortedJobs.length / ITEMS_PER_PAGE);
   const currentJobs = sortedJobs.slice(
@@ -123,12 +128,22 @@ const JobsPage: React.FC = () => {
       if (error) throw error;
 
       if (data) {
-        const formattedJobs = data.map((job: any) => ({
-          ...job,
-          company: job.companies?.name || 'Empresa Confidencial',
-          match_score: calculateJobMatch(job.id, user?.id, hasTestResult),
-          requirements: job.requirements || ['Experiência com React', 'TypeScript', 'TailwindCSS'] // Fallback reqs
-        }));
+        // Fetch applied job IDs
+        const { data: appliedData } = await supabase
+            .from('job_applications')
+            .select('job_id')
+            .eq('user_id', user?.id);
+        
+        const appliedIds = new Set(appliedData?.map(a => a.job_id) || []);
+
+        const formattedJobs = data
+          .filter((j: any) => !appliedIds.has(j.id)) // Filter out applied
+          .map((job: any) => ({
+            ...job,
+            company: job.companies?.name || 'Empresa Confidencial',
+            match_score: calculateJobMatch(job.id, user?.id, hasTestResult),
+            requirements: job.requirements || ['Experiência com React', 'TypeScript', 'TailwindCSS'] // Fallback reqs
+          }));
         setJobs(formattedJobs);
         setFilteredJobs(formattedJobs);
       }
