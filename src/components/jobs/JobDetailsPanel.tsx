@@ -71,6 +71,7 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
 
             setMissingRequirements(missing);
             setIsProfileComplete(missing.length === 0);
+            setHasTestResult(testRes.data && testRes.data.length > 0);
         } catch (err) {
             console.error('Error checking profile completion:', err);
         }
@@ -167,7 +168,8 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
         return `R$ ${min || max}`;
     };
 
-    const matchScore = job.match_score || 87; // Mock
+    const [hasTestResult, setHasTestResult] = useState(false);
+    const matchScore = job.match_score || 87; // Mock for now if test exists
 
     return (
         <>
@@ -213,15 +215,30 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
 
                     {/* Match Score Badge */}
                     <div className="flex items-center gap-2 mb-8 -mt-4 animate-in fade-in slide-in-from-left-4 duration-500">
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 border border-orange-100 rounded-full">
-                            <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
-                            <span className="text-xs font-black text-orange-600 whitespace-nowrap">
-                                {matchScore}% de aderência
-                            </span>
-                        </div>
-                        <p className="text-[11px] text-gray-400 font-bold leading-none translate-y-[1px]">
-                            com o cargo baseado no seu teste comportamental
-                        </p>
+                        {hasTestResult ? (
+                            <>
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 border border-orange-100 rounded-full">
+                                    <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+                                    <span className="text-xs font-black text-orange-600 whitespace-nowrap">
+                                        {matchScore}% de aderência
+                                    </span>
+                                </div>
+                                <p className="text-[11px] text-gray-400 font-bold leading-none translate-y-[1px]">
+                                    com o cargo baseado no seu teste comportamental
+                                </p>
+                            </>
+                        ) : (
+                            <>
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 border border-gray-200 rounded-full">
+                                    <span className="text-xs font-bold text-gray-400 whitespace-nowrap">
+                                        (Teste não realizado)
+                                    </span>
+                                </div>
+                                <p className="text-[11px] text-gray-400 leading-none translate-y-[1px]">
+                                    Realize o teste para ver sua aderência com a vaga
+                                </p>
+                            </>
+                        )}
                     </div>
 
                     {/* Action Buttons - Image 2 Style */}

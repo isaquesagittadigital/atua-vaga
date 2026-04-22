@@ -31,6 +31,7 @@ const MyJobsPage: React.FC = () => {
   const [appliedJobs, setAppliedJobs] = useState<Job[]>([]);
   const [savedJobs, setSavedJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasTestResult, setHasTestResult] = useState(false);
 
   // State for Split Layout
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
@@ -73,7 +74,19 @@ const MyJobsPage: React.FC = () => {
       }
     };
     fetchSavedJobs();
+    if (user) checkTestResult();
   }, [user]);
+
+  const checkTestResult = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from('candidate_test_results')
+      .select('id')
+      .eq('user_id', user.id)
+      .not('completed_at', 'is', null)
+      .limit(1);
+    setHasTestResult(!!data && data.length > 0);
+  };
 
   // Fetch Applied Jobs
   useEffect(() => {
@@ -212,7 +225,7 @@ const MyJobsPage: React.FC = () => {
               ) : activeJobs.length === 0 ? (
                 <div className="text-center py-20 text-gray-400">Nenhuma vaga encontrada.</div>
               ) : (
-                activeJobs.map(job => <JobRowItem key={job.id} job={job} onClick={() => handleJobClick(job)} />)
+                activeJobs.map(job => <JobRowItem key={job.id} job={job} onClick={() => handleJobClick(job)} hasTest={hasTestResult} />)
               )}
             </div>
           </div>
@@ -236,6 +249,7 @@ const MyJobsPage: React.FC = () => {
                     job={job}
                     isSelected={selectedJob?.id === job.id}
                     onClick={() => handleJobClick(job)}
+                    hasTest={hasTestResult}
                   />
                 ))}
               </div>
@@ -268,7 +282,7 @@ const MyJobsPage: React.FC = () => {
 };
 
 // --- Initial List View Item (Image 2 Style) ---
-const JobRowItem: React.FC<{ job: Job; onClick: () => void }> = ({ job, onClick }) => (
+const JobRowItem: React.FC<{ job: Job; onClick: () => void; hasTest?: boolean }> = ({ job, onClick, hasTest = false }) => (
   <div className="bg-white rounded-2xl p-6 mb-4 flex items-center justify-between shadow-sm border border-gray-100 hover:shadow-md transition-all">
     <div className="flex items-center gap-6">
       {/* Logo */}
@@ -280,9 +294,15 @@ const JobRowItem: React.FC<{ job: Job; onClick: () => void }> = ({ job, onClick 
       <div>
         <div className="flex items-center gap-3 mb-1">
           <h3 className="font-bold text-[#2563EB] text-lg">{job.title}</h3>
-          <span className="bg-blue-50 text-blue-600 text-xs font-bold px-3 py-1 rounded-full border border-blue-100">
-            {job.match_score || 90}% de aderência
-          </span>
+          {hasTest ? (
+            <span className="bg-blue-50 text-blue-600 text-xs font-bold px-3 py-1 rounded-full border border-blue-100">
+              {job.match_score || 90}% de aderência
+            </span>
+          ) : (
+            <span className="bg-gray-50 text-gray-400 text-[10px] font-bold px-3 py-1 rounded-full border border-gray-100">
+              (Teste não realizado)
+            </span>
+          )}
         </div>
         <p className="text-gray-500 text-sm">
           {job.company_name || 'Empresa Confidencial'} • {job.location}
@@ -292,9 +312,11 @@ const JobRowItem: React.FC<{ job: Job; onClick: () => void }> = ({ job, onClick 
 
     {/* Right Side */}
     <div className="flex items-center gap-10">
-      <span className="text-gray-400 text-sm hidden lg:block">
-        A média de % para essa vaga é de {job.match_score || 90}%
-      </span>
+      {hasTest && (
+        <span className="text-gray-400 text-sm hidden lg:block">
+          A média de % para essa vaga é de {job.match_score || 90}%
+        </span>
+      )}
       <button
         onClick={onClick}
         className="text-[#F04E23] font-bold hover:underline whitespace-nowrap"
@@ -306,7 +328,7 @@ const JobRowItem: React.FC<{ job: Job; onClick: () => void }> = ({ job, onClick 
 );
 
 // --- Master-Detail Sidebar Item (Image 3 List Style) ---
-const JobSidebarItem: React.FC<{ job: Job; isSelected: boolean; onClick: () => void }> = ({ job, isSelected, onClick }) => (
+const JobSidebarItem: React.FC<{ job: Job; isSelected: boolean; onClick: () => void; hasTest?: boolean }> = ({ job, isSelected, onClick, hasTest = false }) => (
   <div
     onClick={onClick}
     className={`p-6 rounded-2xl border cursor-pointer transition-all hover:shadow-md mb-4
@@ -340,11 +362,17 @@ const JobSidebarItem: React.FC<{ job: Job; isSelected: boolean; onClick: () => v
         </div>
 
         <div className="flex justify-between items-center mt-4">
-          <span className={`text-xs font-bold px-3 py-1 rounded-full border 
-               ${job.match_score && job.match_score >= 80 ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-orange-50 text-orange-600 border-orange-100'}
-           `}>
-            {job.match_score || 0}% de aderência
-          </span>
+          {hasTest ? (
+            <span className={`text-xs font-bold px-3 py-1 rounded-full border 
+                ${job.match_score && job.match_score >= 80 ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-orange-50 text-orange-600 border-orange-100'}
+            `}>
+              {job.match_score || 0}% de aderência
+            </span>
+          ) : (
+            <span className="text-[10px] font-bold px-3 py-1 rounded-full border border-gray-100 bg-gray-50 text-gray-400">
+              (Teste não realizado)
+            </span>
+          )}
         </div>
       </div>
     </div>

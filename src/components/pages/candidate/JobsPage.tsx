@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   Search, ChevronDown, MapPin, DollarSign, Clock, Briefcase,
   ChevronRight, Calendar, ChevronLeft, ArrowRight
@@ -34,6 +35,7 @@ interface Job {
 }
 
 const JobsPage: React.FC = () => {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
@@ -41,6 +43,7 @@ const JobsPage: React.FC = () => {
   const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hasTestResult, setHasTestResult] = useState(false);
   const [viewAllMode, setViewAllMode] = React.useState(false);
   const [currentPage, setCurrentPage] = React.useState(1);
   const [sidebarPage, setSidebarPage] = React.useState(1);
@@ -87,7 +90,19 @@ const JobsPage: React.FC = () => {
 
   useEffect(() => {
     fetchJobs();
-  }, []);
+    if (user) checkTestResult();
+  }, [user]);
+
+  const checkTestResult = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from('candidate_test_results')
+      .select('id')
+      .eq('user_id', user.id)
+      .not('completed_at', 'is', null)
+      .limit(1);
+    setHasTestResult(!!data && data.length > 0);
+  };
 
   useEffect(() => {
     applyFilters();
@@ -358,7 +373,7 @@ const JobsPage: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
               {currentJobs.map(job => (
-                <JobGridCard key={job.id} job={job} onClick={() => setSelectedJob(job)} />
+                <JobGridCard key={job.id} job={job} onClick={() => setSelectedJob(job)} hasTest={hasTestResult} />
               ))}
             </div>
 
@@ -405,7 +420,7 @@ const JobsPage: React.FC = () => {
                   .slice((sidebarPage - 1) * SIDEBAR_ITEMS_PER_PAGE, sidebarPage * SIDEBAR_ITEMS_PER_PAGE)
                   .map(job => (
                     <div key={job.id} onClick={() => setSelectedJob(job)}>
-                      <JobGridCard job={job} onClick={() => { }} compact />
+                      <JobGridCard job={job} onClick={() => { }} compact hasTest={hasTestResult} />
                     </div>
                   ))}
               </div>
@@ -470,13 +485,13 @@ const JobSection: React.FC<{ title: string, subtitle?: string, jobs: Job[], onSe
 
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
       {jobs.slice(0, 3).map(job => (
-        <JobGridCard key={job.id} job={job} onClick={() => onSelect(job)} />
+        <JobGridCard key={job.id} job={job} onClick={() => onSelect(job)} hasTest={true} /> // Highlights always show score or we can pass actual state
       ))}
     </div>
   </section>
 );
 
-const JobGridCard: React.FC<{ job: Job, onClick: () => void, compact?: boolean }> = ({ job, onClick, compact }) => {
+const JobGridCard: React.FC<{ job: Job, onClick: () => void, compact?: boolean, hasTest?: boolean }> = ({ job, onClick, compact, hasTest = false }) => {
   const formatSalary = (min: number, max: number) => {
     if (!min && !max) return 'A combinar';
     return `R$ ${min || max}`;
@@ -538,9 +553,15 @@ const JobGridCard: React.FC<{ job: Job, onClick: () => void, compact?: boolean }
 
       {/* Adherence Pill - Centered */}
       <div className={`w-full flex justify-center mb-4 ${compact ? 'mb-2' : ''}`}>
-        <span className={`text-xs font-bold px-3 py-1 rounded-full border ${adherenceColor(score)}`}>
-          {score}% de aderência
-        </span>
+        {hasTest ? (
+          <span className={`text-xs font-bold px-3 py-1 rounded-full border ${adherenceColor(score)}`}>
+            {score}% de aderência
+          </span>
+        ) : (
+          <span className="text-[10px] font-bold px-3 py-1 rounded-full border border-gray-100 bg-gray-50 text-gray-400">
+            (Teste não realizado)
+          </span>
+        )}
       </div>
 
       {/* Footer */}
