@@ -331,33 +331,38 @@ const JobsPage: React.FC = () => {
             )}
 
             {/* Job Lists */}
-            {filteredJobs.length > 0 && (
+            {sortedJobs.length > 0 && (
               <div className="flex flex-col gap-12">
                 <JobSection
                   title="Destaques para você"
                   subtitle="Baseado no seu perfil"
-                  jobs={filteredJobs.slice(0, 3)}
+                  jobs={sortedJobs.slice(0, 3)}
                   onSelect={setSelectedJob}
                   onViewAll={handleViewAll}
                   hasTest={hasTestResult}
                 />
 
-                <JobSection
-                  title="Vagas recentes"
-                  jobs={filteredJobs}
-                  onSelect={setSelectedJob}
-                  onViewAll={handleViewAll}
-                  hasTest={hasTestResult}
-                />
+                {sortedJobs.length > 3 && (
+                  <JobSection
+                    title="Vagas recentes"
+                    subtitle="Novas oportunidades para você"
+                    jobs={sortedJobs.slice(3, 9)}
+                    onSelect={setSelectedJob}
+                    onViewAll={handleViewAll}
+                    hasTest={hasTestResult}
+                  />
+                )}
 
-                <JobSection
-                  title="Recomendadas para você"
-                  subtitle="Sugestões baseadas nas suas preferências"
-                  jobs={[...filteredJobs].reverse()}
-                  onSelect={setSelectedJob}
-                  onViewAll={handleViewAll}
-                  hasTest={hasTestResult}
-                />
+                {sortedJobs.length > 9 && (
+                  <JobSection
+                    title="Recomendadas para você"
+                    subtitle="Sugestões baseadas nas suas preferências"
+                    jobs={sortedJobs.slice(9, 15)}
+                    onSelect={setSelectedJob}
+                    onViewAll={handleViewAll}
+                    hasTest={hasTestResult}
+                  />
+                )}
               </div>
             )}
           </div>
