@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapPin, DollarSign, Clock, Briefcase, Calendar, CheckCircle2, Share2, Bookmark, Flag, HelpCircle, TriangleAlert } from 'lucide-react';
-import { ReportFormModal, ReportSuccessModal, LowMatchModal, BehavioralTestModal, IncompleteProfileModal, ApplySuccessModal, SaveSuccessModal } from './JobModals';
+import { ReportFormModal, ReportSuccessModal, LowMatchModal, BehavioralTestModal, IncompleteProfileModal, ApplySuccessModal, SaveSuccessModal, RemoveSaveConfirmModal } from './JobModals';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { calculateJobMatch } from '@/utils/matchingUtils';
@@ -38,6 +38,7 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
     const [showApplyWarning, setShowApplyWarning] = useState(false);
     const [showApplySuccess, setShowApplySuccess] = useState(false);
     const [showSaveSuccess, setShowSaveSuccess] = useState(false);
+    const [showRemoveSaveConfirm, setShowRemoveSaveConfirm] = useState(false);
     const [showIncompleteProfile, setShowIncompleteProfile] = useState(false);
     const [missingRequirements, setMissingRequirements] = useState<string[]>([]);
     const [isProfileComplete, setIsProfileComplete] = useState(false);
@@ -132,13 +133,9 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
         setSaving(true);
         try {
             if (isSaved) {
-                // Unsave
-                const { error } = await supabase
-                    .from('saved_jobs')
-                    .delete()
-                    .eq('user_id', user.id)
-                    .eq('job_id', job.id);
-                if (!error) setIsSaved(false);
+                // Show confirmation modal instead of immediate delete
+                setShowRemoveSaveConfirm(true);
+                return; // Stop here, delete happens in confirmUnsave
             } else {
                 // Save
                 const { error } = await supabase
@@ -165,6 +162,24 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
             </div>
         );
     }
+
+    const confirmUnsave = async () => {
+        if (!user) return;
+        try {
+            const { error } = await supabase
+                .from('saved_jobs')
+                .delete()
+                .eq('user_id', user.id)
+                .eq('job_id', job.id);
+            
+            if (!error) {
+                setIsSaved(false);
+                setShowRemoveSaveConfirm(false);
+            }
+        } catch (err) {
+            console.error('Error unsaving job:', err);
+        }
+    };
 
     const handleApply = async () => {
         if (!user || !job) return;
@@ -561,6 +576,13 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
             {showSaveSuccess && (
                 <SaveSuccessModal
                     onClose={() => setShowSaveSuccess(false)}
+                />
+            )}
+
+            {showRemoveSaveConfirm && (
+                <RemoveSaveConfirmModal
+                    onConfirm={confirmUnsave}
+                    onClose={() => setShowRemoveSaveConfirm(false)}
                 />
             )}
         </>

@@ -171,3 +171,33 @@ export const SaveSuccessModal: React.FC<{ onClose: () => void }> = ({ onClose })
     </ModalOverlay>
 );
 
+// --- 7. Remove Saved Job Confirmation Modal ---
+export const RemoveSaveConfirmModal: React.FC<{ onConfirm: () => void, onClose: () => void }> = ({ onConfirm, onClose }) => (
+    <ModalOverlay onClose={onClose}>
+        <div className="flex flex-col items-center text-center">
+            <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-6 text-red-500">
+                <TriangleAlert size={32} />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">Remover vaga?</h3>
+            <p className="text-gray-600 mb-8 leading-relaxed text-sm">
+                Ao remover esta vaga da sua lista de salvos, você <span className="text-red-500 font-bold">deixará de receber notificações</span> internas sobre atualizações e movimentações deste processo seletivo.
+            </p>
+            <div className="flex flex-col w-full gap-3">
+                <button 
+                    onClick={onConfirm}
+                    className="w-full py-3.5 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-red-500/20"
+                >
+                    Sim, remover e parar monitoramento
+                </button>
+                <button 
+                    onClick={onClose}
+                    className="w-full py-3.5 bg-gray-50 hover:bg-gray-100 text-gray-500 font-bold rounded-xl transition-all"
+                >
+                    Manter vaga salva
+                </button>
+            </div>
+        </div>
+    </ModalOverlay>
+);
+
+
