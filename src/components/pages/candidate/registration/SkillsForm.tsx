@@ -217,25 +217,31 @@ const SkillsForm: React.FC<SkillsFormProps> = ({ onNext, readOnly = false, canEd
                         </div>
 
                         {/* Rede Sociais - Nova Estrutura em Lista/Colunas */}
+                        <div className="space-y-                        {/* Rede Sociais - Fluxo de Adicionar sob demanda */}
                         <div className="space-y-6">
                             <div>
                                 <label className="block text-[11px] font-black text-gray-400 mb-6 uppercase tracking-wider">Rede sociais</label>
+                                
                                 <div className="grid grid-cols-1 gap-4">
+                                    {/* Lista de redes já ativas (com valor ou selecionadas para adicionar) */}
                                     {SOCIAL_PLATFORMS.map(platform => {
                                         const key = platform.name.toLowerCase();
                                         const value = (formData as any)[key] || '';
                                         
+                                        // Só mostra se houver valor ou se estivermos em modo de edição e a rede foi "ativada" (usando um estado auxiliar ou apenas checando o valor)
+                                        // Para simplificar, vamos mostrar as que possuem valor. 
+                                        if (!value && !isEditing) return null;
+                                        if (!value && isEditing && !(formData as any)[`show_${key}`]) return null;
+
                                         return (
-                                            <div key={key} className="group flex flex-col md:flex-row md:items-center gap-4 p-4 rounded-2xl border border-gray-100 bg-white hover:border-[#F04E23]/30 transition-all duration-300">
-                                                {/* Coluna 1: Nome e Ícone */}
+                                            <div key={key} className="group flex flex-col md:flex-row md:items-center gap-4 p-4 rounded-2xl border border-gray-100 bg-white hover:border-[#F04E23]/30 transition-all duration-300 animate-in zoom-in duration-300">
                                                 <div className="flex items-center gap-4 md:w-48 shrink-0">
-                                                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg transition-transform group-hover:scale-110" style={{ backgroundColor: platform.color }}>
+                                                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg" style={{ backgroundColor: platform.color }}>
                                                         <platform.icon size={20} />
                                                     </div>
                                                     <span className="font-black text-gray-900 text-sm tracking-tight">{platform.name}</span>
                                                 </div>
 
-                                                {/* Coluna 2: Input do link */}
                                                 <div className="relative flex-1">
                                                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-[11px] font-bold pointer-events-none">
                                                         {platform.domain}
@@ -247,10 +253,18 @@ const SkillsForm: React.FC<SkillsFormProps> = ({ onNext, readOnly = false, canEd
                                                             const handle = e.target.value.replace(`https://${platform.domain}`, '').replace(`http://${platform.domain}`, '');
                                                             setFormData({ ...formData, [key as any]: handle ? `https://${platform.domain}${handle}` : '' });
                                                         }}
-                                                        className="w-full pl-[calc(4ch+2rem)] pr-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white focus:border-[#F04E23] outline-none text-gray-800 font-bold text-sm transition-all"
+                                                        className="w-full pl-[calc(4ch+2rem)] pr-12 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white focus:border-[#F04E23] outline-none text-gray-800 font-bold text-sm transition-all"
                                                         placeholder="seu_usuario"
-                                                        style={{ paddingLeft: `${platform.domain.length + 2}ch` }} // Dynamic padding based on domain length
+                                                        style={{ paddingLeft: `${platform.domain.length + 2}ch` }}
                                                     />
+                                                    {isEditing && (
+                                                        <button 
+                                                            onClick={() => setFormData({ ...formData, [key as any]: '', [`show_${key}` as any]: false })}
+                                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-red-500 transition-colors"
+                                                        >
+                                                            <X size={18} />
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </div>
                                         );
@@ -258,7 +272,7 @@ const SkillsForm: React.FC<SkillsFormProps> = ({ onNext, readOnly = false, canEd
 
                                     {/* Outros links personalizados */}
                                     {formData.others?.map((other, idx) => (
-                                        <div key={idx} className="group flex flex-col md:flex-row md:items-center gap-4 p-4 rounded-2xl border border-gray-100 bg-white hover:border-[#F04E23]/30 transition-all duration-300 animate-in zoom-in duration-300">
+                                        <div key={idx} className="group flex flex-col md:flex-row md:items-center gap-4 p-4 rounded-2xl border border-gray-100 bg-white hover:border-[#F04E23]/30 transition-all duration-300">
                                             <div className="flex items-center gap-4 md:w-48 shrink-0">
                                                 <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400 shadow-sm group-hover:bg-gray-200 transition-colors">
                                                     <Globe size={20} />
@@ -296,17 +310,36 @@ const SkillsForm: React.FC<SkillsFormProps> = ({ onNext, readOnly = false, canEd
                                         </div>
                                     ))}
 
-                                    {/* Botão para adicionar outro link */}
-                                    <button
-                                        type="button"
-                                        onClick={() => setFormData({ ...formData, others: [...formData.others, { name: 'Outro', url: '' }] })}
-                                        className="mt-2 flex items-center gap-2 text-gray-400 hover:text-[#F04E23] font-bold text-sm px-4 py-2 hover:bg-orange-50 rounded-xl transition-all self-start"
-                                    >
-                                        <Plus size={18} /> Adicionar rede personalizada
-                                    </button>
+                                    {/* Seletor para adicionar novas redes */}
+                                    {isEditing && (
+                                        <div className="flex flex-wrap gap-3 pt-4">
+                                            <div className="relative group">
+                                                <select
+                                                    onChange={(e) => {
+                                                        if (e.target.value === 'custom') {
+                                                            setFormData({ ...formData, others: [...formData.others, { name: 'Outro', url: '' }] });
+                                                        } else if (e.target.value) {
+                                                            setFormData({ ...formData, [`show_${e.target.value.toLowerCase()}` as any]: true });
+                                                        }
+                                                        e.target.value = '';
+                                                    }}
+                                                    className="appearance-none bg-white border-2 border-dashed border-gray-200 hover:border-[#F04E23] text-gray-400 hover:text-[#F04E23] font-black text-sm px-6 py-3 rounded-2xl transition-all cursor-pointer pr-10 outline-none"
+                                                >
+                                                    <option value="">+ Adicionar rede social</option>
+                                                    {SOCIAL_PLATFORMS.filter(p => !(formData as any)[p.name.toLowerCase()]).map(p => (
+                                                        <option key={p.name} value={p.name}>{p.name}</option>
+                                                    ))}
+                                                    <option value="custom">Outro link (Personalizado)</option>
+                                                </select>
+                                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 group-hover:text-[#F04E23]">
+                                                    <Plus size={18} />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
-                        </div>
+                        </div></div>
 
                         {/* Treinamentos - Multiline Full Width like Reference */}
                         <div>
