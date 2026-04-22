@@ -48,7 +48,8 @@ export const BehavioralTestModal: React.FC<{ onRespond: () => void, onLater: () 
 );
 
 // --- 2. Low Profile Match Warning ---
-export const LowMatchModal: React.FC<{ onApply: () => void, onEdit: () => void, onClose: () => void }> = ({ onApply, onEdit, onClose }) => (
+// --- 2. Low Profile Match Warning ---
+export const LowMatchModal: React.FC<{ onApply: () => void, onEdit: () => void, onClose: () => void, canApply?: boolean }> = ({ onApply, onEdit, onClose, canApply = true }) => (
     <ModalOverlay onClose={onClose}>
         <div className="flex flex-col items-center text-center">
             <div className="w-16 h-16 bg-[#FEF3C7] rounded-full flex items-center justify-center mb-6 text-[#D97706]">
@@ -58,8 +59,39 @@ export const LowMatchModal: React.FC<{ onApply: () => void, onEdit: () => void, 
             <p className="text-gray-600 mb-8 leading-relaxed text-sm">
                 Suas informações profissionais não estão alinhadas com o perfil buscado pela empresa.
             </p>
-            <PrimaryButton onClick={onApply}>Candidatar-se</PrimaryButton>
+            {canApply ? (
+                <PrimaryButton onClick={onApply}>Candidatar-se</PrimaryButton>
+            ) : (
+                <div className="w-full bg-gray-100 text-gray-400 font-bold py-3.5 rounded-xl mb-3 cursor-not-allowed">
+                    Candidatar-se (Perfil Incompleto)
+                </div>
+            )}
             <SecondaryButton onClick={onEdit}>Editar currículo</SecondaryButton>
+        </div>
+    </ModalOverlay>
+);
+
+// --- 2.1 Incomplete Profile Warning ---
+export const IncompleteProfileModal: React.FC<{ onEdit: () => void, onClose: () => void, missingItems: string[] }> = ({ onEdit, onClose, missingItems }) => (
+    <ModalOverlay onClose={onClose}>
+        <div className="flex flex-col items-center text-center">
+            <div className="w-16 h-16 bg-[#FEE2E2] rounded-full flex items-center justify-center mb-6 text-[#DC2626]">
+                <TriangleAlert size={32} />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">Perfil Incompleto</h3>
+            <p className="text-gray-600 mb-4 leading-relaxed text-sm">
+                Você precisa completar seu perfil antes de se candidatar. Itens pendentes:
+            </p>
+            <ul className="text-left w-full mb-8 space-y-2">
+                {missingItems.map((item, i) => (
+                    <li key={i} className="flex items-center gap-2 text-red-600 text-xs font-bold">
+                        <div className="w-1.5 h-1.5 rounded-full bg-red-600 shrink-0" />
+                        {item}
+                    </li>
+                ))}
+            </ul>
+            <PrimaryButton onClick={onEdit}>Completar perfil agora</PrimaryButton>
+            <SecondaryButton onClick={onClose}>Voltar</SecondaryButton>
         </div>
     </ModalOverlay>
 );

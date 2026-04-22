@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, DollarSign, Clock, Briefcase, Calendar, CheckCircle2, Share2, Bookmark, Flag, HelpCircle } from 'lucide-react';
-import { ReportFormModal, ReportSuccessModal, LowMatchModal, BehavioralTestModal } from './JobModals';
+import { useNavigate } from 'react-router-dom';
+import { MapPin, DollarSign, Clock, Briefcase, Calendar, CheckCircle2, Share2, Bookmark, Flag, HelpCircle, TriangleAlert } from 'lucide-react';
+import { ReportFormModal, ReportSuccessModal, LowMatchModal, BehavioralTestModal, IncompleteProfileModal } from './JobModals';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -33,16 +34,47 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
     // Modal States
     const [showReportForm, setShowReportForm] = useState(false);
     const [showReportSuccess, setShowReportSuccess] = useState(false);
-    const [showApplyWarning, setShowApplyWarning] = useState(false); // Can swap this with BehavioralTestModal for testing
+    const [showApplyWarning, setShowApplyWarning] = useState(false);
+    const [showIncompleteProfile, setShowIncompleteProfile] = useState(false);
+    const [missingRequirements, setMissingRequirements] = useState<string[]>([]);
+    const [isProfileComplete, setIsProfileComplete] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
     const [saving, setSaving] = useState(false);
     const { user } = useAuth();
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (job && user) {
             checkIfSaved();
+            checkProfileCompletion();
         }
     }, [job, user]);
+
+    const checkProfileCompletion = async () => {
+        if (!user) return;
+        
+        try {
+            const [profileRes, eduRes, expRes, testRes] = await Promise.all([
+                supabase.from('profiles').select('full_name, cpf, phone').eq('id', user.id).single(),
+                supabase.from('academic_education').select('id').eq('user_id', user.id).limit(1),
+                supabase.from('professional_experience').select('id').eq('user_id', user.id).limit(1),
+                supabase.from('candidate_test_results').select('id').eq('user_id', user.id).not('completed_at', 'is', null).limit(1)
+            ]);
+
+            const missing = [];
+            const p = profileRes.data;
+            
+            if (!p?.full_name || !p?.cpf || !p?.phone) missing.push('Dados pessoais (Nome, CPF ou Telefone)');
+            if (!eduRes.data || eduRes.data.length === 0) missing.push('Formação acadêmica');
+            if (!expRes.data || expRes.data.length === 0) missing.push('Experiência profissional');
+            if (!testRes.data || testRes.data.length === 0) missing.push('Teste comportamental (Big Five)');
+
+            setMissingRequirements(missing);
+            setIsProfileComplete(missing.length === 0);
+        } catch (err) {
+            console.error('Error checking profile completion:', err);
+        }
+    };
 
     const checkIfSaved = async () => {
         if (!job || !user) return;
@@ -97,8 +129,11 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
     }
 
     const handleApply = () => {
-        // Simulate logic: Randomly show "Low Profile" warning or just succeed
-        // For demo purposes, let's show the Low Match Warning
+        if (!isProfileComplete) {
+            setShowIncompleteProfile(true);
+            return;
+        }
+        // If complete, show the match warning (or proceed to apply)
         setShowApplyWarning(true);
     };
 
@@ -336,8 +371,17 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
             {showApplyWarning && (
                 <LowMatchModal
                     onApply={() => { setShowApplyWarning(false); alert('Candidatura enviada!'); }}
-                    onEdit={() => setShowApplyWarning(false)}
+                    onEdit={() => { setShowApplyWarning(false); navigate('/app/profile'); }}
                     onClose={() => setShowApplyWarning(false)}
+                    canApply={isProfileComplete}
+                />
+            )}
+
+            {showIncompleteProfile && (
+                <IncompleteProfileModal
+                    missingItems={missingRequirements}
+                    onEdit={() => { setShowIncompleteProfile(false); navigate('/app/profile'); }}
+                    onClose={() => setShowIncompleteProfile(false)}
                 />
             )}
         </>
