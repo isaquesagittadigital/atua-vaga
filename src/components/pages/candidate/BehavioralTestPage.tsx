@@ -112,15 +112,14 @@ const BehavioralTestPage: React.FC = () => {
       let currentId = testId;
 
       if (!currentId) {
-        const { data: defaultTest } = await supabase
-          .from('behavioral_tests')
-          .select('id')
-          .eq('title', 'Mapeamento de Perfil Comportamental (Big Five)')
-          .single();
-        currentId = defaultTest?.id || (await supabase.from('behavioral_tests').select('id').limit(1).single()).data?.id;
+        // Fallback: try to get any test
+        const { data: anyTest } = await supabase.from('behavioral_tests').select('id').limit(1).maybeSingle();
+        currentId = anyTest?.id;
       }
-
-      if (!currentId) throw new Error('Nenhum teste encontrado.');
+      
+      if (!currentId) {
+        throw new Error('Nenhum teste comportamental foi encontrado no banco de dados.');
+      }
       setActiveTestId(currentId);
 
       // Fetch Info & Questions
@@ -142,8 +141,9 @@ const BehavioralTestPage: React.FC = () => {
         }).select().single();
         if (newRes) setResultId(newRes.id);
       }
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      console.error('Erro detalhado no teste:', error);
+      alert(`Erro ao iniciar o teste: ${error.message || 'Falha na conexão com o banco de dados'}. Verifique se as tabelas de teste estão populadas.`);
       setView('LIST');
     } finally {
       setLoading(false);
