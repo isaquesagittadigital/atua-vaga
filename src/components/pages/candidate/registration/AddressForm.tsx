@@ -26,6 +26,7 @@ const AddressForm: React.FC<AddressFormProps> = ({ onNext, onBack, readOnly = fa
         state: '',
         street: '',
         number: '',
+        complement: '',
         neighborhood: ''
     });
 
@@ -37,6 +38,7 @@ const AddressForm: React.FC<AddressFormProps> = ({ onNext, onBack, readOnly = fa
                 state: userProfile.state || '',
                 street: userProfile.street || '',
                 number: userProfile.number || '',
+                complement: userProfile.complement || '',
                 neighborhood: userProfile.neighborhood || ''
             });
         }
@@ -84,6 +86,7 @@ const AddressForm: React.FC<AddressFormProps> = ({ onNext, onBack, readOnly = fa
                     state: formData.state,
                     street: formData.street,
                     number: formData.number,
+                    complement: formData.complement,
                     neighborhood: formData.neighborhood
                 })
                 .eq('id', user.id);
@@ -161,6 +164,18 @@ const AddressForm: React.FC<AddressFormProps> = ({ onNext, onBack, readOnly = fa
                                 className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-[#F04E23] outline-none text-gray-800 font-medium"
                                 placeholder="123"
                                 required
+                            />
+                        </div>
+
+                        {/* Complemento */}
+                        <div>
+                            <label className="block text-[11px] font-black text-gray-400 mb-2">Complemento</label>
+                            <input
+                                type="text"
+                                value={formData.complement}
+                                onChange={(e) => handleChange('complement', e.target.value)}
+                                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-[#F04E23] outline-none text-gray-800 font-medium"
+                                placeholder="Apto, Bloco, etc."
                             />
                         </div>
 

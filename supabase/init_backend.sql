@@ -57,6 +57,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     neighborhood TEXT,
     street TEXT,
     number TEXT,
+    complement TEXT,
     cnh BOOLEAN DEFAULT false,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
