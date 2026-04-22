@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FileText, ChevronRight, PieChart, ClipboardCheck, ArrowUpRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
@@ -140,10 +140,21 @@ const BehavioralResults: React.FC = () => {
                         })}
                     </div>
                 ) : (
-                    <div className="bg-gray-50/50 rounded-3xl p-12 text-center border border-gray-300">
-                        <FileText className="text-gray-300 mx-auto mb-4" size={32} />
-                        <h3 className="text-lg font-black text-gray-900">Nenhum teste concluído</h3>
-                        <p className="text-gray-400 font-bold text-sm mt-1">Conclua avaliações para ver seus insights aqui.</p>
+                    <div className="bg-gray-50/50 rounded-[32px] p-16 text-center border border-gray-300 animate-in fade-in zoom-in duration-500">
+                        <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border border-gray-100">
+                            <FileText className="text-gray-300" size={32} />
+                        </div>
+                        <h3 className="text-xl font-black text-gray-900">Nenhum teste concluído</h3>
+                        <p className="text-gray-400 font-bold text-sm mt-2 mb-8 max-w-[280px] mx-auto">Conclua avaliações para ver seus insights comportamentais aqui.</p>
+                        
+                        <button
+                            onClick={() => navigate('/app/behavioral-test')}
+                            className="inline-flex items-center gap-2 px-8 py-4 bg-[#F04E23] text-white rounded-2xl font-black text-sm hover:bg-[#d63e19] transition-all hover:scale-105 active:scale-95 shadow-xl shadow-orange-100"
+                        >
+                            <ClipboardCheck size={18} />
+                            Realizar Avaliação
+                            <ChevronRight size={18} className="opacity-50" />
+                        </button>
                     </div>
                 )}
             </div>
