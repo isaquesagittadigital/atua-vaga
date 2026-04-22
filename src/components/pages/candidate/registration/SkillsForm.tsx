@@ -80,7 +80,6 @@ const SkillsForm: React.FC<SkillsFormProps> = ({ onNext, readOnly = false, canEd
                     availability_move: profile.availability_move || false,
                     availability_sleep: profile.availability_sleep || false
                 });
-                const socials = profile.social_links as any || {};
                 setLanguages(socials.languages || []);
             }
         }
