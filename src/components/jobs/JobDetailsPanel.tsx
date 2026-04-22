@@ -161,13 +161,49 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
         );
     }
 
-    const handleApply = () => {
+    const handleApply = async () => {
+        if (!user || !job) return;
+
         if (!isProfileComplete) {
             setShowIncompleteProfile(true);
             return;
         }
-        // If complete, show the match warning (or proceed to apply)
-        setShowApplyWarning(true);
+
+        // Only show warning if match is really low (below 70%)
+        if (matchScore < 70) {
+            setShowApplyWarning(true);
+        } else {
+            // Apply directly for high match candidates
+            await submitApplication();
+        }
+    };
+
+    const submitApplication = async () => {
+        if (!user || !job) return;
+        
+        try {
+            const { error } = await supabase
+                .from('job_applications')
+                .insert({
+                    user_id: user.id,
+                    job_id: job.id,
+                    status: 'applied'
+                });
+
+            if (error) {
+                if (error.code === '23505') {
+                    alert('Você já se candidatou a esta vaga.');
+                } else {
+                    throw error;
+                }
+            } else {
+                alert('Candidatura enviada com sucesso!');
+                window.location.reload(); // Refresh to show applied state
+            }
+        } catch (err) {
+            console.error('Error applying:', err);
+            alert('Erro ao enviar candidatura.');
+        }
     };
 
     const handleReport = () => {
@@ -469,7 +505,7 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
 
             {showApplyWarning && (
                 <LowMatchModal
-                    onApply={() => { setShowApplyWarning(false); alert('Candidatura enviada!'); }}
+                    onApply={async () => { setShowApplyWarning(false); await submitApplication(); }}
                     onEdit={() => { setShowApplyWarning(false); navigate('/app/profile'); }}
                     onClose={() => setShowApplyWarning(false)}
                     canApply={isProfileComplete}
