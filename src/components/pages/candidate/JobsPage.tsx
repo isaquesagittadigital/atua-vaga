@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import JobsFilterBar from '@/components/jobs/JobsFilterBar';
 import JobDetailsPanel from '@/components/jobs/JobDetailsPanel';
+import { calculateJobMatch } from '@/utils/matchingUtils';
 
 interface Job {
   id: string;
@@ -136,7 +137,7 @@ const JobsPage: React.FC = () => {
         const formattedJobs = data.map((job: any) => ({
           ...job,
           company: job.companies?.name || 'Empresa Confidencial',
-          match_score: Math.floor(Math.random() * 40) + 60, // Mock match score
+          match_score: calculateJobMatch(job.id, user?.id),
           requirements: job.requirements || ['Experiência com React', 'TypeScript', 'TailwindCSS'] // Fallback reqs
         }));
         setJobs(formattedJobs);

@@ -4,6 +4,7 @@ import { MapPin, DollarSign, Clock, Briefcase, Calendar, CheckCircle2, Share2, B
 import { ReportFormModal, ReportSuccessModal, LowMatchModal, BehavioralTestModal, IncompleteProfileModal } from './JobModals';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
+import { calculateJobMatch } from '@/utils/matchingUtils';
 
 interface Job {
     id: string;
@@ -169,7 +170,7 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
     };
 
     const [hasTestResult, setHasTestResult] = useState(false);
-    const matchScore = job.match_score || 87; // Mock for now if test exists
+    const matchScore = calculateJobMatch(job.id, user?.id);
 
     return (
         <>

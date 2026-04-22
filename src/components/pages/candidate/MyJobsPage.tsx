@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ChevronLeft, MapPin, DollarSign, Clock, Briefcase, Calendar, Trash2 } from 'lucide-react';
 import JobDetailsPanel from '../../jobs/JobDetailsPanel';
 import ConfirmModal from '@/components/modals/ConfirmModal';
+import { calculateJobMatch } from '@/utils/matchingUtils';
 
 // Define Job Type
 interface Job {
@@ -64,6 +65,7 @@ const MyJobsPage: React.FC = () => {
           const jobs = data?.map((item: any) => ({
             ...item.jobs,
             company_name: item.jobs.companies?.name || 'Empresa Confidencial',
+            match_score: calculateJobMatch(item.jobs.id, user?.id)
           })) || [];
           setSavedJobs(jobs);
         }
@@ -119,6 +121,7 @@ const MyJobsPage: React.FC = () => {
             ...item.jobs,
             application_id: item.id,
             company_name: item.jobs.companies?.name || 'Empresa Confidencial',
+            match_score: calculateJobMatch(item.jobs.id, user?.id)
           })) || [];
           setAppliedJobs(jobs);
           
@@ -296,7 +299,7 @@ const JobRowItem: React.FC<{ job: Job; onClick: () => void; hasTest?: boolean }>
           <h3 className="font-bold text-[#2563EB] text-lg">{job.title}</h3>
           {hasTest ? (
             <span className="bg-blue-50 text-blue-600 text-xs font-bold px-3 py-1 rounded-full border border-blue-100">
-              {job.match_score || 90}% de aderência
+              {job.match_score}% de aderência
             </span>
           ) : (
             <span className="bg-gray-50 text-gray-400 text-[10px] font-bold px-3 py-1 rounded-full border border-gray-100">
@@ -314,7 +317,7 @@ const JobRowItem: React.FC<{ job: Job; onClick: () => void; hasTest?: boolean }>
     <div className="flex items-center gap-10">
       {hasTest && (
         <span className="text-gray-400 text-sm hidden lg:block">
-          A média de % para essa vaga é de {job.match_score || 90}%
+          A média de % para essa vaga é de {job.match_score}%
         </span>
       )}
       <button
@@ -366,7 +369,7 @@ const JobSidebarItem: React.FC<{ job: Job; isSelected: boolean; onClick: () => v
             <span className={`text-xs font-bold px-3 py-1 rounded-full border 
                 ${job.match_score && job.match_score >= 80 ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-orange-50 text-orange-600 border-orange-100'}
             `}>
-              {job.match_score || 0}% de aderência
+              {job.match_score}% de aderência
             </span>
           ) : (
             <span className="text-[10px] font-bold px-3 py-1 rounded-full border border-gray-100 bg-gray-50 text-gray-400">
