@@ -9,6 +9,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import OnboardingModal from '@/components/modals/OnboardingModal';
+import { calculateJobMatch } from '@/utils/matchingUtils';
 
 interface Job {
   id: string;
@@ -85,7 +86,7 @@ const JobCard = ({
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 const Dashboard: React.FC = () => {
-  const { user, profile } = useAuth();
+  const { user, profile, hasTestResult } = useAuth();
   const navigate = useNavigate();
 
   // Stats
@@ -214,8 +215,7 @@ const Dashboard: React.FC = () => {
 
       let allJobs: Job[] = ((allJobsData as any[]) ?? []).map(j => ({
         ...j,
-        // If match_score is null in DB, assign a mock one for demonstration (consistent with JobsPage)
-        match_score: j.match_score || (Math.floor(Math.random() * 30) + 70) 
+        match_score: calculateJobMatch(j.id, user?.id, tested) 
       }));
 
       // 1. Alerta de novas vagas (always top 3 by date)
