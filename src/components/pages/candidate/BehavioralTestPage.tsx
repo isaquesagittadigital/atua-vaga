@@ -170,26 +170,92 @@ const BehavioralTestPage: React.FC = () => {
 
   const calculateAndFinish = async () => {
     try {
-      if (!activeTestId || !resultId) return;
-      const apiUrl = import.meta.env.VITE_API_URL;
-      
-      if (!apiUrl) {
-        console.error('VITE_API_URL is not defined in environment variables.');
-        alert('Configuração de servidor ausente. Por favor, verifique as variáveis de ambiente (VITE_API_URL).');
-        return;
-      }
+      if (!activeTestId || !resultId || !user) return;
+      setLoading(true);
 
-      const { data: { session } } = await supabase.auth.getSession();
-      const response = await fetch(`${apiUrl}/tests/calculate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
-        body: JSON.stringify({ testId: activeTestId, responses })
+      // 1. Fetch Question categories to map responses to variables
+      const { data: questionsData, error: qError } = await supabase
+        .from('test_questions')
+        .select('id, category')
+        .eq('test_id', activeTestId);
+
+      if (qError) throw qError;
+
+      const variables: Record<string, number> = {};
+      questionsData?.forEach(q => {
+        if (q.category) {
+          variables[q.category] = responses[q.id] || 3;
+        }
       });
-      if (!response.ok) throw new Error('Erro ao calcular');
+
+      // 2. Formulas Implementation (Migrated from Backend)
+      const scores: Record<string, number> = {};
+      const v = (code: string) => variables[code] || 3;
+
+      // --- AMABILIDADE ---
+      scores['Confiança'] = (2 * v('A1') + (v('E1') + 2 * (v('E6') + v('A3')) + 2 * (6 - v('N1')) + 2 * (6 - v('A4')) + (6 - v('N4')))) / 60;
+      scores['Franqueza'] = (2 * v('A2') + 2 * (v('C3') + v('A1') + v('A3')) + 2 * ((6 - v('A4')) + (6 - v('N2'))) + v('A2')) / 65;
+      scores['Altruísmo'] = (2 * v('A3') + 2 * (v('A1') + v('E6') + v('A6')) + 2 * (v('N2') + v('E3')) + v('A5')) / 65;
+      scores['Complacência'] = (2 * v('A4') + 2 * v('A6') + v('A1') + v('A2') + 2 * (6 - v('E3')) + 2 * (6 - v('N2')) + (6 - v('C3'))) / 55;
+      scores['Modestia'] = (2 * v('A5') + 2 * (v('A6') + v('C3')) + v('A1') + 2 * (6 - v('E3')) + 2 * (6 - v('O1')) + v('N4')) / 60;
+      scores['Sensibilidade'] = (2 * v('A6') + 2 * (v('A3') + v('E6')) + v('A4') + 2 * (6 - v('E3')) + 2 * (6 - v('N1')) + (6 - v('C3'))) / 60;
+
+      // --- CONSCIENCIOSIDADE ---
+      scores['Competência'] = (2 * v('C1') + 2 * v('C5') + v('E3') + v('O5') + 2 * (6 - v('N1')) + (6 - v('N6')) + (6 - v('N3'))) / 50;
+      scores['Ordem'] = (2 * v('C2') + 2 * (v('C4') + v('C5')) + v('C6') + (6 - v('E5')) + (6 - v('N1')) + 2 * (6 - v('O5'))) / 55;
+      scores['Senso de dever'] = (2 * v('C3') + 2 * (v('C1') + v('C5')) + v('A4') + (6 - v('O6')) + 2 * (6 - v('N6')) + 2 * (6 - v('N2'))) / 60;
+      scores['Esforço por realizações'] = (2 * v('C4') + 2 * (v('C5') + v('C1')) + v('E3') + 2 * (6 - v('N6')) + 2 * (6 - v('N1')) + (6 - v('N2'))) / 60;
+      scores['Autodisciplina'] = (2 * v('C5') + 2 * (v('C4') + v('E3')) + v('C1') + 2 * (6 - v('E5')) + (6 - v('N5'))) / 50;
+      scores['Ponderação'] = (2 * v('C6') + 2 * (v('C5') + v('C1')) + v('C2') + 2 * (6 - v('N5')) + 2 * (6 - v('E5'))) / 55;
+
+      // --- EXTROVERSÃO ---
+      scores['Acolhimento'] = (2 * v('E1') + 2 * v('E2') + v('E3') + v('E4') + (6 - v('N4')) + (6 - v('N3')) + 2 * (6 - v('N2'))) / 50;
+      scores['Gregarismo'] = (2 * v('E2') + 2 * (v('E1') + v('E3')) + v('E4') + (6 - v('N3')) + (6 - v('C2')) + 2 * (6 - v('N4'))) / 55;
+      scores['Assertividade'] = (2 * v('E3') + 2 * (v('C1') + v('E4') + v('C5')) + 2 * ((6 - v('N1')) + (6 - v('N6')) + (6 - v('A4')))) / 70;
+      scores['Atividade'] = (2 * v('E4') + v('E2') + v('E3') + v('O4') + 2 * (6 - v('N3')) + (6 - v('N1')) + (6 - v('N6'))) / 45;
+      scores['Busca de sensações'] = (2 * v('E5') + 2 * (v('E6') + v('O4') + v('O2')) + 2 * ((6 - v('C6')) + (6 - v('N1')) + (6 - v('C2')))) / 70;
+      scores['Emoções Positivas'] = (2 * v('E6') + 2 * (v('E1') + v('E3')) + v('A3') + (6 - v('N1')) + 2 * (6 - v('N3')) + 2 * (6 - v('N6'))) / 60;
+
+      // --- NEUROTICISMO ---
+      scores['Ansiedade'] = (2 * v('N1') + 2 * (v('N3') + v('N4')) + v('C5') + 2 * ((6 - v('C1')) + (6 - v('A1')) + (6 - v('E3')))) / 65;
+      scores['Raiva'] = (2 * v('N2') + 2 * (v('E3') + v('N4')) + v('N3') + 2 * (6 - v('A1')) + 2 * (6 - v('A3'))) / 55;
+      scores['Depressão'] = (2 * v('N3') + 2 * (v('N1') + v('N6')) + v('O3') + 2 * (6 - v('E6')) + 2 * (6 - v('E4')) + (6 - v('C1'))) / 60;
+      scores['Embaraço'] = (2 * v('N4') + 2 * (v('A5') + v('N3') + v('N1')) + 2 * (6 - v('E3')) + 2 * (6 - v('A1')) + (6 - v('E2'))) / 65;
+      scores['Impulsividade'] = (2 * v('N5') + 2 * (v('E5') + v('N1')) + v('O4') + 2 * (6 - v('C5')) + 2 * (6 - v('C1')) + (6 - v('C3'))) / 60;
+      scores['Vulnerabilidade'] = (2 * v('N6') + 2 * (v('N1') + v('N3')) + v('O3') + 2 * ((6 - v('C1')) + (6 - v('E3')) + (6 - v('A2')))) / 65;
+
+      // --- ABERTURA ---
+      scores['Fantasia'] = (2 * v('O1') + 2 * v('O5') + v('E5') + v('O2') + 2 * ((6 - v('C6')) + (6 - v('C5')) + (6 - v('C2')))) / 60;
+      scores['Estética'] = (2 * v('O2') + 2 * v('O1') + v('O5') + v('O3') + 2 * (6 - v('C5')) + (6 - v('C2')) + (6 - v('E3'))) / 55;
+      scores['Sentimentos'] = (2 * v('O3') + 2 * (v('O1') + v('N1')) + v('E6') + 2 * (6 - v('E3')) + (6 - v('C2')) + (6 - v('C5'))) / 55;
+      scores['Ações Variadas'] = (2 * v('O4') + 2 * (v('O1') + v('E5')) + v('O6') + (6 - v('C6')) + 2 * (6 - v('C2')) + 2 * (6 - v('C5'))) / 60;
+      scores['Ideias'] = (2 * v('O5') + 2 * (v('O1') + v('O2')) + v('O6') + 2 * (6 - v('C2')) + 2 * (6 - v('C5')) + (6 - v('N1'))) / 60;
+      scores['Valores'] = (2 * v('O6') + 2 * (v('O1') + v('O5')) + v('A1') + (6 - v('C3')) + 2 * (6 - v('A4')) + 2 * (6 - v('C2'))) / 60;
+
+      // Normalize and Round
+      const normalizedScores: Record<string, number> = {};
+      Object.entries(scores).forEach(([key, val]) => {
+        normalizedScores[key] = Math.max(0, Math.min(100, Math.round(val * 100)));
+      });
+
+      // 3. Save to Supabase
+      const { error: updateError } = await supabase
+        .from('candidate_test_results')
+        .update({
+          responses: responses,
+          scores: normalizedScores,
+          completed_at: new Date().toISOString()
+        })
+        .eq('id', resultId);
+
+      if (updateError) throw updateError;
+
       setSuccessModalOpen(true);
     } catch (error) {
-      console.error(error);
-      alert('Houve um erro ao processar seus resultados. Verifique se o servidor backend está rodando.');
+      console.error('Calculation Error:', error);
+      alert('Houve um erro ao processar seus resultados. Por favor, tente novamente.');
+    } finally {
+      setLoading(false);
     }
   };
 
