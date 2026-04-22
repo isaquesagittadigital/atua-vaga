@@ -204,7 +204,6 @@ const Dashboard: React.FC = () => {
   const fetchJobSections = async (tested: boolean) => {
     try {
       // Fetch all open jobs to work with locally
-      // This is more robust as it avoids dependency on match_score being a DB column
       const { data: allJobsData, error } = await supabase
         .from('jobs')
         .select('*, companies(name, logo_url)')
@@ -213,10 +212,20 @@ const Dashboard: React.FC = () => {
 
       if (error) throw error;
 
-      let allJobs: Job[] = ((allJobsData as any[]) ?? []).map(j => ({
-        ...j,
-        match_score: calculateJobMatch(j.id, user?.id, tested) 
-      }));
+      // Fetch applied job IDs to hide them
+      const { data: appliedData } = await supabase
+        .from('job_applications')
+        .select('job_id')
+        .eq('user_id', user?.id);
+      
+      const appliedIds = new Set(appliedData?.map(a => a.job_id) || []);
+
+      let allJobs: Job[] = ((allJobsData as any[]) ?? [])
+        .filter(j => !appliedIds.has(j.id)) // Filter out already applied jobs
+        .map(j => ({
+          ...j,
+          match_score: calculateJobMatch(j.id, user?.id, tested) 
+        }));
 
       // 1. Alerta de novas vagas (always top 3 by date)
       const latestList = allJobs.slice(0, 3);
