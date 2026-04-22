@@ -154,3 +154,20 @@ export const ApplySuccessModal: React.FC<{ onClose: () => void }> = ({ onClose }
         </div>
     </ModalOverlay>
 );
+
+// --- 6. Job Saved Success Modal ---
+export const SaveSuccessModal: React.FC<{ onClose: () => void }> = ({ onClose }) => (
+    <ModalOverlay onClose={onClose}>
+        <div className="flex flex-col items-center text-center">
+            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-6 text-[#F04E23]">
+                <Bookmark size={32} className="fill-[#F04E23]" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">Vaga salva!</h3>
+            <p className="text-gray-600 mb-8 leading-relaxed text-sm">
+                Esta vaga foi salva com sucesso! Nosso sistema passará a monitorar esta oportunidade e você receberá notificações internas sobre qualquer atualização importante.
+            </p>
+            <PrimaryButton onClick={onClose}>Entendido</PrimaryButton>
+        </div>
+    </ModalOverlay>
+);
+

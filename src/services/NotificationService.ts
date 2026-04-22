@@ -69,5 +69,52 @@ export const NotificationService = {
         if (error) throw error;
     },
 
-    // Realtime subscription helper could go here later
+    /**
+     * Notifies all users who saved or applied to a specific job about an action taken by the company.
+     */
+    async notifyUsersOfJobAction(jobId: string, title: string, message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') {
+        try {
+            // 1. Get all candidates
+            const { data: candidates } = await supabase
+                .from('job_applications')
+                .select('user_id')
+                .eq('job_id', jobId);
+
+            // 2. Get all users who saved the job
+            const { data: observers } = await supabase
+                .from('saved_jobs')
+                .select('user_id')
+                .eq('job_id', jobId);
+
+            // 3. Combine into unique set of user IDs
+            const userIds = new Set([
+                ...(candidates?.map(c => c.user_id) || []),
+                ...(observers?.map(o => o.user_id) || [])
+            ]);
+
+            if (userIds.size === 0) return;
+
+            // 4. Create notifications in bulk
+            const notifications = Array.from(userIds).map(userId => ({
+                user_id: userId,
+                title,
+                message,
+                type,
+                read: false,
+                created_at: new Date().toISOString(),
+                link: `/app/jobs?id=${jobId}`
+            }));
+
+            const { error: notifyError } = await supabase
+                .from('notifications')
+                .insert(notifications);
+
+            if (notifyError) throw notifyError;
+
+            console.log(`Notified ${userIds.size} users about job ${jobId}`);
+        } catch (err) {
+            console.error('Error sending mass notifications:', err);
+        }
+    }
 };
+

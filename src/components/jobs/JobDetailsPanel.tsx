@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapPin, DollarSign, Clock, Briefcase, Calendar, CheckCircle2, Share2, Bookmark, Flag, HelpCircle, TriangleAlert } from 'lucide-react';
-import { ReportFormModal, ReportSuccessModal, LowMatchModal, BehavioralTestModal, IncompleteProfileModal, ApplySuccessModal } from './JobModals';
+import { ReportFormModal, ReportSuccessModal, LowMatchModal, BehavioralTestModal, IncompleteProfileModal, ApplySuccessModal, SaveSuccessModal } from './JobModals';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { calculateJobMatch } from '@/utils/matchingUtils';
@@ -37,6 +37,7 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
     const [showReportSuccess, setShowReportSuccess] = useState(false);
     const [showApplyWarning, setShowApplyWarning] = useState(false);
     const [showApplySuccess, setShowApplySuccess] = useState(false);
+    const [showSaveSuccess, setShowSaveSuccess] = useState(false);
     const [showIncompleteProfile, setShowIncompleteProfile] = useState(false);
     const [missingRequirements, setMissingRequirements] = useState<string[]>([]);
     const [isProfileComplete, setIsProfileComplete] = useState(false);
@@ -143,7 +144,10 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
                 const { error } = await supabase
                     .from('saved_jobs')
                     .insert({ user_id: user.id, job_id: job.id });
-                if (!error) setIsSaved(true);
+                if (!error) {
+                    setIsSaved(true);
+                    setShowSaveSuccess(true);
+                }
             }
         } catch (err) {
             console.error(err);
@@ -551,6 +555,12 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
                         setShowApplySuccess(false);
                         window.location.reload();
                     }}
+                />
+            )}
+
+            {showSaveSuccess && (
+                <SaveSuccessModal
+                    onClose={() => setShowSaveSuccess(false)}
                 />
             )}
         </>
