@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { PlusCircle, Trash2, Pencil } from 'lucide-react';
-import { formatDate, parseDateToISO, formatDateToLocale } from '@/utils/validators';
+import { formatDate, parseDateToISO, formatDateToLocale, formatCurrency, parseCurrencyToNumber } from '@/utils/validators';
 
 interface ExperienceFormProps {
     onNext: () => void;
@@ -16,9 +16,9 @@ interface Experience {
     company_name: string;
     role: string;
     description: string;
-    salary: number | '';
+    salary: string;
     is_variable_salary: boolean;
-    variable_salary_amount: number | '';
+    variable_salary_amount: string;
     start_date: string;
     end_date: string;
     is_current: boolean;
@@ -49,6 +49,8 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ onNext, readOnly = fals
         if (data) {
             setExperiences((data as any[]).map(exp => ({
                 ...exp,
+                salary: formatCurrency(exp.salary),
+                variable_salary_amount: formatCurrency(exp.variable_salary_amount),
                 start_date: formatDateToLocale(exp.start_date || ''),
                 end_date: formatDateToLocale(exp.end_date || '')
             })));
@@ -76,9 +78,9 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ onNext, readOnly = fals
                 company_name: currentExp.company_name,
                 role: currentExp.role,
                 description: currentExp.description,
-                salary: currentExp.salary === '' ? null : Number(currentExp.salary),
+                salary: parseCurrencyToNumber(currentExp.salary),
                 is_variable_salary: currentExp.is_variable_salary,
-                variable_salary_amount: currentExp.variable_salary_amount === '' ? null : Number(currentExp.variable_salary_amount),
+                variable_salary_amount: parseCurrencyToNumber(currentExp.variable_salary_amount),
                 start_date: parseDateToISO(currentExp.start_date),
                 end_date: currentExp.is_current ? null : parseDateToISO(currentExp.end_date),
                 is_current: currentExp.is_current
@@ -95,8 +97,7 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ onNext, readOnly = fals
         }
     };
 
-    const formatCurrency = (val: number | '') =>
-        val === '' ? '' : `R$ ${Number(val).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+
 
     return (
         <div className="bg-white">
@@ -156,7 +157,7 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ onNext, readOnly = fals
                                 </div>
                                 <div>
                                     <label className="block text-[11px] font-black text-gray-400 mb-1.5">Remuneração</label>
-                                    <div className="px-4 py-3 rounded-xl border border-gray-300 bg-white text-gray-800 font-medium text-sm">{formatCurrency(exp.salary)}</div>
+                                    <div className="px-4 py-3 rounded-xl border border-gray-300 bg-white text-gray-800 font-medium text-sm">{exp.salary}</div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
@@ -173,7 +174,7 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ onNext, readOnly = fals
                                 {exp.is_variable_salary && (
                                     <div>
                                         <label className="block text-[11px] font-black text-gray-400 mb-1.5">Remuneração variável</label>
-                                        <div className="px-4 py-3 rounded-xl border border-gray-300 bg-white text-gray-800 font-medium text-sm">{formatCurrency(exp.variable_salary_amount)}</div>
+                                        <div className="px-4 py-3 rounded-xl border border-gray-300 bg-white text-gray-800 font-medium text-sm">{exp.variable_salary_amount}</div>
                                     </div>
                                 )}
 
@@ -224,14 +225,11 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ onNext, readOnly = fals
                         </div>
                         <div>
                             <label className="block text-[11px] font-black text-gray-400 mb-2">Valor da remuneração</label>
-                            <div className="relative">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-sm">R$</span>
                                 <input type="text" value={currentExp.salary}
-                                    onChange={(e) => setCurrentExp({ ...currentExp, salary: e.target.value === '' ? '' : Number(e.target.value) })}
-                                    className="w-full pl-10 px-4 py-3 rounded-xl border border-gray-300 focus:border-[#F04E23] outline-none text-gray-800 font-medium"
-                                    placeholder="0,00" />
+                                    onChange={(e) => setCurrentExp({ ...currentExp, salary: formatCurrency(e.target.value) })}
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-[#F04E23] outline-none text-gray-800 font-medium"
+                                    placeholder="R$ 0,00" />
                             </div>
-                        </div>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
@@ -270,11 +268,10 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ onNext, readOnly = fals
                             <div className="md:col-span-1 animate-in fade-in duration-300">
                                 <label className="block text-[11px] font-black text-gray-400 mb-2">Valor variável</label>
                                 <div className="relative">
-                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-sm">R$</span>
                                     <input type="text" value={currentExp.variable_salary_amount}
-                                        onChange={(e) => setCurrentExp({ ...currentExp, variable_salary_amount: e.target.value === '' ? '' : Number(e.target.value) })}
-                                        className="w-full pl-10 px-4 py-3 rounded-xl border border-gray-300 focus:border-[#F04E23] outline-none text-gray-800 font-medium"
-                                        placeholder="0,00" />
+                                        onChange={(e) => setCurrentExp({ ...currentExp, variable_salary_amount: formatCurrency(e.target.value) })}
+                                        className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-[#F04E23] outline-none text-gray-800 font-medium"
+                                        placeholder="R$ 0,00" />
                                 </div>
                             </div>
                         )}

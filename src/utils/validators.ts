@@ -121,3 +121,30 @@ export const suggestEmailCorrection = (email: string): string | null => {
 
   return null;
 };
+
+export const formatCurrency = (value: string | number | undefined | null): string => {
+  if (value === undefined || value === null || value === '') return "";
+  
+  // Se for número, já vem como valor cheio (ex: 1500.50)
+  if (typeof value === 'number') {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(value);
+  }
+
+  // Se for string, tratamos como input de usuário (máscara em tempo real)
+  const cleanValue = value.replace(/\D/g, '');
+  if (!cleanValue) return "";
+  
+  const numberValue = parseFloat(cleanValue) / 100;
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(numberValue);
+};
+
+export const parseCurrencyToNumber = (value: string): number => {
+  if (!value) return 0;
+  return parseFloat(value.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
+};
