@@ -311,21 +311,46 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
                     {/* Action Buttons - Image 2 Style */}
                     <div className="flex items-center gap-4 mb-10">
                         {isApplied ? (
-                            // Applied State Buttons
-                            <>
-                                <button
-                                    onClick={onBehavioralTest}
-                                    className="bg-[#F04E23] text-white px-6 py-3.5 rounded-lg font-bold shadow-sm hover:bg-[#E03E13] transition-all"
-                                >
-                                    Teste comportamental
-                                </button>
+                            // Applied State - Premium Confirmed Look
+                            <div className="w-full">
+                                <div className="flex items-center gap-4 mb-3">
+                                    <button
+                                        disabled
+                                        className="flex-[2] bg-green-500/10 text-green-600 border border-green-200 py-3.5 rounded-lg font-bold flex items-center justify-center gap-2 cursor-default"
+                                    >
+                                        <CheckCircle2 size={20} />
+                                        Candidatura realizada
+                                    </button>
+
+                                    <button
+                                        disabled
+                                        className="flex-1 px-6 py-3.5 border border-gray-100 rounded-lg font-bold text-gray-300 cursor-not-allowed flex items-center justify-center gap-2"
+                                    >
+                                        <Bookmark size={18} />
+                                        Salvo
+                                    </button>
+
+                                    <button
+                                        disabled
+                                        className="text-gray-300 font-bold text-sm cursor-not-allowed"
+                                    >
+                                        Denunciar
+                                    </button>
+                                </div>
+                                <div className="flex items-start gap-2 text-gray-400 text-xs bg-gray-50/50 p-3 rounded-xl border border-gray-100/50">
+                                    <HelpCircle size={14} className="mt-0.5 shrink-0" />
+                                    <p className="leading-relaxed">
+                                        Você já está inscrito nesta vaga. Agora, a empresa analisará seu perfil e currículo. 
+                                        Aguarde o retorno da empresa via plataforma ou e-mail para continuar o processo seletivo.
+                                    </p>
+                                </div>
                                 <button
                                     onClick={onCancelApplication}
-                                    className="text-red-500 font-bold hover:underline px-4"
+                                    className="mt-4 text-gray-400 hover:text-red-500 text-[11px] font-medium transition-colors"
                                 >
-                                    Cancelar candidatura
+                                    Deseja cancelar sua candidatura? Clique aqui
                                 </button>
-                            </>
+                            </div>
                         ) : (
                             // Default State Buttons
                             <>
