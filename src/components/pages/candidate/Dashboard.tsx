@@ -8,6 +8,7 @@ import {
 
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
+import OnboardingModal from '@/components/modals/OnboardingModal';
 
 interface Job {
   id: string;
@@ -105,6 +106,7 @@ const Dashboard: React.FC = () => {
   // Job dismissal and Toast state
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
   const [toast, setToast] = useState<{ show: boolean; message: string } | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   // Use stable primitive values as deps to avoid infinite re-fetch caused by
   // object reference changes in the auth context on every render.
@@ -149,6 +151,12 @@ const Dashboard: React.FC = () => {
       fetchBehavioralTest(),
       calculateProgress(),
     ]);
+
+    // Check if onboarding is needed
+    if (profile && (!profile.cpf || !profile.phone)) {
+      setShowOnboarding(true);
+    }
+
     setLoading(false);
   };
 
@@ -536,6 +544,15 @@ const Dashboard: React.FC = () => {
             <span className="text-sm font-bold">{toast.message}</span>
           </div>
         </div>
+      )}
+      {/* Onboarding Modal */}
+      {showOnboarding && (
+        <OnboardingModal 
+          onStart={() => {
+            setShowOnboarding(false);
+            navigate('/app/professional-registration');
+          }} 
+        />
       )}
     </div>
   );
