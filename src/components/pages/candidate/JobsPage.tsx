@@ -334,6 +334,7 @@ const JobsPage: React.FC = () => {
                   jobs={filteredJobs.slice(0, 3)}
                   onSelect={setSelectedJob}
                   onViewAll={handleViewAll}
+                  hasTest={hasTestResult}
                 />
 
                 <JobSection
@@ -341,6 +342,7 @@ const JobsPage: React.FC = () => {
                   jobs={filteredJobs}
                   onSelect={setSelectedJob}
                   onViewAll={handleViewAll}
+                  hasTest={hasTestResult}
                 />
 
                 <JobSection
@@ -349,6 +351,7 @@ const JobsPage: React.FC = () => {
                   jobs={[...filteredJobs].reverse()}
                   onSelect={setSelectedJob}
                   onViewAll={handleViewAll}
+                  hasTest={hasTestResult}
                 />
               </div>
             )}
@@ -466,7 +469,7 @@ const JobsPage: React.FC = () => {
   );
 };
 
-const JobSection: React.FC<{ title: string, subtitle?: string, jobs: Job[], onSelect: (j: Job) => void, onViewAll?: () => void }> = ({ title, subtitle, jobs, onSelect, onViewAll }) => (
+const JobSection: React.FC<{ title: string, subtitle?: string, jobs: Job[], onSelect: (j: Job) => void, onViewAll?: () => void, hasTest?: boolean }> = ({ title, subtitle, jobs, onSelect, onViewAll, hasTest = false }) => (
   <section className="animate-in fade-in slide-in-from-bottom-8 duration-700">
     <div className="flex items-end justify-between mb-8">
       <div>
@@ -485,7 +488,7 @@ const JobSection: React.FC<{ title: string, subtitle?: string, jobs: Job[], onSe
 
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
       {jobs.slice(0, 3).map(job => (
-        <JobGridCard key={job.id} job={job} onClick={() => onSelect(job)} hasTest={true} /> // Highlights always show score or we can pass actual state
+        <JobGridCard key={job.id} job={job} onClick={() => onSelect(job)} hasTest={hasTest} />
       ))}
     </div>
   </section>
