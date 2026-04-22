@@ -2,10 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, EyeOff, Eye } from 'lucide-react';
 
-import { formatCPF, isValidCPF, formatPhone } from '@/utils/validators';
+import { formatCPF, isValidCPF, formatPhone, suggestEmailCorrection } from '@/utils/validators';
 import StatusModal from '../modals/StatusModal';
 import ConfirmModal from '../modals/ConfirmModal';
-import PasswordStrengthMeter from '../ui/PasswordStrengthMeter'; // NEW
+import PasswordStrengthMeter from '../ui/PasswordStrengthMeter';
+import EmailSuggestion from '../ui/EmailSuggestion';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -29,9 +30,10 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
   const [showAlreadyRegistered, setShowAlreadyRegistered] = useState(false);
 
   const [showPass, setShowPass] = useState({ pass: false, confirm: false });
-  const [validationErrors, setValidationErrors] = useState({ cpf: '', password: '', email: '', phone: '' }); // Added email/phone errors
+  const [validationErrors, setValidationErrors] = useState({ cpf: '', password: '', email: '', phone: '' });
   const [isStep1Valid, setIsStep1Valid] = useState(false);
   const [isStep2Valid, setIsStep2Valid] = useState(false);
+  const [emailSuggestion, setEmailSuggestion] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     cpf: '',
@@ -65,6 +67,10 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
         email: (formData.email.length > 0 && !isEmailValid) ? 'E-mail Inválido' : '',
         password: (formData.confirmPassword && !doPasswordsMatch) ? 'As senhas não coincidem' : ''
       }));
+
+      // 4. Check for typos
+      const suggestion = suggestEmailCorrection(formData.email);
+      setEmailSuggestion(suggestion);
 
       // Overall Validity
       setIsStep1Valid(isEmailValid && isPasswordComplex && doPasswordsMatch);
@@ -167,9 +173,15 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBack, onLoginLink, onRegi
                 className={`${inputClasses} ${validationErrors.email ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : ''}`}
                 required
               />
-              {validationErrors.cpf && (
+              {emailSuggestion && (
+                <EmailSuggestion 
+                  suggestion={emailSuggestion} 
+                  onApply={(val) => setFormData(p => ({ ...p, email: val }))} 
+                />
+              )}
+              {validationErrors.email && (
                 <span className="text-red-500 text-[12px] font-bold mt-1.5 block animate-in slide-in-from-top-1 fade-in duration-300">
-                  {validationErrors.cpf}
+                  {validationErrors.email}
                 </span>
               )}
             </div>

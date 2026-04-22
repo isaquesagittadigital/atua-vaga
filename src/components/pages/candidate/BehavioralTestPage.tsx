@@ -32,6 +32,8 @@ const BehavioralTestPage: React.FC = () => {
   // List View State
   const [allTests, setAllTests] = useState<BehavioralTest[]>([]);
   const [allResults, setAllResults] = useState<Record<string, TestResult>>({});
+  const [canTakeNewTest, setCanTakeNewTest] = useState(true);
+  const [nextAvailableDate, setNextAvailableDate] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -50,14 +52,33 @@ const BehavioralTestPage: React.FC = () => {
       const { data: resData } = await supabase.from('candidate_test_results').select('*').eq('user_id', user!.id);
 
       const resultsMap: Record<string, TestResult> = {};
+      let hasRecentTest = false;
+      let latestExpiry: Date | null = null;
+      const twelveMonthsAgo = new Date();
+      twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+
       resData?.forEach(res => {
         if (res.test_id && res.scores && Object.keys(res.scores as object).length > 0) {
           resultsMap[res.test_id] = res;
+          
+          if (res.completed_at) {
+            const completedDate = new Date(res.completed_at);
+            if (completedDate > twelveMonthsAgo) {
+              hasRecentTest = true;
+              const expiry = new Date(completedDate);
+              expiry.setMonth(expiry.getMonth() + 12);
+              if (!latestExpiry || expiry > latestExpiry) latestExpiry = expiry;
+            }
+          }
         }
       });
 
       setAllTests(testData || []);
       setAllResults(resultsMap);
+      setCanTakeNewTest(!hasRecentTest);
+      if (hasRecentTest && latestExpiry) {
+        setNextAvailableDate(latestExpiry.toLocaleDateString('pt-BR'));
+      }
     } catch (error) {
       console.error(error);
     } finally {
@@ -68,6 +89,26 @@ const BehavioralTestPage: React.FC = () => {
   const fetchTestAndprogress = async () => {
     try {
       setLoading(true);
+
+      // Check if user has a recent test that blocks new ones
+      const twelveMonthsAgo = new Date();
+      twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+      
+      const { data: recentResults } = await supabase
+        .from('candidate_test_results')
+        .select('completed_at')
+        .eq('user_id', user!.id)
+        .not('completed_at', 'is', null);
+
+      const hasRecent = recentResults?.some(r => r.completed_at && new Date(r.completed_at) > twelveMonthsAgo);
+      
+      if (hasRecent) {
+        alert('Você possui um teste válido realizado nos últimos 12 meses. Novos testes não são permitidos no momento.');
+        setView('LIST');
+        navigate('/app/behavioral-test');
+        return;
+      }
+
       let currentId = testId;
 
       if (!currentId) {
@@ -191,13 +232,20 @@ const BehavioralTestPage: React.FC = () => {
               <div>
                 <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight mb-2">Avaliações comportamentais</h1>
                 <p className="text-gray-400 font-bold text-base">Gerencie seus testes e visualize seu desempenho profissional.</p>
+                {!canTakeNewTest && nextAvailableDate && (
+                  <p className="inline-flex items-center gap-2 mt-2 px-3 py-1 bg-orange-50 text-orange-600 rounded-lg text-[10px] font-black border border-orange-100">
+                    <ClipboardCheck size={12} /> Próxima avaliação disponível em: {nextAvailableDate}
+                  </p>
+                )}
               </div>
-              <button 
-                onClick={() => setView('QUIZ')}
-                className="flex items-center gap-3 px-6 py-3 bg-[#F04E23] text-white font-black rounded-xl hover:scale-105 transition-all shadow-lg shadow-orange-100 text-sm"
-              >
-                <Plus size={18} strokeWidth={3} /> Novo teste
-              </button>
+              {canTakeNewTest && (
+                <button 
+                  onClick={() => setView('QUIZ')}
+                  className="flex items-center gap-3 px-6 py-3 bg-[#F04E23] text-white font-black rounded-xl hover:scale-105 transition-all shadow-lg shadow-orange-100 text-sm"
+                >
+                  <Plus size={18} strokeWidth={3} /> Novo teste
+                </button>
+              )}
             </div>
 
             {/* Results Grid */}

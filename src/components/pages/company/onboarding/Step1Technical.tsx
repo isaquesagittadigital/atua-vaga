@@ -4,9 +4,10 @@ interface Step1Props {
     data: any;
     onUpdate: (data: any) => void;
     onNext: () => void;
+    onCancel?: () => void;
 }
 
-const Step1Technical: React.FC<Step1Props> = ({ data, onUpdate, onNext }) => {
+const Step1Technical: React.FC<Step1Props> = ({ data, onUpdate, onNext, onCancel }) => {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         onUpdate({ [e.target.name]: e.target.value });
     };
@@ -77,7 +78,13 @@ const Step1Technical: React.FC<Step1Props> = ({ data, onUpdate, onNext }) => {
                 </div>
             </div>
 
-            <div className="mt-8 flex justify-end">
+            <div className="mt-8 flex justify-between">
+                <button
+                    onClick={onCancel}
+                    className="px-8 py-3 border border-gray-200 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition-colors"
+                >
+                    Cancelar
+                </button>
                 <button
                     onClick={onNext}
                     className="px-8 py-3 bg-[#F04E23] text-white font-bold rounded-xl hover:bg-[#E03E13] transition-all shadow-lg shadow-orange-500/20"

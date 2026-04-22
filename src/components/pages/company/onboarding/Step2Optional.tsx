@@ -82,7 +82,7 @@ const Step2Optional: React.FC<Step2Props> = ({ data, onUpdate, onBack, onFinish,
                     disabled={loading}
                     className="px-8 py-3 bg-[#F04E23] text-white font-bold rounded-xl hover:bg-[#E03E13] transition-all shadow-lg shadow-orange-500/20 disabled:opacity-50"
                 >
-                    {loading ? 'Salvando...' : 'Finalizar'}
+                    {loading ? 'Salvando...' : 'Finalizar Onboarding'}
                 </button>
             </div>
         </div>

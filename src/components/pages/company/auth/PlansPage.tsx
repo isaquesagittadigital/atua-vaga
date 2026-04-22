@@ -92,7 +92,7 @@ const PlansPage: React.FC = () => {
                         <p className="text-gray-500 font-medium text-lg">Escolha o plano perfeito para sua empresa.</p>
                     </div>
                     <button 
-                        onClick={() => navigate('/company/dashboard')}
+                        onClick={() => navigate('/company/onboarding')}
                         className="text-gray-400 font-bold hover:text-gray-600 transition-colors mt-4 md:mt-0"
                     >
                         Contratar depois

@@ -2,9 +2,10 @@
 import React, { useState } from 'react';
 import { EyeOff, Eye } from 'lucide-react';
 
-import { formatCPF } from '@/utils/validators';
+import { formatCPF, suggestEmailCorrection } from '@/utils/validators';
 import { LoginFormData, FormErrors } from '../types';
 import { useAuth } from '@/contexts/AuthContext';
+import EmailSuggestion from '../ui/EmailSuggestion';
 
 interface LoginFormProps {
   onForgotPassword: () => void;
@@ -25,6 +26,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onForgotPassword, onRegister, onL
   const [errors, setErrors] = useState<FormErrors>({});
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [emailSuggestion, setEmailSuggestion] = useState<string | null>(null);
 
   const handleGoogleLogin = async () => {
     try {
@@ -45,8 +47,13 @@ const LoginForm: React.FC<LoginFormProps> = ({ onForgotPassword, onRegister, onL
   };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({ ...prev, email: e.target.value }));
+    const val = e.target.value;
+    setFormData(prev => ({ ...prev, email: val }));
     if (errors.email) setErrors(prev => ({ ...prev, email: undefined }));
+
+    // Check for typos
+    const suggestion = suggestEmailCorrection(val);
+    setEmailSuggestion(suggestion);
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -115,6 +122,15 @@ const LoginForm: React.FC<LoginFormProps> = ({ onForgotPassword, onRegister, onL
               className={inputClasses}
               required
             />
+            {emailSuggestion && (
+              <EmailSuggestion
+                suggestion={emailSuggestion}
+                onApply={(val) => {
+                  setFormData(p => ({ ...p, email: val }));
+                  setEmailSuggestion(null);
+                }}
+              />
+            )}
             {errors.email && <p className="mt-1 text-xs text-red-500 font-medium">{errors.email}</p>}
           </div>
 

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { PlusCircle, Trash2, Pencil } from 'lucide-react';
@@ -28,6 +28,7 @@ const EducationForm: React.FC<EducationFormProps> = ({ onNext, readOnly = false,
     const [educations, setEducations] = useState<Education[]>([]);
     const [isEditing, setIsEditing] = useState(!canEdit);
     const [isAdding, setIsAdding] = useState(false);
+    const [editingId, setEditingId] = useState<string | null>(null);
     const [currentEducation, setCurrentEducation] = useState<Education>({
         level: '', institution: '', course: '', start_date: '', end_date: '', status: 'Concluído'
     });
@@ -57,6 +58,19 @@ const EducationForm: React.FC<EducationFormProps> = ({ onNext, readOnly = false,
         if (!error) fetchEducation();
     };
 
+    const handleEdit = (edu: Education) => {
+        setEditingId(edu.id!);
+        setCurrentEducation({
+            level: edu.level,
+            institution: edu.institution,
+            course: edu.course || '',
+            start_date: edu.start_date || '',
+            end_date: edu.end_date || '',
+            status: edu.status || 'Concluído'
+        });
+        setIsAdding(true);
+    };
+
     const handleSaveCurrent = async () => {
         if (!user) return;
         if (!currentEducation.level || !currentEducation.institution) {
@@ -65,7 +79,7 @@ const EducationForm: React.FC<EducationFormProps> = ({ onNext, readOnly = false,
         }
         setLoading(true);
         try {
-            const { error } = await supabase.from('academic_education').insert({
+            const payload = {
                 user_id: user.id,
                 level: currentEducation.level,
                 institution: currentEducation.institution,
@@ -73,9 +87,15 @@ const EducationForm: React.FC<EducationFormProps> = ({ onNext, readOnly = false,
                 start_date: parseDateToISO(currentEducation.start_date),
                 end_date: parseDateToISO(currentEducation.end_date),
                 status: currentEducation.status
-            });
+            };
+
+            const { error } = editingId 
+                ? await supabase.from('academic_education').update(payload).eq('id', editingId)
+                : await supabase.from('academic_education').insert(payload);
+
             if (error) throw error;
             setIsAdding(false);
+            setEditingId(null);
             setCurrentEducation({ level: '', institution: '', course: '', start_date: '', end_date: '', status: 'Concluído' });
             fetchEducation();
         } catch (err) {
@@ -110,7 +130,11 @@ const EducationForm: React.FC<EducationFormProps> = ({ onNext, readOnly = false,
                     {/* Add button — always visible while editing */}
                     {!readOnly && isEditing && (
                         <button
-                            onClick={() => setIsAdding(true)}
+                            onClick={() => {
+                                setIsAdding(true);
+                                setEditingId(null);
+                                setCurrentEducation({ level: '', institution: '', course: '', start_date: '', end_date: '', status: 'Concluído' });
+                            }}
                             className="flex items-center gap-2 text-[#1D4ED8] font-bold text-sm hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-all"
                         >
                             <PlusCircle size={18} /> Adicionar formação
@@ -126,20 +150,24 @@ const EducationForm: React.FC<EducationFormProps> = ({ onNext, readOnly = false,
                         {educations.map(edu => (
                             <div
                                 key={edu.id}
-                                className="relative group grid grid-cols-1 md:grid-cols-3 gap-4 p-5 rounded-2xl border border-gray-300 bg-gray-50/40 hover:border-gray-200 transition-all animate-in fade-in duration-300"
+                                className="relative group grid grid-cols-1 md:grid-cols-2 gap-6 p-6 rounded-2xl border border-gray-100 bg-white hover:border-blue-500 hover:shadow-2xl hover:shadow-blue-50 transition-all duration-300 animate-in fade-in duration-300"
                             >
                                 <div>
-                                    <label className="block text-[11px] font-black text-gray-400 mb-1.5">Tipo de formação</label>
-                                    <div className="px-4 py-3 rounded-xl border border-gray-300 bg-white text-gray-800 font-medium text-sm">{edu.level}</div>
+                                    <label className="block text-[11px] font-black text-gray-400 mb-1.5 uppercase tracking-wider">Tipo de formação</label>
+                                    <div className="px-4 py-3 rounded-xl border border-gray-50 bg-gray-50/50 text-gray-900 font-bold text-[13px]">{edu.level}</div>
                                 </div>
                                 <div>
-                                    <label className="block text-[11px] font-black text-gray-400 mb-1.5">Instituição</label>
-                                    <div className="px-4 py-3 rounded-xl border border-gray-300 bg-white text-gray-800 font-medium text-sm">{edu.institution}</div>
+                                    <label className="block text-[11px] font-black text-gray-400 mb-1.5 uppercase tracking-wider">Curso</label>
+                                    <div className="px-4 py-3 rounded-xl border border-gray-50 bg-gray-50/50 text-gray-900 font-bold text-[13px]">{edu.course || '—'}</div>
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-black text-gray-400 mb-1.5 uppercase tracking-wider">Instituição</label>
+                                    <div className="px-4 py-3 rounded-xl border border-gray-50 bg-gray-50/50 text-gray-900 font-bold text-[13px]">{edu.institution}</div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
-                                        <label className="block text-[11px] font-black text-gray-400 mb-1.5">Início</label>
-                                        <div className="px-4 py-3 rounded-xl border border-gray-300 bg-white text-gray-800 font-medium text-sm">{edu.start_date || '—'}</div>
+                                        <label className="block text-[11px] font-black text-gray-400 mb-1.5 uppercase tracking-wider">Início</label>
+                                        <div className="px-4 py-3 rounded-xl border border-gray-50 bg-gray-50/50 text-gray-900 font-bold text-[13px]">{edu.start_date || '—'}</div>
                                     </div>
                                     <div>
                                         <label className="block text-[11px] font-black text-gray-400 mb-1.5">Conclusão</label>
@@ -149,14 +177,22 @@ const EducationForm: React.FC<EducationFormProps> = ({ onNext, readOnly = false,
                                     </div>
                                 </div>
 
-                                {/* Per-item delete — appears on hover */}
+                                {/* Per-item actions */}
                                 {!readOnly && isEditing && edu.id && (
-                                    <button
-                                        onClick={() => handleDelete(edu.id!)}
-                                        className="absolute top-4 right-4 flex items-center gap-1.5 text-red-400 font-bold text-xs hover:text-red-600 hover:bg-red-50 px-2.5 py-1 rounded-lg transition-all opacity-0 group-hover:opacity-100"
-                                    >
-                                        <Trash2 size={13} /> Excluir
-                                    </button>
+                                    <div className="absolute top-4 right-4 flex gap-2">
+                                        <button
+                                            onClick={() => handleEdit(edu)}
+                                            className="flex items-center gap-1.5 text-blue-500 font-bold text-xs hover:bg-blue-50 px-2.5 py-1 rounded-lg transition-all"
+                                        >
+                                            <Pencil size={13} /> Editar
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(edu.id!)}
+                                            className="flex items-center gap-1.5 text-red-500 font-bold text-xs hover:bg-red-50 px-2.5 py-1 rounded-lg transition-all"
+                                        >
+                                            <Trash2 size={13} /> Excluir
+                                        </button>
+                                    </div>
                                 )}
                             </div>
                         ))}
@@ -172,27 +208,39 @@ const EducationForm: React.FC<EducationFormProps> = ({ onNext, readOnly = false,
 
                 {/* ── Add Form ──────────────────────────────────────────── */}
                 {isAdding && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6 rounded-2xl border-2 border-dashed border-blue-100 bg-blue-50/20 animate-in slide-in-from-top-4 duration-300">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-8 rounded-[32px] border-2 border-dashed border-blue-100 bg-blue-50/20 animate-in slide-in-from-top-4 duration-300">
                         <div>
-                            <label className="block text-[11px] font-black text-gray-400 mb-2">Tipo de formação</label>
+                            <label className="block text-[11px] font-black text-gray-400 mb-2 uppercase tracking-wider">Tipo de formação</label>
                             <select
                                 value={currentEducation.level}
                                 onChange={(e) => setCurrentEducation({ ...currentEducation, level: e.target.value })}
-                                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-[#F04E23] outline-none bg-white text-gray-800 font-medium"
+                                className="w-full px-4 py-3.5 rounded-xl border border-gray-200 focus:border-[#F04E23] focus:ring-4 focus:ring-orange-50 outline-none bg-white text-gray-900 font-bold text-[14px] transition-all"
                             >
                                 <option value="">Selecionar</option>
                                 <option value="Ensino Médio">Ensino Médio</option>
                                 <option value="Ensino Superior">Ensino Superior</option>
                                 <option value="Pós-graduação">Pós-graduação</option>
+                                <option value="Curso Técnico">Curso Técnico</option>
+                                <option value="Mestrado / Doutorado">Mestrado / Doutorado</option>
                             </select>
                         </div>
                         <div>
-                            <label className="block text-[11px] font-black text-gray-400 mb-2">Instituição</label>
+                            <label className="block text-[11px] font-black text-gray-400 mb-2 uppercase tracking-wider">Curso</label>
+                            <input
+                                type="text"
+                                value={currentEducation.course}
+                                onChange={(e) => setCurrentEducation({ ...currentEducation, course: e.target.value })}
+                                className="w-full px-4 py-3.5 rounded-xl border border-gray-200 focus:border-[#F04E23] focus:ring-4 focus:ring-orange-50 outline-none bg-white text-gray-900 font-bold text-[14px] transition-all"
+                                placeholder="Ex: Engenharia de Software"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-[11px] font-black text-gray-400 mb-2 uppercase tracking-wider">Instituição</label>
                             <input
                                 type="text"
                                 value={currentEducation.institution}
                                 onChange={(e) => setCurrentEducation({ ...currentEducation, institution: e.target.value })}
-                                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-[#F04E23] outline-none text-gray-800 font-medium"
+                                className="w-full px-4 py-3.5 rounded-xl border border-gray-200 focus:border-[#F04E23] focus:ring-4 focus:ring-orange-50 outline-none bg-white text-gray-900 font-bold text-[14px] transition-all"
                                 placeholder="Nome da instituição"
                             />
                         </div>
@@ -246,7 +294,7 @@ const EducationForm: React.FC<EducationFormProps> = ({ onNext, readOnly = false,
                                 disabled={loading}
                                 className="px-8 py-3 bg-[#F04E23] text-white rounded-xl font-black text-sm hover:bg-[#d63e19] transition-colors disabled:opacity-50 shadow-lg shadow-orange-100"
                             >
-                                {loading ? 'Salvando...' : 'Gravar formação'}
+                                {loading ? 'Salvando...' : editingId ? 'Salvar alterações' : 'Gravar formação'}
                             </button>
                         </div>
                     </div>

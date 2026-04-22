@@ -211,108 +211,95 @@ const SkillsForm: React.FC<SkillsFormProps> = ({ onNext, readOnly = false, canEd
                             />
                         </div>
 
-                        {/* Rede Sociais */}
-                        <div className="relative">
-                            <label className="block text-[11px] font-black text-gray-400 mb-2 tracking-wider">Rede sociais</label>
-                            <div className="max-w-sm relative">
-                                <input
-                                    type="text"
-                                    value={socialInput}
-                                    onChange={(e) => {
-                                        setSocialInput(e.target.value);
-                                        setShowSocialSuggestions(true);
-                                    }}
-                                    onFocus={() => setShowSocialSuggestions(true)}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter') {
-                                            e.preventDefault();
-                                            const val = socialInput.trim();
-                                            if (val) {
-                                                // If it looks like a platform name, try to match it
-                                                const platform = SOCIAL_PLATFORMS.find(p => p.name.toLowerCase() === val.toLowerCase());
-                                                if (platform) {
-                                                    setFormData({ ...formData, [platform.name.toLowerCase() as any]: `https://${platform.domain}` });
-                                                } else {
-                                                    // Otherwise add to others
-                                                    setFormData({ 
-                                                        ...formData, 
-                                                        others: [...formData.others, { name: 'Personalizado', url: val }] 
-                                                    });
-                                                }
-                                                setSocialInput('');
-                                                setShowSocialSuggestions(false);
-                                            }
-                                        }
-                                    }}
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-[#F04E23] outline-none text-gray-800 font-medium transition-all"
-                                    placeholder="Digite a rede social ou cole o link e dê Enter"
-                                />
+                        {/* Rede Sociais - Nova Estrutura em Lista/Colunas */}
+                        <div className="space-y-6">
+                            <div>
+                                <label className="block text-[11px] font-black text-gray-400 mb-6 uppercase tracking-wider">Rede sociais</label>
+                                <div className="grid grid-cols-1 gap-4">
+                                    {SOCIAL_PLATFORMS.map(platform => {
+                                        const key = platform.name.toLowerCase();
+                                        const value = (formData as any)[key] || '';
+                                        
+                                        return (
+                                            <div key={key} className="group flex flex-col md:flex-row md:items-center gap-4 p-4 rounded-2xl border border-gray-100 bg-white hover:border-[#F04E23]/30 transition-all duration-300">
+                                                {/* Coluna 1: Nome e Ícone */}
+                                                <div className="flex items-center gap-4 md:w-48 shrink-0">
+                                                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg transition-transform group-hover:scale-110" style={{ backgroundColor: platform.color }}>
+                                                        <platform.icon size={20} />
+                                                    </div>
+                                                    <span className="font-black text-gray-900 text-sm tracking-tight">{platform.name}</span>
+                                                </div>
 
-                                {showSocialSuggestions && socialInput.length > 0 && (
-                                    <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-300 rounded-2xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                                        {SOCIAL_PLATFORMS.filter(p => p.name.toLowerCase().includes(socialInput.toLowerCase())).map(platform => (
-                                            <button
-                                                key={platform.name}
-                                                className="w-full px-5 py-4 flex items-center gap-4 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0"
-                                                onClick={() => {
-                                                    const key = platform.name.toLowerCase();
-                                                    setFormData({ 
-                                                        ...formData, 
-                                                        [key as any]: `https://${platform.domain}` 
-                                                    });
-                                                    setSocialInput('');
-                                                    setShowSocialSuggestions(false);
-                                                }}
-                                            >
-                                                <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg" style={{ backgroundColor: platform.color }}>
-                                                    <platform.icon size={20} />
+                                                {/* Coluna 2: Input do link */}
+                                                <div className="relative flex-1">
+                                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-[11px] font-bold pointer-events-none">
+                                                        {platform.domain}
+                                                    </div>
+                                                    <input
+                                                        type="text"
+                                                        value={value.replace(`https://${platform.domain}`, '').replace(`http://${platform.domain}`, '')}
+                                                        onChange={(e) => {
+                                                            const handle = e.target.value.replace(`https://${platform.domain}`, '').replace(`http://${platform.domain}`, '');
+                                                            setFormData({ ...formData, [key as any]: handle ? `https://${platform.domain}${handle}` : '' });
+                                                        }}
+                                                        className="w-full pl-[calc(4ch+2rem)] pr-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white focus:border-[#F04E23] outline-none text-gray-800 font-bold text-sm transition-all"
+                                                        placeholder="seu_usuario"
+                                                        style={{ paddingLeft: `${platform.domain.length + 2}ch` }} // Dynamic padding based on domain length
+                                                    />
                                                 </div>
-                                                <div className="text-left">
-                                                    <p className="font-black text-gray-900 text-sm tracking-tight">{platform.name}</p>
-                                                    <p className="text-[10px] font-bold text-gray-400">Adicionar perfil do {platform.name}</p>
-                                                </div>
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                            
-                            <div className="flex flex-wrap gap-3 mt-4">
-                                {SOCIAL_PLATFORMS.map(platform => {
-                                    const key = platform.name.toLowerCase();
-                                    const value = (formData as any)[key];
-                                    if (!value) return null;
-                                    
-                                    return (
-                                        <div key={key} className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold text-gray-500 flex items-center gap-2 animate-in zoom-in duration-200">
-                                            <div className="w-6 h-6 rounded flex items-center justify-center text-white text-[10px]" style={{ backgroundColor: platform.color }}>
-                                                <platform.icon size={12} />
                                             </div>
-                                            <span className="truncate max-w-[150px]">{value.split('/').filter(Boolean).pop() || platform.name}</span>
-                                            <button 
-                                                onClick={() => setFormData({ ...formData, [key as any]: '' } as any)} 
-                                                className="text-gray-400 hover:text-gray-900 transition-colors"
-                                            >
-                                                <X size={14} />
-                                            </button>
+                                        );
+                                    })}
+
+                                    {/* Outros links personalizados */}
+                                    {formData.others?.map((other, idx) => (
+                                        <div key={idx} className="group flex flex-col md:flex-row md:items-center gap-4 p-4 rounded-2xl border border-gray-100 bg-white hover:border-[#F04E23]/30 transition-all duration-300 animate-in zoom-in duration-300">
+                                            <div className="flex items-center gap-4 md:w-48 shrink-0">
+                                                <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400 shadow-sm group-hover:bg-gray-200 transition-colors">
+                                                    <Globe size={20} />
+                                                </div>
+                                                <input
+                                                    type="text"
+                                                    value={other.name}
+                                                    onChange={(e) => {
+                                                        const newOthers = [...formData.others];
+                                                        newOthers[idx].name = e.target.value;
+                                                        setFormData({ ...formData, others: newOthers });
+                                                    }}
+                                                    className="bg-transparent border-none p-0 focus:ring-0 font-black text-gray-900 text-sm tracking-tight outline-none w-full"
+                                                />
+                                            </div>
+                                            <div className="flex-1 flex gap-2 items-center">
+                                                <input
+                                                    type="url"
+                                                    value={other.url}
+                                                    onChange={(e) => {
+                                                        const newOthers = [...formData.others];
+                                                        newOthers[idx].url = e.target.value;
+                                                        setFormData({ ...formData, others: newOthers });
+                                                    }}
+                                                    className="flex-1 px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white focus:border-[#F04E23] outline-none text-gray-800 font-bold text-sm transition-all"
+                                                    placeholder="https://seu-link-extra.com"
+                                                />
+                                                <button 
+                                                    onClick={() => setFormData({ ...formData, others: formData.others.filter((_, i) => i !== idx) })}
+                                                    className="w-10 h-10 flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                                                >
+                                                    <X size={18} />
+                                                </button>
+                                            </div>
                                         </div>
-                                    );
-                                })}
-                                {/* Others list */}
-                                {formData.others?.map((other, idx) => (
-                                    <div key={idx} className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold text-gray-500 flex items-center gap-2 animate-in zoom-in duration-200">
-                                        <div className="w-6 h-6 rounded bg-gray-200 flex items-center justify-center text-gray-500">
-                                            <Globe size={12} />
-                                        </div>
-                                        <span className="truncate max-w-[150px]">{other.url.split('/').filter(Boolean).pop()}</span>
-                                        <button 
-                                            onClick={() => setFormData({ ...formData, others: formData.others.filter((_, i) => i !== idx) })} 
-                                            className="text-gray-400 hover:text-gray-900 transition-colors"
-                                        >
-                                            <X size={14} />
-                                        </button>
-                                    </div>
-                                ))}
+                                    ))}
+
+                                    {/* Botão para adicionar outro link */}
+                                    <button
+                                        type="button"
+                                        onClick={() => setFormData({ ...formData, others: [...formData.others, { name: 'Outro', url: '' }] })}
+                                        className="mt-2 flex items-center gap-2 text-gray-400 hover:text-[#F04E23] font-bold text-sm px-4 py-2 hover:bg-orange-50 rounded-xl transition-all self-start"
+                                    >
+                                        <Plus size={18} /> Adicionar rede personalizada
+                                    </button>
+                                </div>
                             </div>
                         </div>
 

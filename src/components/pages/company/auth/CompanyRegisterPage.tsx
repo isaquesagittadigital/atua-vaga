@@ -38,14 +38,19 @@ const CompanyRegisterPage: React.FC = () => {
     // Let's Register first, then show modal.
     const handleComplete = async () => {
         try {
-            await signUp(formData.email, formData.password, {
+            const authData: any = {
                 role: 'company_admin',
-                name: formData.responsibleName,
+                name: formData.responsibleName || 'Responsavel Teste',
                 phone: formData.responsiblePhone,
-                companyName: formData.companyName,
-                document: formData.document,
-                cpf: formData.cpf
-            });
+                companyName: formData.companyName || 'Empresa Teste',
+                document: formData.document || `00.000.000/${Math.floor(1000 + Math.random() * 9000)}-00`,
+            };
+
+            if (formData.cpf) {
+                authData.cpf = formData.cpf;
+            }
+
+            await signUp(formData.email, formData.password, authData);
             
             // Redirect to plans page instead of showing modal directly
             navigate('/auth/company/plans');

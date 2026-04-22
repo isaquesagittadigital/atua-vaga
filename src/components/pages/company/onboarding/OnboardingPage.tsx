@@ -5,17 +5,57 @@ import OnboardingSuccess from './OnboardingSuccess';
 import { Logo } from '../../../ui/Icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
 
 const OnboardingPage: React.FC = () => {
     const [step, setStep] = useState(1);
-    const { session } = useAuth();
+    const { session, company, signOut, loading: authLoading } = useAuth();
     const [loading, setLoading] = useState(false);
+    const [dataLoading, setDataLoading] = useState(true);
 
     // State to hold all onboarding data
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<any>({
         technical: {},
         optional: {}
     });
+
+    // Fetch existing onboarding data when company becomes available
+    React.useEffect(() => {
+        // Wait for auth context to finish loading
+        if (authLoading) return;
+
+        // Auth is done - if no company exists for this user, just show form empty
+        if (!company?.id) {
+            setDataLoading(false);
+            return;
+        }
+
+        const fetchOnboardingData = async () => {
+            setDataLoading(true);
+            try {
+                const { data, error } = await supabase
+                    .from('companies')
+                    .select('onboarding_data')
+                    .eq('id', company.id)
+                    .single();
+                    
+                if (error) {
+                    console.error('Error fetching onboarding data:', error);
+                } else if (data?.onboarding_data && Object.keys(data.onboarding_data).length > 0) {
+                    setFormData({
+                        technical: data.onboarding_data.technical || {},
+                        optional: data.onboarding_data.optional || {}
+                    });
+                }
+            } catch (err) {
+                console.error('Error fetching existing onboarding data', err);
+            } finally {
+                setDataLoading(false);
+            }
+        };
+
+        fetchOnboardingData();
+    }, [authLoading, company?.id]);
 
     const updateFormData = (section: 'technical' | 'optional', data: any) => {
         setFormData(prev => ({
@@ -24,22 +64,47 @@ const OnboardingPage: React.FC = () => {
         }));
     };
 
+    const handleCancel = async () => {
+        try {
+            if (signOut) {
+                await signOut();
+            }
+            navigate('/auth/login');
+        } catch (error) {
+            console.error('Error logging out on cancel:', error);
+            navigate('/auth/login');
+        }
+    };
+
     const handleFinish = async () => {
         if (!session) return;
         setLoading(true);
 
         try {
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-            const response = await fetch(`${apiUrl}/company/onboarding`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session.access_token}`
-                },
-                body: JSON.stringify(formData)
-            });
+            // Se o usuário possuir a empresa vinculada no Contexto, envia para o banco
+            if (company) {
+                const updates: any = {};
+                if (formData.technical.employeeCount) updates.company_size = formData.technical.employeeCount;
+                if (formData.optional.sector) updates.industry = formData.optional.sector;
+                
+                // Grava o JSON estruturado diretamente na coluna certa e também acusa término globalmente
+                updates.onboarding_data = formData;
+                updates.onboarding_completed = true;
 
-            if (!response.ok) throw new Error('Failed to save onboarding data');
+                const { error } = await supabase
+                    .from('companies')
+                    .update(updates)
+                    .eq('id', company.id);
+
+                if (error) {
+                    console.error('Erro ao atualizar dados da empresa no Supabase:', error);
+                }
+            }
+
+            // Mark onboarding as completed for this user in local storage
+            if (session.user) {
+                localStorage.setItem(`onboarding_completed_${session.user.id}`, 'true');
+            }
 
             setStep(3); // Show success screen
         } catch (error) {
@@ -58,29 +123,20 @@ const OnboardingPage: React.FC = () => {
         );
     }
 
+    if (dataLoading) {
+        return (
+            <div className="min-h-screen bg-white flex flex-col items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-10 h-10 border-4 border-[#F04E23] border-t-transparent rounded-full animate-spin"></div>
+                    <p className="text-sm text-gray-500 font-medium">Carregando seus dados...</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-white flex flex-col">
-            {/* Header */}
-            <header className="w-full h-20 border-b border-gray-100 flex items-center justify-between px-8 md:px-16 container mx-auto">
-                <div className="flex items-center gap-2">
-                    <Logo className="scale-75 origin-left" />
-                </div>
 
-                {/* Simple Menu for Context */}
-                <div className="hidden md:flex items-center gap-8 text-sm font-bold text-gray-500">
-                    <span className="text-gray-900">Indicadores</span>
-                    <span>Minhas vagas</span>
-                    <span>Candidatos</span>
-                    <span>Seleção</span>
-                </div>
-
-                <div className="flex items-center gap-4">
-                    {/* Profile Avatar Mock */}
-                    <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden border border-gray-100">
-                        <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=150" alt="Profile" className="w-full h-full object-cover grayscale" />
-                    </div>
-                </div>
-            </header>
 
             <main className="flex-1 container mx-auto px-6 py-12 max-w-4xl">
                 <h1 className="text-3xl font-black text-gray-900 mb-2">Onboarding</h1>
@@ -124,6 +180,7 @@ const OnboardingPage: React.FC = () => {
                             data={formData.technical}
                             onUpdate={(data) => updateFormData('technical', data)}
                             onNext={() => setStep(2)}
+                            onCancel={handleCancel}
                         />
                     )}
                     {step === 2 && (

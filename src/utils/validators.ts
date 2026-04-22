@@ -99,3 +99,25 @@ export const formatDateToLocale = (isoDate: string): string => {
   }
   return isoDate;
 };
+
+export const suggestEmailCorrection = (email: string): string | null => {
+  if (!email || !email.includes('@')) return null;
+
+  const [user, domain] = email.split('@');
+  if (!user || !domain) return null;
+
+  const commonDomains: Record<string, string[]> = {
+    'gmail.com': ['gtail.com', 'gamil.com', 'gmial.com', 'gmai.com', 'gmal.com', 'gmail.co'],
+    'hotmail.com': ['hotmal.com', 'hotmai.com', 'hotmi.com', 'hotmail.co', 'hormail.com'],
+    'outlook.com': ['outlok.com', 'outloock.com', 'outlokk.com', 'outlook.co'],
+    'yahoo.com.br': ['yaho.com.br', 'yhoo.com.br', 'yahoo.com.b'],
+  };
+
+  for (const [valid, typos] of Object.entries(commonDomains)) {
+    if (typos.includes(domain.toLowerCase())) {
+      return `${user}@${valid}`;
+    }
+  }
+
+  return null;
+};
