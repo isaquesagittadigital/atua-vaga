@@ -52,6 +52,8 @@ const SkillsForm: React.FC<SkillsFormProps> = ({ onNext, readOnly = false, canEd
         availability_move: false,
         availability_sleep: false
     });
+    const [languages, setLanguages] = useState<{ name: string, level: string }[]>([]);
+    const [newLang, setNewLang] = useState({ name: '', level: 'Básico' });
 
     useEffect(() => {
         if (user) {
@@ -78,6 +80,7 @@ const SkillsForm: React.FC<SkillsFormProps> = ({ onNext, readOnly = false, canEd
                     availability_move: profile.availability_move || false,
                     availability_sleep: profile.availability_sleep || false
                 });
+                setLanguages(profile.languages as any || []);
             }
         }
     }, [user, profile]);
@@ -130,7 +133,8 @@ const SkillsForm: React.FC<SkillsFormProps> = ({ onNext, readOnly = false, canEd
                 availability_travel: formData.availability_travel,
                 availability_move: formData.availability_move,
                 availability_sleep: formData.availability_sleep,
-                trainings: typeof formData.trainings === 'string' ? formData.trainings : (Array.isArray(formData.trainings) ? formData.trainings.join(', ') : '')
+                trainings: typeof formData.trainings === 'string' ? formData.trainings : (Array.isArray(formData.trainings) ? formData.trainings.join(', ') : ''),
+                languages: languages
             }).eq('id', user.id);
 
             if (error) throw error;
@@ -190,17 +194,70 @@ const SkillsForm: React.FC<SkillsFormProps> = ({ onNext, readOnly = false, canEd
                 </div>
             ) : null}
 
-            <div className="flex flex-wrap gap-3 mb-12">
-                {skills.map(skill => (
-                    <div key={skill.id} className="px-4 py-2 bg-[#F9FAFB] border border-gray-300 rounded-lg text-sm font-semibold text-gray-500 flex items-center gap-3 animate-in fade-in duration-300">
-                        {skill.name}
-                        {isEditing && (
-                            <button onClick={() => handleDeleteSkill(skill.id)} className="text-gray-400 hover:text-gray-900 transition-colors">
-                                <X size={16} className="stroke-[2.5]" />
-                            </button>
-                        )}
+            </div>
+            
+            {/* Idiomas Section */}
+            <div className="mb-12">
+                <label className="block text-[11px] font-black text-gray-400 mb-4 uppercase tracking-wider">Idiomas</label>
+                
+                {isEditing && (
+                    <div className="flex flex-col md:flex-row gap-3 mb-4">
+                        <input
+                            type="text"
+                            value={newLang.name}
+                            onChange={(e) => setNewLang({ ...newLang, name: e.target.value })}
+                            className="flex-1 px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm outline-none focus:border-[#F04E23] placeholder:text-gray-400 text-gray-600 font-medium"
+                            placeholder="Ex: Inglês, Espanhol..."
+                        />
+                        <select
+                            value={newLang.level}
+                            onChange={(e) => setNewLang({ ...newLang, level: e.target.value })}
+                            className="md:w-48 px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm outline-none focus:border-[#F04E23] text-gray-600 font-medium appearance-none"
+                        >
+                            <option value="Básico">Básico</option>
+                            <option value="Intermediário">Intermediário</option>
+                            <option value="Avançado">Avançado</option>
+                            <option value="Fluente">Fluente</option>
+                            <option value="Nativo">Nativo</option>
+                        </select>
+                        <button
+                            onClick={() => {
+                                if (newLang.name.trim()) {
+                                    setLanguages([...languages, { ...newLang }]);
+                                    setNewLang({ name: '', level: 'Básico' });
+                                }
+                            }}
+                            className="px-6 py-3 bg-orange-50 text-[#F04E23] rounded-xl font-black text-sm hover:bg-orange-100 transition-colors border border-orange-100"
+                        >
+                            Adicionar
+                        </button>
                     </div>
-                ))}
+                )}
+
+                <div className="flex flex-wrap gap-3">
+                    {languages.length === 0 && !isEditing && (
+                        <p className="text-gray-400 text-xs italic">Nenhum idioma informado.</p>
+                    )}
+                    {languages.map((lang, idx) => (
+                        <div key={idx} className="group flex items-center gap-3 px-4 py-2.5 bg-white border border-gray-200 rounded-xl shadow-sm hover:border-[#F04E23]/30 transition-all animate-in zoom-in duration-300">
+                            <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500">
+                                <Globe size={16} />
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-sm font-black text-gray-900 leading-none mb-1">{lang.name}</span>
+                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">{lang.level}</span>
+                            </div>
+                            {isEditing && (
+                                <button 
+                                    onClick={() => setLanguages(languages.filter((_, i) => i !== idx))}
+                                    className="ml-2 text-gray-300 hover:text-red-500 transition-colors"
+                                >
+                                    <X size={16} />
+                                </button>
+                            )}
+                        </div>
+                    ))}
+                </div>
             </div>
 
                 <fieldset disabled={readOnly || (canEdit && !isEditing)} className="contents">
