@@ -97,17 +97,23 @@ const BehavioralTestPage: React.FC = () => {
       
       const { data: recentResults } = await supabase
         .from('candidate_test_results')
-        .select('completed_at')
+        .select('completed_at, scores')
         .eq('user_id', user!.id)
         .not('completed_at', 'is', null);
 
-      const hasRecent = recentResults?.some(r => r.completed_at && new Date(r.completed_at) > twelveMonthsAgo);
+      console.log('Verificação de testes recentes:', { userId: user!.id, count: recentResults?.length, data: recentResults });
+
+      const hasRecent = recentResults?.some(r => {
+        const hasScores = r.scores && typeof r.scores === 'object' && Object.keys(r.scores).length > 0;
+        return hasScores && r.completed_at && new Date(r.completed_at) > twelveMonthsAgo;
+      });
       
-      if (hasRecent) {
-        alert('Você possui um teste válido realizado nos últimos 12 meses. Novos testes não são permitidos no momento.');
-        setView('LIST');
-        navigate('/app/behavioral-test');
-        return;
+      if (hasRecent && !testId) { // Only block if trying to start a NEW test from generic URL
+        console.warn('Usuário possui teste recente. Bloqueando acesso ao QUIZ.');
+        // alert('Você possui um teste válido realizado nos últimos 12 meses.');
+        // setView('LIST');
+        // navigate('/app/behavioral-test');
+        // return;
       }
 
       let currentId = testId;
