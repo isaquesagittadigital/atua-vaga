@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { PlusCircle, Trash2, Pencil } from 'lucide-react';
 import { formatDate, parseDateToISO, formatDateToLocale, formatCurrency, parseCurrencyToNumber } from '@/utils/validators';
+import ConfirmModal from '@/components/modals/ConfirmModal';
 
 interface ExperienceFormProps {
     onNext: () => void;
@@ -37,6 +38,8 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ onNext, readOnly = fals
     const [isEditing, setIsEditing] = useState(!canEdit);
     const [isAdding, setIsAdding] = useState(false);
     const [currentExp, setCurrentExp] = useState<Experience>(EMPTY_EXP);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [expToDelete, setExpToDelete] = useState<string | null>(null);
 
     const fetchExperience = async () => {
         if (!user) return;
@@ -67,9 +70,16 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ onNext, readOnly = fals
     useEffect(() => { fetchExperience(); }, [user]);
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Tem certeza que deseja excluir esta experiência?')) return;
-        const { error } = await supabase.from('professional_experience').delete().eq('id', id);
+        setExpToDelete(id);
+        setShowDeleteModal(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!expToDelete) return;
+        const { error } = await supabase.from('professional_experience').delete().eq('id', expToDelete);
         if (!error) fetchExperience();
+        setShowDeleteModal(false);
+        setExpToDelete(null);
     };
 
     const handleEdit = (exp: Experience) => {
@@ -355,6 +365,15 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ onNext, readOnly = fals
                         Continuar
                     </button>
                 </div>
+            )}
+
+            {showDeleteModal && (
+                <ConfirmModal
+                    title="Excluir experiência"
+                    message="Tem certeza que deseja excluir esta experiência profissional? Esta ação não pode ser desfeita."
+                    onConfirm={confirmDelete}
+                    onCancel={() => setShowDeleteModal(false)}
+                />
             )}
         </div>
     );

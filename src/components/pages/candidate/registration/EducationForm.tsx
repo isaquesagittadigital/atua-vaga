@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { PlusCircle, Trash2, Pencil } from 'lucide-react';
 import { formatDate, parseDateToISO, formatDateToLocale } from '@/utils/validators';
+import ConfirmModal from '@/components/modals/ConfirmModal';
 
 interface EducationFormProps {
     onNext: () => void;
@@ -32,6 +33,8 @@ const EducationForm: React.FC<EducationFormProps> = ({ onNext, readOnly = false,
     const [currentEducation, setCurrentEducation] = useState<Education>({
         level: '', institution: '', course: '', start_date: '', end_date: '', status: 'Concluído'
     });
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [eduToDelete, setEduToDelete] = useState<string | null>(null);
 
     const fetchEducation = async () => {
         if (!user) return;
@@ -53,9 +56,16 @@ const EducationForm: React.FC<EducationFormProps> = ({ onNext, readOnly = false,
     useEffect(() => { fetchEducation(); }, [user]);
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Tem certeza que deseja excluir esta formação?')) return;
-        const { error } = await supabase.from('academic_education').delete().eq('id', id);
+        setEduToDelete(id);
+        setShowDeleteModal(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!eduToDelete) return;
+        const { error } = await supabase.from('academic_education').delete().eq('id', eduToDelete);
         if (!error) fetchEducation();
+        setShowDeleteModal(false);
+        setEduToDelete(null);
     };
 
     const handleEdit = (edu: Education) => {
@@ -324,6 +334,15 @@ const EducationForm: React.FC<EducationFormProps> = ({ onNext, readOnly = false,
                         Continuar
                     </button>
                 </div>
+            )}
+
+            {showDeleteModal && (
+                <ConfirmModal
+                    title="Excluir formação"
+                    message="Tem certeza que deseja excluir esta formação acadêmica? Esta ação não pode ser desfeita."
+                    onConfirm={confirmDelete}
+                    onCancel={() => setShowDeleteModal(false)}
+                />
             )}
         </div>
     );

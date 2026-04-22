@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Trash2 } from 'lucide-react';
 
 interface ConfirmModalProps {
   title: string;
@@ -17,56 +16,42 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
   message, 
   onConfirm, 
   onCancel, 
-  confirmText = "Não", 
-  cancelText = "Sim",
+  confirmText = "Sim, excluir", 
+  cancelText = "Cancelar",
   type = "danger"
 }) => {
-  const isWarning = type === 'warning';
+  const isDanger = type === 'danger';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-gray-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="bg-white w-full max-w-[420px] rounded-3xl overflow-hidden shadow-2xl p-10 text-center animate-in zoom-in-95 duration-300">
-        <div className="w-16 h-16 bg-[#FEF3C7] text-[#F59E0B] rounded-full flex items-center justify-center mx-auto mb-8">
-          <AlertTriangle size={32} strokeWidth={2} />
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-gray-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+      <div className="bg-white w-full max-w-[400px] rounded-[32px] overflow-hidden shadow-2xl p-10 text-center animate-in zoom-in-95 duration-300">
+        <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-8 ${isDanger ? 'bg-red-50 text-red-500' : 'bg-amber-50 text-amber-500'}`}>
+          {isDanger ? <Trash2 size={40} /> : <AlertTriangle size={40} />}
         </div>
         
-        <h3 className="text-2xl font-black text-gray-900 mb-4 leading-tight">{title}</h3>
-        <p className="text-gray-500 text-[14px] leading-relaxed mb-10 px-4">
+        <h3 className="text-2xl font-black text-gray-900 mb-4 leading-tight tracking-tight">{title}</h3>
+        <p className="text-gray-500 text-sm leading-relaxed mb-10 font-medium">
           {message}
         </p>
         
-        <div className="space-y-3">
-          {isWarning ? (
-            <>
-              <button 
-                onClick={onConfirm}
-                className="w-full py-4 bg-[#F04E23] hover:bg-[#E03E13] text-white font-bold rounded-xl transition-all shadow-md shadow-orange-100"
-              >
-                {confirmText === "Não" ? "Recuperar acesso" : confirmText}
-              </button>
-              <button 
-                onClick={onCancel}
-                className="w-full py-3 bg-white hover:bg-gray-50 text-gray-700 font-bold rounded-xl transition-all"
-              >
-                {cancelText === "Sim" ? "Voltar" : cancelText}
-              </button>
-            </>
-          ) : (
-            <>
-              <button 
-                onClick={onCancel}
-                className="w-full py-4 bg-[#F04E23] hover:bg-[#E03E13] text-white font-bold rounded-xl transition-all shadow-md shadow-orange-100"
-              >
-                {confirmText}
-              </button>
-              <button 
-                onClick={onConfirm}
-                className="w-full py-3 bg-white hover:bg-gray-50 text-gray-700 font-bold rounded-xl transition-all border border-gray-100"
-              >
-                {cancelText}
-              </button>
-            </>
-          )}
+        <div className="flex flex-col gap-3">
+          <button 
+            onClick={onConfirm}
+            className={`w-full py-4 font-black rounded-2xl transition-all shadow-lg hover:-translate-y-0.5 active:scale-95 ${
+              isDanger 
+                ? 'bg-red-500 hover:bg-red-600 text-white shadow-red-100' 
+                : 'bg-[#F04E23] hover:bg-[#E03E13] text-white shadow-orange-100'
+            }`}
+          >
+            {confirmText}
+          </button>
+          
+          <button 
+            onClick={onCancel}
+            className="w-full py-4 bg-gray-50 hover:bg-gray-100 text-gray-400 font-bold rounded-2xl transition-all active:scale-95"
+          >
+            {cancelText}
+          </button>
         </div>
       </div>
     </div>
