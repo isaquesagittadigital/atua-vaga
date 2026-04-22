@@ -194,8 +194,6 @@ const SkillsForm: React.FC<SkillsFormProps> = ({ onNext, readOnly = false, canEd
                 </div>
             ) : null}
 
-            </div>
-            
             {/* Idiomas Section */}
             <div className="mb-12">
                 <label className="block text-[11px] font-black text-gray-400 mb-4 uppercase tracking-wider">Idiomas</label>
