@@ -151,8 +151,13 @@ const SkillsForm: React.FC<SkillsFormProps> = ({ onNext, readOnly = false, canEd
 
     return (
         <div className="bg-white">
-            <div className="mb-2 flex justify-between items-center">
-                <label className="block text-[11px] font-black text-gray-400 tracking-wider">Habilidades</label>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-2 gap-4">
+                <div>
+                    <h2 className="text-2xl font-black text-gray-900 tracking-tight">Habilidades e Perfil</h2>
+                    <p className="text-gray-400 font-bold mt-1 text-sm">
+                        Destaque suas competências, redes sociais e informações sobre seu perfil.
+                    </p>
+                </div>
                 {canEdit && !isEditing && !readOnly && (
                     <button
                         type="button"
