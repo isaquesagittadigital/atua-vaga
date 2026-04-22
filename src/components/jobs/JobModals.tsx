@@ -139,3 +139,18 @@ export const ReportFormModal: React.FC<{ onSubmit: () => void, onCancel: () => v
         </div>
     </ModalOverlay>
 );
+// --- 5. Application Success Modal ---
+export const ApplySuccessModal: React.FC<{ onClose: () => void }> = ({ onClose }) => (
+    <ModalOverlay onClose={onClose}>
+        <div className="flex flex-col items-center text-center">
+            <div className="w-16 h-16 bg-[#DCFCE7] rounded-full flex items-center justify-center mb-6 text-[#16A34A]">
+                <CheckCircle2 size={32} strokeWidth={3} />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">Candidatura enviada!</h3>
+            <p className="text-gray-600 mb-8 leading-relaxed">
+                Sua candidatura foi enviada com sucesso. Agora é só torcer! Você pode acompanhar o status em "Minhas vagas".
+            </p>
+            <PrimaryButton onClick={onClose}>Entendido</PrimaryButton>
+        </div>
+    </ModalOverlay>
+);

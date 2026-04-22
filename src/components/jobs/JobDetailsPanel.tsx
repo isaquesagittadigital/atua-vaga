@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapPin, DollarSign, Clock, Briefcase, Calendar, CheckCircle2, Share2, Bookmark, Flag, HelpCircle, TriangleAlert } from 'lucide-react';
-import { ReportFormModal, ReportSuccessModal, LowMatchModal, BehavioralTestModal, IncompleteProfileModal } from './JobModals';
+import { ReportFormModal, ReportSuccessModal, LowMatchModal, BehavioralTestModal, IncompleteProfileModal, ApplySuccessModal } from './JobModals';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { calculateJobMatch } from '@/utils/matchingUtils';
@@ -36,6 +36,7 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
     const [showReportForm, setShowReportForm] = useState(false);
     const [showReportSuccess, setShowReportSuccess] = useState(false);
     const [showApplyWarning, setShowApplyWarning] = useState(false);
+    const [showApplySuccess, setShowApplySuccess] = useState(false);
     const [showIncompleteProfile, setShowIncompleteProfile] = useState(false);
     const [missingRequirements, setMissingRequirements] = useState<string[]>([]);
     const [isProfileComplete, setIsProfileComplete] = useState(false);
@@ -197,8 +198,7 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
                     throw error;
                 }
             } else {
-                alert('Candidatura enviada com sucesso!');
-                window.location.reload(); // Refresh to show applied state
+                setShowApplySuccess(true);
             }
         } catch (err) {
             console.error('Error applying:', err);
@@ -517,6 +517,15 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
                     missingItems={missingRequirements}
                     onEdit={() => { setShowIncompleteProfile(false); navigate('/app/profile'); }}
                     onClose={() => setShowIncompleteProfile(false)}
+                />
+            )}
+
+            {showApplySuccess && (
+                <ApplySuccessModal
+                    onClose={() => {
+                        setShowApplySuccess(false);
+                        window.location.reload();
+                    }}
                 />
             )}
         </>
