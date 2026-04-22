@@ -48,7 +48,7 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
     }>({});
     const [isSaved, setIsSaved] = useState(false);
     const [saving, setSaving] = useState(false);
-    const { user } = useAuth();
+    const { user, hasTestResult } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -80,7 +80,6 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
 
             setMissingRequirements(missing);
             setIsProfileComplete(missing.length === 0);
-            setHasTestResult(testRes.data && testRes.data.length > 0);
 
             // Process candidate metrics for charts
             const city = p?.address?.split(',')[0]?.trim();
@@ -201,8 +200,7 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
         return `R$ ${min || max}`;
     };
 
-    const [hasTestResult, setHasTestResult] = useState(false);
-    const matchScore = calculateJobMatch(job.id, user?.id);
+    const matchScore = calculateJobMatch(job.id, user?.id, hasTestResult);
 
     return (
         <>

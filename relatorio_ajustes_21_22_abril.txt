@@ -1,0 +1,49 @@
+RELATÓRIO DE AJUSTES E IMPLEMENTAÇÕES - ATUA-VAGA (21 E 22 DE ABRIL)
+
+RESUMO GERAL:
+O foco principal deste período foi a integridade dos dados do candidato, a precisão dos indicadores de aderência e a estabilização das funcionalidades de perfil.
+
+---
+
+DIA 21 DE ABRIL: EXPANSAO DO PERFIL E ESTRUTURA DE DADOS
+Nesta fase, focamos em coletar dados mais granulares para permitir uma análise de concorrência mais rica.
+
+1. Módulo de Idiomas:
+- Implementação da seção de "Idiomas" no formulário de habilidades.
+- Suporte a níveis de proficiência (Básico a Nativo).
+
+2. Refinamento de Formação e Experiência:
+- Adição do campo "Curso" na formação acadêmica.
+- Reestruturação da lista de experiências para cálculos de tempo total de carreira.
+
+3. Persistência de Dados (Fix):
+- Solução de armazenamento de idiomas via JSON no campo 'social_links' para contornar a ausência da coluna no banco.
+
+4. Redes Sociais:
+- Reestruturação visual para layout em colunas.
+
+---
+
+DIA 22 DE ABRIL: INTELIGÊNCIA DE MATCH E INTEGRIDADE VISUAL
+Foco em garantir que os indicadores fossem honestos e baseados 100% no perfil real.
+
+1. Centralização do Status do Teste:
+- Implementação do estado 'hasTestResult' no AuthContext para controle global de aderência.
+
+2. Reformulação da Aba "Concorrência" (Detalhes da Vaga):
+- Match Score agora retorna 0% e mensagem "(Teste não realizado)" caso o candidato não tenha avaliação.
+- Gráficos Dinâmicos: Barras de Idioma, Experiência, Salário e Residência agora refletem dados reais do perfil.
+- Ajuste Visual: Barras ficam em 0% (vazias) quando a informação não existe no perfil.
+
+3. Inteligência na Dashboard (Recomendadas para você):
+- Fim da aleatoriedade: Remoção de Math.random().
+- Ordenação por Relevância: Vagas agora são ordenadas pelas maiores notas de match do candidato.
+
+4. Correções Técnicas (Bug Fixes):
+- Resolução do Erro PGRST204 (coluna de idiomas ausente).
+- Correção de duplicidade de variáveis em formulários.
+- Otimização do build para produção no Vercel.
+
+---
+STATUS FINAL: Sistema estável, íntegro e orientado a dados reais.
+DATA DO RELATÓRIO: 22/04/2026
