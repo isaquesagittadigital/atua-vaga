@@ -25,14 +25,13 @@ interface Job {
 }
 
 const MyJobsPage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, hasTestResult } = useAuth();
   const navigate = useNavigate();
   const location = useLocation(); // Add hook
   const [activeTab, setActiveTab] = useState<'applied' | 'saved'>('applied');
   const [appliedJobs, setAppliedJobs] = useState<Job[]>([]);
   const [savedJobs, setSavedJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
-  const [hasTestResult, setHasTestResult] = useState(false);
 
   // State for Split Layout
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
@@ -65,7 +64,7 @@ const MyJobsPage: React.FC = () => {
           const jobs = data?.map((item: any) => ({
             ...item.jobs,
             company_name: item.jobs.companies?.name || 'Empresa Confidencial',
-            match_score: calculateJobMatch(item.jobs.id, user?.id)
+            match_score: calculateJobMatch(item.jobs.id, user?.id, hasTestResult)
           })) || [];
           setSavedJobs(jobs);
         }
@@ -76,19 +75,9 @@ const MyJobsPage: React.FC = () => {
       }
     };
     fetchSavedJobs();
-    if (user) checkTestResult();
-  }, [user]);
+  }, [user, hasTestResult]);
 
-  const checkTestResult = async () => {
-    if (!user) return;
-    const { data } = await supabase
-      .from('candidate_test_results')
-      .select('id')
-      .eq('user_id', user.id)
-      .not('completed_at', 'is', null)
-      .limit(1);
-    setHasTestResult(!!data && data.length > 0);
-  };
+
 
   // Fetch Applied Jobs
   useEffect(() => {
@@ -121,7 +110,7 @@ const MyJobsPage: React.FC = () => {
             ...item.jobs,
             application_id: item.id,
             company_name: item.jobs.companies?.name || 'Empresa Confidencial',
-            match_score: calculateJobMatch(item.jobs.id, user?.id)
+            match_score: calculateJobMatch(item.jobs.id, user?.id, hasTestResult)
           })) || [];
           setAppliedJobs(jobs);
           
@@ -139,7 +128,7 @@ const MyJobsPage: React.FC = () => {
       }
     };
     fetchAppliedJobs();
-  }, [user, location.state]);
+  }, [user, location.state, hasTestResult]);
 
   const handleCancelApplication = (job: Job) => {
     setJobToCancel(job);

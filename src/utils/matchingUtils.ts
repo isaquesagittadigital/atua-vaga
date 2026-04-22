@@ -3,8 +3,8 @@
  * In the future, this will use real trait comparisons.
  * For now, it uses a hash of jobId and userId to ensure consistency.
  */
-export const calculateJobMatch = (jobId: string, userId: string | undefined): number => {
-  if (!userId) return 0;
+export const calculateJobMatch = (jobId: string, userId: string | undefined, hasTest: boolean = false): number => {
+  if (!userId || !hasTest) return 0;
   
   // Simple deterministic hash based on IDs
   const combined = jobId + userId;

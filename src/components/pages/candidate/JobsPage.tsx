@@ -36,7 +36,7 @@ interface Job {
 }
 
 const JobsPage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, hasTestResult } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
@@ -44,7 +44,6 @@ const JobsPage: React.FC = () => {
   const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
-  const [hasTestResult, setHasTestResult] = useState(false);
   const [viewAllMode, setViewAllMode] = React.useState(false);
   const [currentPage, setCurrentPage] = React.useState(1);
   const [sidebarPage, setSidebarPage] = React.useState(1);
@@ -91,19 +90,9 @@ const JobsPage: React.FC = () => {
 
   useEffect(() => {
     fetchJobs();
-    if (user) checkTestResult();
-  }, [user]);
+  }, [user, hasTestResult]);
 
-  const checkTestResult = async () => {
-    if (!user) return;
-    const { data } = await supabase
-      .from('candidate_test_results')
-      .select('id')
-      .eq('user_id', user.id)
-      .not('completed_at', 'is', null)
-      .limit(1);
-    setHasTestResult(!!data && data.length > 0);
-  };
+
 
   useEffect(() => {
     applyFilters();
@@ -137,7 +126,7 @@ const JobsPage: React.FC = () => {
         const formattedJobs = data.map((job: any) => ({
           ...job,
           company: job.companies?.name || 'Empresa Confidencial',
-          match_score: calculateJobMatch(job.id, user?.id),
+          match_score: calculateJobMatch(job.id, user?.id, hasTestResult),
           requirements: job.requirements || ['Experiência com React', 'TypeScript', 'TailwindCSS'] // Fallback reqs
         }));
         setJobs(formattedJobs);
