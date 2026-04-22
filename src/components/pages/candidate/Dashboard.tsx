@@ -550,7 +550,7 @@ const Dashboard: React.FC = () => {
         <OnboardingModal 
           onStart={() => {
             setShowOnboarding(false);
-            navigate('/app/professional-registration');
+            navigate('/app/profile');
           }} 
         />
       )}
