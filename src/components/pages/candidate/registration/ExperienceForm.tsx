@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { PlusCircle, Trash2, Pencil } from 'lucide-react';
@@ -118,9 +118,13 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ onNext, readOnly = fals
                             <Pencil size={16} /> Editar
                         </button>
                     )}
-                    {!readOnly && isEditing && (
+                    {!readOnly && (
                         <button
-                            onClick={() => setIsAdding(true)}
+                            onClick={() => {
+                                if (canEdit) setIsEditing(true);
+                                setIsAdding(true);
+                                setCurrentExp(EMPTY_EXP);
+                            }}
                             className="flex items-center gap-2 text-[#1D4ED8] font-bold text-sm hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-all"
                         >
                             <PlusCircle size={18} /> Adicionar experiência

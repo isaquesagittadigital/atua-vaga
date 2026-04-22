@@ -127,10 +127,11 @@ const EducationForm: React.FC<EducationFormProps> = ({ onNext, readOnly = false,
                             <Pencil size={16} /> Editar
                         </button>
                     )}
-                    {/* Add button — always visible while editing */}
-                    {!readOnly && isEditing && (
+                    {/* Add button — always visible */}
+                    {!readOnly && (
                         <button
                             onClick={() => {
+                                if (canEdit) setIsEditing(true);
                                 setIsAdding(true);
                                 setEditingId(null);
                                 setCurrentEducation({ level: '', institution: '', course: '', start_date: '', end_date: '', status: 'Concluído' });
