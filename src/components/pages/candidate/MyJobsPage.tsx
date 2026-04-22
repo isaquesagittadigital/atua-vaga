@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
-import { ChevronLeft, MapPin, DollarSign, Clock, Briefcase, Calendar } from 'lucide-react';
+import { ChevronLeft, MapPin, DollarSign, Clock, Briefcase, Calendar, Trash2 } from 'lucide-react';
 import JobDetailsPanel from '../../jobs/JobDetailsPanel';
+import ConfirmModal from '@/components/modals/ConfirmModal';
 
 // Define Job Type
 interface Job {
@@ -19,6 +20,7 @@ interface Job {
   status: string;
   match_score?: number;
   requirements?: string[];
+  application_id?: string;
 }
 
 const MyJobsPage: React.FC = () => {
@@ -32,6 +34,8 @@ const MyJobsPage: React.FC = () => {
 
   // State for Split Layout
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [jobToCancel, setJobToCancel] = useState<Job | null>(null);
 
   // Fetch Saved Jobs
   useEffect(() => {
@@ -71,22 +75,82 @@ const MyJobsPage: React.FC = () => {
     fetchSavedJobs();
   }, [user]);
 
-  // Mock Fetch Applied Jobs
+  // Fetch Applied Jobs
   useEffect(() => {
-    // Simulating fetch
-    const mockApplied: Job[] = [
-      { id: '1', title: 'Analista de Marketing Digital', company_name: 'Digital Marketing Experts S/A', location: 'Remoto', type: 'Remoto', salary_min: 5000, salary_max: 7000, created_at: new Date().toISOString(), status: 'active', match_score: 90, description: 'Descrição da vaga...' },
-      { id: '2', title: 'Pessoa Recursos Humanos', company_name: 'Digital Marketing Experts S/A', location: 'Remoto', type: 'Remoto', salary_min: 0, salary_max: 0, created_at: new Date().toISOString(), status: 'active', match_score: 70, description: 'Descrição da vaga...' },
-      { id: '3', title: 'Gerente de Projetos', company_name: 'Digital Marketing Experts S/A', location: 'Remoto', type: 'Remoto', salary_min: 0, salary_max: 0, created_at: new Date().toISOString(), status: 'active', match_score: 20, description: 'Descrição da vaga...' },
-    ];
-    setAppliedJobs(mockApplied);
-    // Handle navigation state from other pages
-    const state = location.state as { selectedJobId?: string };
-    if (state?.selectedJobId && mockApplied.length > 0) {
-      const preSelected = mockApplied.find(j => j.id === state.selectedJobId);
-      if (preSelected) setSelectedJob(preSelected);
+    if (!user) return;
+    const fetchAppliedJobs = async () => {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('job_applications')
+          .select(`
+            id,
+            job_id,
+            jobs:job_id (
+              *,
+              companies (
+                name,
+                logo_url
+              )
+            )
+          `)
+          .eq('user_id', user.id);
+
+        if (error) {
+          console.error('Error fetching applied jobs:', error);
+        } else {
+          const jobs = data?.map((item: any) => ({
+            ...item.jobs,
+            application_id: item.id,
+            company_name: item.jobs.companies?.name || 'Empresa Confidencial',
+          })) || [];
+          setAppliedJobs(jobs);
+          
+          // Handle navigation state
+          const state = location.state as { selectedJobId?: string };
+          if (state?.selectedJobId && jobs.length > 0) {
+            const preSelected = jobs.find(j => j.id === state.selectedJobId);
+            if (preSelected) setSelectedJob(preSelected);
+          }
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAppliedJobs();
+  }, [user, location.state]);
+
+  const handleCancelApplication = (job: Job) => {
+    setJobToCancel(job);
+    setShowCancelModal(true);
+  };
+
+  const confirmCancel = async () => {
+    if (!jobToCancel || !user) return;
+    
+    try {
+      const { error } = await supabase
+        .from('job_applications')
+        .delete()
+        .eq('id', jobToCancel.application_id);
+
+      if (error) throw error;
+
+      // Update local state
+      setAppliedJobs(prev => prev.filter(j => j.application_id !== jobToCancel.application_id));
+      if (selectedJob?.application_id === jobToCancel.application_id) {
+        setSelectedJob(null);
+      }
+    } catch (error) {
+      console.error('Error canceling application:', error);
+      alert('Erro ao cancelar candidatura. Tente novamente.');
+    } finally {
+      setShowCancelModal(false);
+      setJobToCancel(null);
     }
-  }, [location.state]);
+  };
 
   const handleJobClick = (job: Job) => {
     setSelectedJob(job);
@@ -173,11 +237,20 @@ const MyJobsPage: React.FC = () => {
                 job={selectedJob}
                 onClose={() => setSelectedJob(null)}
                 isApplied={activeTab === 'applied'}
-                onCancelApplication={() => alert('Candidatura cancelada (mock)')}
-                onBehavioralTest={() => alert('Iniciar teste comportamental')}
+                onCancelApplication={() => handleCancelApplication(selectedJob)}
+                onBehavioralTest={() => navigate('/app/behavioral-test')}
               />
             </div>
           </div>
+        )}
+
+        {showCancelModal && (
+          <ConfirmModal
+            title="Cancelar candidatura"
+            message={`Tem certeza que deseja cancelar sua candidatura para a vaga "${jobToCancel?.title}"? Esta ação removerá seu perfil da lista de candidatos desta empresa.`}
+            onConfirm={confirmCancel}
+            onCancel={() => setShowCancelModal(false)}
+          />
         )}
       </div>
     </div>
