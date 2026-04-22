@@ -40,20 +40,27 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ onNext, readOnly = fals
 
     const fetchExperience = async () => {
         if (!user) return;
-        const { data } = await supabase
-            .from('professional_experience')
-            .select('*')
-            .eq('user_id', user.id)
-            .order('start_date', { ascending: false });
+        try {
+            const { data, error } = await supabase
+                .from('professional_experience')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('start_date', { ascending: false });
 
-        if (data) {
-            setExperiences((data as any[]).map(exp => ({
-                ...exp,
-                salary: formatCurrency(exp.salary),
-                variable_salary_amount: formatCurrency(exp.variable_salary_amount),
-                start_date: formatDateToLocale(exp.start_date || ''),
-                end_date: formatDateToLocale(exp.end_date || '')
-            })));
+            if (error) throw error;
+
+            if (data) {
+                setExperiences((data as any[]).map(exp => ({
+                    ...exp,
+                    salary: formatCurrency(exp.salary),
+                    variable_salary_amount: formatCurrency(exp.variable_salary_amount),
+                    start_date: formatDateToLocale(exp.start_date || ''),
+                    end_date: formatDateToLocale(exp.end_date || '')
+                })));
+            }
+        } catch (err) {
+            console.error('Erro ao buscar experiências:', err);
+            // Opcional: mostrar um aviso amigável na UI se falhar o fetch
         }
     };
 
@@ -65,6 +72,17 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ onNext, readOnly = fals
         if (!error) fetchExperience();
     };
 
+    const handleEdit = (exp: Experience) => {
+        setCurrentExp({
+            ...exp,
+            // Certificamos que as datas estão formatadas para o input
+            start_date: exp.start_date,
+            end_date: exp.is_current ? '' : exp.end_date
+        });
+        setIsAdding(true);
+        if (canEdit) setIsEditing(true);
+    };
+
     const handleSaveCurrent = async () => {
         if (!user) return;
         if (!currentExp.company_name || !currentExp.role) {
@@ -73,7 +91,7 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ onNext, readOnly = fals
         }
         setLoading(true);
         try {
-            const { error } = await supabase.from('professional_experience').insert({
+            const dataToSave = {
                 user_id: user.id,
                 company_name: currentExp.company_name,
                 role: currentExp.role,
@@ -84,7 +102,24 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ onNext, readOnly = fals
                 start_date: parseDateToISO(currentExp.start_date),
                 end_date: currentExp.is_current ? null : parseDateToISO(currentExp.end_date),
                 is_current: currentExp.is_current
-            });
+            };
+
+            let error;
+            if (currentExp.id) {
+                // UPDATE
+                const { error: updateError } = await supabase
+                    .from('professional_experience')
+                    .update(dataToSave)
+                    .eq('id', currentExp.id);
+                error = updateError;
+            } else {
+                // INSERT
+                const { error: insertError } = await supabase
+                    .from('professional_experience')
+                    .insert(dataToSave);
+                error = insertError;
+            }
+
             if (error) throw error;
             setIsAdding(false);
             setCurrentExp(EMPTY_EXP);
@@ -178,14 +213,22 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ onNext, readOnly = fals
                                     </div>
                                 )}
 
-                                {/* Per-item delete */}
+                                {/* Actions */}
                                 {!readOnly && isEditing && exp.id && (
-                                    <button
-                                        onClick={() => handleDelete(exp.id!)}
-                                        className="absolute top-4 right-4 flex items-center gap-1.5 text-red-400 font-bold text-xs hover:text-red-600 hover:bg-red-50 px-2.5 py-1 rounded-lg transition-all opacity-0 group-hover:opacity-100"
-                                    >
-                                        <Trash2 size={13} /> Excluir
-                                    </button>
+                                    <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                                        <button
+                                            onClick={() => handleEdit(exp)}
+                                            className="flex items-center gap-1.5 text-blue-500 font-bold text-xs hover:bg-blue-50 px-2.5 py-1.5 rounded-lg transition-all"
+                                        >
+                                            <Pencil size={14} /> Editar
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(exp.id!)}
+                                            className="flex items-center gap-1.5 text-red-400 font-bold text-xs hover:text-red-600 hover:bg-red-50 px-2.5 py-1.5 rounded-lg transition-all"
+                                        >
+                                            <Trash2 size={14} /> Excluir
+                                        </button>
+                                    </div>
                                 )}
                             </div>
                         ))}
@@ -283,7 +326,7 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ onNext, readOnly = fals
                             </button>
                             <button onClick={handleSaveCurrent} disabled={loading}
                                 className="px-8 py-3 bg-[#F04E23] text-white rounded-xl font-black text-sm hover:bg-[#d63e19] transition-colors disabled:opacity-50 shadow-lg shadow-orange-100">
-                                {loading ? 'Salvando...' : 'Gravar experiência'}
+                                {loading ? 'Salvando...' : currentExp.id ? 'Salvar alterações' : 'Gravar experiência'}
                             </button>
                         </div>
                     </div>
