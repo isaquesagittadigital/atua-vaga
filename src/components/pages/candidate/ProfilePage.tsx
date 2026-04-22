@@ -122,6 +122,10 @@ const ProfilePage: React.FC = () => {
                </div>
 
                <div className="bg-white rounded-3xl border border-gray-200 shadow-sm px-10 py-10">
+                  <AddressForm onNext={() => { }} canEdit={true} hideSkip={true} />
+               </div>
+
+               <div className="bg-white rounded-3xl border border-gray-200 shadow-sm px-10 py-10">
                   <EducationForm onNext={() => { }} canEdit={true} hideSkip={true} />
                </div>
 

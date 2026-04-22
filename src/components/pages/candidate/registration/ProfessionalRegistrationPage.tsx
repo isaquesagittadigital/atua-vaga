@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Trophy, User as UserIcon, Briefcase } from 'lucide-react';
 import PersonalDataForm from './PersonalDataForm';
@@ -138,7 +138,13 @@ const ProfessionalRegistrationPage: React.FC = () => {
                 )}
 
                 {/* Main Content Area */}
-                {renderStep()}
+                {currentStep <= totalSteps ? (
+                    <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm px-8 md:px-16 py-12 md:py-20">
+                        {renderStep()}
+                    </div>
+                ) : (
+                    renderStep()
+                )}
             </main>
         </div>
     );

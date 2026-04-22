@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatCPF, formatPhone, formatDate, formatDateToLocale, parseDateToISO, formatCEP } from '@/utils/validators';
@@ -111,7 +111,6 @@ const PersonalDataForm: React.FC<PersonalDataFormProps> = ({ onNext, readOnly = 
         return age >= 0 ? `${age} anos` : '';
     };
 
-    const fullAddress = `${formData.street}${formData.number ? ', ' + formData.number : ''}${formData.city ? '. ' + formData.city : ''}${formData.state ? ' - ' + formData.state : ''}`;
 
     return (
         <div className="bg-white">
@@ -218,18 +217,6 @@ const PersonalDataForm: React.FC<PersonalDataFormProps> = ({ onNext, readOnly = 
                                 <option value="Divorciado(a)">Divorciado(a)</option>
                                 <option value="Viúvo(a)">Viúvo(a)</option>
                             </select>
-                        </div>
-
-                        {/* Endereço Completo */}
-                        <div className="md:col-span-1">
-                            <label className="block text-[11px] font-black text-gray-400 mb-2">Endereço completo</label>
-                            <input
-                                type="text"
-                                value={fullAddress || ''}
-                                readOnly
-                                className="w-full px-4 py-3 rounded-xl border border-gray-300 bg-gray-50 text-gray-600 font-medium outline-none"
-                                placeholder="Seu endereço aparecerá aqui"
-                            />
                         </div>
 
                         {/* Possui CNH? */}
