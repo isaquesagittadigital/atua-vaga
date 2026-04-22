@@ -19,6 +19,7 @@ const BehavioralTestPage: React.FC = () => {
 
   const [view, setView] = useState<'LIST' | 'QUIZ'>(testId ? 'QUIZ' : 'LIST');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
   // Quiz State
   const [testTitle, setTestTitle] = useState('');
@@ -130,7 +131,11 @@ const BehavioralTestPage: React.FC = () => {
       ]);
 
       if (testRes.data) setTestTitle(testRes.data.title);
-      if (qRes.data) setQuestions(qRes.data);
+      if (!qRes.data || qRes.data.length === 0) {
+        throw new Error('Nenhuma pergunta foi encontrada para este teste. O banco de dados pode estar vazio.');
+      }
+      
+      setQuestions(qRes.data);
       
       if (progressRes.data) {
         setResultId(progressRes.data.id);
@@ -141,9 +146,10 @@ const BehavioralTestPage: React.FC = () => {
         }).select().single();
         if (newRes) setResultId(newRes.id);
       }
-    } catch (error: any) {
-      console.error('Erro detalhado no teste:', error);
-      alert(`Erro ao iniciar o teste: ${error.message || 'Falha na conexão com o banco de dados'}. Verifique se as tabelas de teste estão populadas.`);
+      setError(null);
+    } catch (err: any) {
+      console.error('Erro detalhado no teste:', err);
+      setError(err.message || 'Falha na conexão com o banco de dados');
       setView('LIST');
     } finally {
       setLoading(false);
@@ -291,6 +297,19 @@ const BehavioralTestPage: React.FC = () => {
     <div className="flex-1 font-sans flex flex-col">
       <main className="flex-1 max-w-[1480px] w-full mx-auto px-4 md:px-8 py-8 md:py-12">
         
+        {error && (
+          <div className="mb-8 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-red-600 animate-in slide-in-from-top-2 duration-300">
+            <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center shrink-0">
+              <Plus className="rotate-45" size={20} />
+            </div>
+            <div>
+              <p className="font-black text-sm">Erro ao processar avaliação</p>
+              <p className="text-xs font-bold opacity-80">{error}</p>
+            </div>
+            <button onClick={() => setError(null)} className="ml-auto text-red-300 hover:text-red-500 transition-colors font-black text-xs">Dispensar</button>
+          </div>
+        )}
+
         {view === 'LIST' ? (
           <div className="animate-in fade-in duration-500">
             {/* Header List */}
