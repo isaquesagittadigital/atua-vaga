@@ -80,7 +80,8 @@ const SkillsForm: React.FC<SkillsFormProps> = ({ onNext, readOnly = false, canEd
                     availability_move: profile.availability_move || false,
                     availability_sleep: profile.availability_sleep || false
                 });
-                setLanguages(profile.languages as any || []);
+                const socials = profile.social_links as any || {};
+                setLanguages(socials.languages || []);
             }
         }
     }, [user, profile]);
@@ -125,7 +126,8 @@ const SkillsForm: React.FC<SkillsFormProps> = ({ onNext, readOnly = false, canEd
                     telegram: formData.telegram || '',
                     tiktok: formData.tiktok || '',
                     discord: formData.discord || '',
-                    others: formData.others || []
+                    others: formData.others || [],
+                    languages: languages // Storing here as the column doesn't exist
                 },
                 salary_objective: formData.salary_objective ? Number(formData.salary_objective) : null,
                 job_objective: formData.job_objective,
@@ -133,8 +135,7 @@ const SkillsForm: React.FC<SkillsFormProps> = ({ onNext, readOnly = false, canEd
                 availability_travel: formData.availability_travel,
                 availability_move: formData.availability_move,
                 availability_sleep: formData.availability_sleep,
-                trainings: typeof formData.trainings === 'string' ? formData.trainings : (Array.isArray(formData.trainings) ? formData.trainings.join(', ') : ''),
-                languages: languages
+                trainings: typeof formData.trainings === 'string' ? formData.trainings : (Array.isArray(formData.trainings) ? formData.trainings.join(', ') : '')
             }).eq('id', user.id);
 
             if (error) throw error;

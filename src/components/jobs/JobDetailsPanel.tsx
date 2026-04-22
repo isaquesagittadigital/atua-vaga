@@ -63,7 +63,7 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
         
         try {
             const [profileRes, eduRes, expRes, testRes] = await Promise.all([
-                supabase.from('profiles').select('full_name, cpf, phone, address, salary_objective, languages').eq('id', user.id).single(),
+                supabase.from('profiles').select('full_name, cpf, phone, address, salary_objective, social_links').eq('id', user.id).single(),
                 supabase.from('academic_education').select('*').eq('user_id', user.id),
                 supabase.from('professional_experience').select('*').eq('user_id', user.id),
                 supabase.from('candidate_test_results').select('id').eq('user_id', user.id).not('completed_at', 'is', null).limit(1)
@@ -71,6 +71,7 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
 
             const missing = [];
             const p = profileRes.data;
+            const socials = p?.social_links as any || {};
             
             if (!p?.full_name || !p?.cpf || !p?.phone) missing.push('Dados pessoais (Nome, CPF ou Telefone)');
             if (!eduRes.data || eduRes.data.length === 0) missing.push('Formação acadêmica');
@@ -101,7 +102,7 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
                 city,
                 salary,
                 yearsExp: Math.round(totalYears * 10) / 10,
-                languages: p?.languages as any || [],
+                languages: socials.languages || [],
                 hasDegree: eduRes.data && eduRes.data.length > 0
             });
         } catch (err) {
