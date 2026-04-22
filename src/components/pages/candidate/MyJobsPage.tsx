@@ -77,7 +77,10 @@ const MyJobsPage: React.FC = () => {
 
   // Fetch Applied Jobs
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setAppliedJobs([]);
+      return;
+    }
     const fetchAppliedJobs = async () => {
       setLoading(true);
       try {
@@ -162,6 +165,13 @@ const MyJobsPage: React.FC = () => {
   return (
     <div className="flex-1">
       <div className="max-w-[1480px] mx-auto p-6 md:p-8">
+        {/* Debug Info (Remove after testing) */}
+        <div className="mb-4 p-2 bg-gray-50 rounded text-[10px] font-mono text-gray-400 flex gap-4">
+          <span>User: {user?.id || 'Not Logged'}</span>
+          <span>Applied: {appliedJobs.length}</span>
+          <span>Tab: {activeTab}</span>
+        </div>
+
         {/* Header */}
         <div className="mb-8 flex justify-between items-end">
           <div>
