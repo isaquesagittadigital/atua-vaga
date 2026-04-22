@@ -217,7 +217,7 @@ const SkillsForm: React.FC<SkillsFormProps> = ({ onNext, readOnly = false, canEd
                         </div>
 
                         {/* Rede Sociais - Nova Estrutura em Lista/Colunas */}
-                        <div className="space-y-                        {/* Rede Sociais - Fluxo de Adicionar sob demanda */}
+                        {/* Rede Sociais - Fluxo de Adicionar sob demanda */}
                         <div className="space-y-6">
                             <div>
                                 <label className="block text-[11px] font-black text-gray-400 mb-6 uppercase tracking-wider">Rede sociais</label>
@@ -339,7 +339,7 @@ const SkillsForm: React.FC<SkillsFormProps> = ({ onNext, readOnly = false, canEd
                                     )}
                                 </div>
                             </div>
-                        </div></div>
+                        </div>
 
                         {/* Treinamentos - Multiline Full Width like Reference */}
                         <div>
@@ -471,12 +471,12 @@ const SkillsForm: React.FC<SkillsFormProps> = ({ onNext, readOnly = false, canEd
                                             </div>
                                             <span className="text-sm font-bold text-gray-500 group-hover:text-gray-900 transition-colors">Não</span>
                                         </label>
-                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </fieldset>
+                </div>
+            </fieldset>
 
                 {isEditing && (
                     <div className="flex justify-center mt-12 pt-12 border-t border-gray-50">
