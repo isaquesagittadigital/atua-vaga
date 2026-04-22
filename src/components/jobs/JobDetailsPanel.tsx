@@ -390,24 +390,24 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
                                     text: candidateData.city && job.location?.includes(candidateData.city) 
                                         ? `Você reside em ${candidateData.city}, na mesma região da vaga.` 
                                         : `Você reside em ${candidateData.city || 'não informado'}. 80% dos candidatos são da região.`, 
-                                    pct: candidateData.city && job.location?.includes(candidateData.city) ? 100 : 40 
+                                    pct: candidateData.city && job.location?.includes(candidateData.city) ? 100 : (candidateData.city ? 40 : 0) 
                                 },
                                 { 
                                     label: 'Pretensão salarial', 
                                     text: candidateData.salary 
                                         ? `Sua pretensão é R$ ${candidateData.salary}. A média da vaga é R$ ${((job.salary_min || 0) + (job.salary_max || 0)) / 2}.`
                                         : 'Pretensão salarial não informada no perfil.', 
-                                    pct: candidateData.salary && job.salary_max && candidateData.salary <= job.salary_max ? 90 : 30 
+                                    pct: candidateData.salary && job.salary_max ? (candidateData.salary <= job.salary_max ? 90 : 30) : 0 
                                 },
                                 { 
                                     label: 'Experiência com cargo', 
                                     text: `Você tem ${candidateData.yearsExp || 0} anos de experiência. A média para essa vaga é 3 anos.`, 
-                                    pct: Math.min(((candidateData.yearsExp || 0) / 5) * 100, 100) 
+                                    pct: candidateData.yearsExp ? Math.min((candidateData.yearsExp / 5) * 100, 100) : 0 
                                 },
                                 { 
                                     label: 'Trabalhando atualmente', 
-                                    text: 'Perfil atualizado recentemente.', 
-                                    pct: 100 
+                                    text: candidateData.yearsExp ? 'Perfil atualizado recentemente.' : 'Sem histórico profissional recente.', 
+                                    pct: candidateData.yearsExp ? 100 : 0 
                                 },
                                 { 
                                     label: 'Experiência no segmento', 
@@ -424,7 +424,7 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
                                     })(),
                                     pct: (() => {
                                         const mainLang = candidateData.languages?.find(l => l.name.toLowerCase().includes('inglês')) || candidateData.languages?.[0];
-                                        if (!mainLang) return 20;
+                                        if (!mainLang) return 0;
                                         if (['Fluente', 'Nativo'].includes(mainLang.level)) return 100;
                                         if (mainLang.level === 'Avançado') return 85;
                                         if (mainLang.level === 'Intermediário') return 60;
@@ -434,7 +434,7 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
                                 { 
                                     label: 'Tempo médio empregos anteriores', 
                                     text: `Sua estabilidade média é de ${candidateData.yearsExp ? Math.round(candidateData.yearsExp / 2) : 0} anos por empresa.`, 
-                                    pct: 75 
+                                    pct: candidateData.yearsExp ? 75 : 0 
                                 },
                             ].map((item, index) => (
                                 <div key={index} className="flex items-center gap-4">
