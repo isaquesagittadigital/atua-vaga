@@ -290,14 +290,13 @@ app.get('/api/candidates/matches', requireAuth, async (req, res) => {
             .from('job_applications')
             .select(`
                 id,
-                match_score,
                 job_id,
                 jobs!inner (
                     id,
                     title,
                     company_id
                 ),
-                profiles!job_applications_user_id_fkey (
+                profiles!inner (
                     id,
                     full_name,
                     avatar_url,
@@ -307,7 +306,6 @@ app.get('/api/candidates/matches', requireAuth, async (req, res) => {
                 )
             `)
             .eq('jobs.company_id', company.id)
-            .order('match_score', { ascending: false })
             .limit(10);
 
         if (error) throw error;

@@ -8,6 +8,9 @@ ADD COLUMN IF NOT EXISTS screening_questions TEXT[] DEFAULT '{}',
 ADD COLUMN IF NOT EXISTS salary_min NUMERIC,
 ADD COLUMN IF NOT EXISTS salary_max NUMERIC;
 
--- Refresh PostgREST cache (Supabase handles this automatically on migration, 
--- but we ensure the columns are available)
+-- Also ensure match_score exists in job_applications
+ALTER TABLE public.job_applications 
+ADD COLUMN IF NOT EXISTS match_score INTEGER DEFAULT 0;
+
+-- Refresh PostgREST cache
 NOTIFY pgrst, 'reload schema';
