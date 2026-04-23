@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Camera, ChevronLeft, Loader2, MapPin, Mail, Phone, Calendar, Briefcase, GraduationCap, Trophy, Globe, Linkedin, FileText, CheckCircle2 } from 'lucide-react';
+import { Camera, ChevronLeft, ChevronRight, Loader2, MapPin, Mail, Phone, Calendar, Briefcase, GraduationCap, Trophy, Globe, Linkedin, FileText, CheckCircle2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { formatDateToLocale } from '@/utils/validators';
 
