@@ -240,7 +240,7 @@ const Step2Requirements: React.FC<StepProps> = ({ data, onUpdate, onNext, onBack
                             type="text" 
                             placeholder="Informe a quantidade" 
                             value={data.requirements.avgTenure || ''}
-                            onChange={(e) => handleNumericChange('avgTenure', e.target.value)}
+                            onChange={(e) => handleNumericChange('avgTenure', e.target.value, 3)}
                             className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm" 
                         />
                     </div>
