@@ -8,6 +8,7 @@ import JobsListPage from '../components/pages/company/jobs/JobsListPage';
 import CreateJobPage from '../components/pages/company/jobs/create/CreateJobPage';
 import JobCandidatesPage from '../components/pages/company/jobs/ranking/JobCandidatesPage';
 import CandidatesPage from '../components/pages/company/CandidatesPage';
+import CandidateProfileView from '../components/pages/company/candidates/CandidateProfileView';
 import SelectionPage from '../components/pages/company/SelectionPage';
 
 const CompanyRoutes: React.FC = () => {
@@ -20,6 +21,7 @@ const CompanyRoutes: React.FC = () => {
             <Route path="jobs/edit/:id" element={<CreateJobPage />} />
             <Route path="jobs/:id" element={<JobCandidatesPage />} />
             <Route path="candidates" element={<CandidatesPage />} />
+            <Route path="candidates/:id" element={<CandidateProfileView />} />
             <Route path="selection" element={<SelectionPage />} />
         </Routes>
     );

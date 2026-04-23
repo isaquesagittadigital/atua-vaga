@@ -1,8 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Briefcase, Calendar, MapPin, Info, ExternalLink, User } from 'lucide-react';
 
 interface CandidateMatchCardProps {
-    id?: string;
+    id: string;
     role: string;
     companyRef?: string; // This is the Name
     matchPercentage: number;
@@ -12,6 +13,7 @@ interface CandidateMatchCardProps {
 }
 
 const CandidateMatchCard: React.FC<CandidateMatchCardProps> = ({ 
+    id,
     role, 
     companyRef, 
     matchPercentage,
@@ -19,6 +21,8 @@ const CandidateMatchCard: React.FC<CandidateMatchCardProps> = ({
     imgUrl,
     age = 25
 }) => {
+    const navigate = useNavigate();
+
     return (
         <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all flex gap-8 max-w-md">
             {/* Left side: Avatar and Name */}
@@ -55,7 +59,10 @@ const CandidateMatchCard: React.FC<CandidateMatchCardProps> = ({
 
                 {/* View Link */}
                 <div className="mt-auto pt-2">
-                    <button className="flex items-center gap-2 text-[#C0421D] font-bold hover:underline transition-colors">
+                    <button 
+                        onClick={() => navigate(`/company/candidates/${id}`)}
+                        className="flex items-center gap-2 text-[#C0421D] font-bold hover:underline transition-colors"
+                    >
                         Ver candidato
                         <ExternalLink size={20} />
                     </button>
