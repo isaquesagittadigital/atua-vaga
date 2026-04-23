@@ -13,9 +13,10 @@ type TestResult = Database['public']['Tables']['candidate_test_results']['Row'];
 const QUESTIONS_PER_PAGE = 5;
 
 const BehavioralTestPage: React.FC = () => {
+  const { user } = useAuth();
+  const userId = user?.id;
   const { testId } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
 
   const [view, setView] = useState<'LIST' | 'QUIZ'>(testId ? 'QUIZ' : 'LIST');
   const [loading, setLoading] = useState(true);
