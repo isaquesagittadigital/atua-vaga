@@ -4,6 +4,8 @@ import JobCard from '../JobCard';
 import CandidateRankingCard from './CandidateRankingCard';
 import { supabase } from '@/lib/supabase';
 import { Edit2, Trash2 } from 'lucide-react';
+import SuccessModal from '@/components/modals/SuccessModal';
+import ConfirmModal from '@/components/modals/ConfirmModal';
 
 const JobCandidatesPage: React.FC = () => {
     const { id } = useParams();
@@ -11,6 +13,8 @@ const JobCandidatesPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [jobData, setJobData] = useState<any>(null);
     const [candidates, setCandidates] = useState<any[]>([]);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
 
     useEffect(() => {
         const fetchJobAndCandidates = async () => {
@@ -88,8 +92,6 @@ const JobCandidatesPage: React.FC = () => {
     }, [id]);
 
     const handleDeleteJob = async () => {
-        if (!window.confirm('Tem certeza que deseja excluir esta vaga? Esta ação não pode ser desfeita.')) return;
-        
         try {
             const { session } = (await supabase.auth.getSession()).data;
             const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
@@ -106,8 +108,8 @@ const JobCandidatesPage: React.FC = () => {
                 throw new Error(errorData.error || 'Erro ao excluir vaga');
             }
             
-            alert('Vaga excluída com sucesso!');
-            navigate('/company/dashboard');
+            setShowDeleteConfirm(false);
+            setShowSuccess(true);
         } catch (error: any) {
             console.error('Error deleting job:', error);
             alert('Erro ao excluir vaga: ' + error.message);
@@ -147,7 +149,7 @@ const JobCandidatesPage: React.FC = () => {
                         Editar vaga
                     </button>
                     <button
-                        onClick={handleDeleteJob}
+                        onClick={() => setShowDeleteConfirm(true)}
                         className="flex items-center gap-2 px-6 py-3 border border-red-100 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 transition-all text-sm"
                     >
                         <Trash2 size={18} />
@@ -197,6 +199,26 @@ const JobCandidatesPage: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            {showDeleteConfirm && (
+                <ConfirmModal 
+                    title="Excluir Vaga"
+                    message="Tem certeza que deseja excluir esta vaga? Esta ação não pode ser desfeita e todos os candidatos perderão o acesso."
+                    onConfirm={handleDeleteJob}
+                    onCancel={() => setShowDeleteConfirm(false)}
+                    confirmText="Sim, excluir agora"
+                    cancelText="Não, manter vaga"
+                    type="danger"
+                />
+            )}
+
+            <SuccessModal 
+                isOpen={showSuccess}
+                onClose={() => navigate('/company/dashboard')}
+                title="Vaga Excluída"
+                description="A vaga foi removida do sistema com sucesso."
+                buttonText="Voltar ao Dashboard"
+            />
         </div>
     );
 };

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import JobCard from './JobCard';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,6 +12,7 @@ const JobsListPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [companyName, setCompanyName] = useState<string>('');
     const [companyLogo, setCompanyLogo] = useState<string>('');
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         fetchJobs();
@@ -23,25 +24,6 @@ const JobsListPage: React.FC = () => {
         try {
             const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
-            // 1. Fetch Company Details (Name/Logo) based on user ID
-            // Assuming we have a way to get company info. For now, query supabase directly or assuming the API returns it?
-            // Let's try to get it from the 'companies' table linked to 'owner_id' (user.id)
-            // Or if we can't query directly here, we might need a separate call.
-            // Let's assume we can query supabase client here since we use it elsewhere, NOT JUST the REST API.
-            // But wait, this file uses valid 'fetch' to an API... okay.
-            // Let's see if we can get the company name from the API response?
-            // If the API /jobs doesn't return company info, we might need to fetch profile.
-
-            // OPTION A: Add supabase client import and fetch profile
-            /* 
-               import { supabase } from '../../../../src/lib/supabase'; 
-            */
-            // But let's stick to the pattern if possible.
-            // Actually, let's just fetch the company for the current user using Supabase client to be safe and quick.
-
-            // Importing supabase dynamically or assuming it's available?
-            // It is available in '../src/lib/supabase' usually.
-
             // Fetch jobs
             const response = await fetch(`${apiUrl}/jobs`, {
                 headers: {
@@ -52,20 +34,6 @@ const JobsListPage: React.FC = () => {
             if (!response.ok) throw new Error('Failed to fetch jobs');
             const data = await response.json();
             setJobs(data);
-
-            // Fetch Company Info (Name)
-            // We need to import supabase at the top. 
-            // Since I can't easily add imports without seeing the top, I'll rely on a separate useEffect or assume I can add it.
-            // Wait, I can't add imports easily with multi_replace if headers are complex.
-            // However, I see `useAuth` is used.
-            // Let's try to set the company name from the `user` metadata if available, or just fetch it.
-
-            // Let's assume the API /jobs returns jobs for THIS company.
-            // The company name is the user's company.
-            if (session.user.user_metadata?.full_name) {
-                setCompanyName(session.user.user_metadata.full_name);
-            }
-            // Better: Join/Fetch from companies table.
 
         } catch (error) {
             console.error('Error loading jobs:', error);
@@ -97,6 +65,11 @@ const JobsListPage: React.FC = () => {
         fetchCompanyProfile();
     }, [session]);
 
+    // Filter jobs by search term
+    const filteredJobs = jobs.filter(job => 
+        job.title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     return (
         <div className="max-w-[1400px] w-full mx-auto px-6 py-8">
             <div className="flex items-center justify-between mb-2">
@@ -109,26 +82,49 @@ const JobsListPage: React.FC = () => {
                     Cadastrar vaga
                 </button>
             </div>
-            <p className="text-sm text-gray-500 mb-10">Baseado no seu perfil, preferências e requisitos da vaga.</p>
+            
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
+                <p className="text-sm text-gray-500">Baseado no seu perfil, preferências e requisitos da vaga.</p>
+                
+                {/* Search Input */}
+                <div className="relative w-full md:w-[400px]">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+                        <Search size={18} />
+                    </div>
+                    <input 
+                        type="text"
+                        placeholder="Buscar vaga pelo nome..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl outline-none focus:border-[#F04E23] focus:ring-1 focus:ring-[#F04E23]/20 transition-all text-sm font-medium shadow-sm"
+                    />
+                </div>
+            </div>
 
             {loading ? (
                 <div className="flex justify-center p-12">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#F04E23]"></div>
                 </div>
-            ) : jobs.length === 0 ? (
+            ) : filteredJobs.length === 0 ? (
                 <div className="text-center py-20 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
-                    <h3 className="text-lg font-bold text-gray-700 mb-2">Nenhuma vaga encontrada</h3>
-                    <p className="text-gray-500 mb-6">Comece criando sua primeira vaga para encontrar talentos.</p>
-                    <button
-                        onClick={() => navigate('/company/jobs/new')}
-                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                        Criar vaga agora
-                    </button>
+                    <h3 className="text-lg font-bold text-gray-700 mb-2">
+                        {searchTerm ? 'Nenhuma vaga encontrada para sua busca' : 'Nenhuma vaga encontrada'}
+                    </h3>
+                    <p className="text-gray-500 mb-6">
+                        {searchTerm ? 'Tente buscar com outros termos.' : 'Comece criando sua primeira vaga para encontrar talentos.'}
+                    </p>
+                    {!searchTerm && (
+                        <button
+                            onClick={() => navigate('/company/jobs/new')}
+                            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                            Criar vaga agora
+                        </button>
+                    )}
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {jobs.map((job) => (
+                    {filteredJobs.map((job) => (
                         <JobCard
                             key={job.id}
                             id={job.id}
