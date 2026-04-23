@@ -90,6 +90,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
 
             // Fetch Test Status
+            setHasTestResult(false); // Reset before fetching
             const { data: testData } = await supabase
                 .from('candidate_test_results')
                 .select('id')
@@ -178,6 +179,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const { error } = await supabase.auth.signOut();
         setProfile(null);
         setCompany(null);
+        setHasTestResult(false);
         if (error) throw error;
     };
 

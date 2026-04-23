@@ -147,6 +147,15 @@ const Dashboard: React.FC = () => {
 
   const fetchDashboardData = async () => {
     setLoading(true);
+    // Reset states to prevent "cache" feel from previous user
+    setCompanyCount(0);
+    setProfileViewCount(0);
+    setRecommendedJobs([]);
+    setLatestJobs([]);
+    setSimilarJobs([]);
+    setHasTest(false);
+    setProgress(0);
+
     await Promise.all([
       fetchStats(),
       fetchBehavioralTest(),

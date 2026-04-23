@@ -23,6 +23,7 @@ const BehavioralResults: React.FC = () => {
     const fetchTestsAndResults = async () => {
         try {
             setLoading(true);
+            setResultsData([]); // Reset before fetching
             const { data, error } = await supabase
                 .from('candidate_test_results')
                 .select(`

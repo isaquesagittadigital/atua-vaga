@@ -41,10 +41,12 @@ const BehavioralTestPage: React.FC = () => {
       if (view === 'QUIZ') {
         fetchTestAndprogress();
       } else {
+        // Clear previous results before fetching new ones
+        setAllResults({});
         fetchAllTestsAndResults();
       }
     }
-  }, [testId, user, view]);
+  }, [testId, userId, view]); // Use userId string to be more stable
 
   const fetchAllTestsAndResults = async () => {
     try {
@@ -88,8 +90,11 @@ const BehavioralTestPage: React.FC = () => {
   };
 
   const fetchTestAndprogress = async () => {
+    setLoading(true);
+    setResponses({});
+    setResultId(null);
+
     try {
-      setLoading(true);
 
       // Check if user has a recent test that blocks new ones
       const twelveMonthsAgo = new Date();
@@ -183,6 +188,13 @@ const BehavioralTestPage: React.FC = () => {
   const calculateAndFinish = async () => {
     try {
       if (!activeTestId || !resultId || !user) return;
+      
+      // Safety check: if no responses, don't calculate (would result in 60% default)
+      if (Object.keys(responses).length === 0) {
+        console.error('Tentativa de calcular resultado sem respostas.');
+        return;
+      }
+
       setLoading(true);
 
       // 1. Fetch Question categories to map responses to variables
