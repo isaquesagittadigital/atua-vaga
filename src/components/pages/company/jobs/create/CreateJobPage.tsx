@@ -32,7 +32,8 @@ const CreateJobPage: React.FC = () => {
         journey: '',
         salary: '',
         requirements: {} as any,
-        questions: [] as string[]
+        questions: [] as string[],
+        isNew: !id
     });
 
     useEffect(() => {

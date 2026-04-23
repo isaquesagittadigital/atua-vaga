@@ -19,6 +19,7 @@ interface Job {
     created_at: string;
     status: string;
     match_score?: number;
+    salary_range?: string;
 }
 
 interface JobDetailsPanelProps {
@@ -249,7 +250,8 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
     };
 
     // Formatting helpers
-    const formatSalary = (min: number, max: number) => {
+    const formatSalary = (min: number, max: number, range?: string) => {
+        if (range) return range;
         if (!min && !max) return 'A combinar';
         if (min && max) return `R$ ${min} - ${max}`;
         return `R$ ${min || max}`;
@@ -289,7 +291,7 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
                             <div className="space-y-3">
                                 <div className="flex items-center gap-3">
                                     <DollarSign size={20} className="text-[#5AB7F7]" />
-                                    <span className="font-bold text-gray-900">{formatSalary(job.salary_min, job.salary_max)}</span>
+                                    <span className="font-bold text-gray-900">{formatSalary(job.salary_min, job.salary_max, job.salary_range)}</span>
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <MapPin size={20} className="text-[#5AB7F7]" />

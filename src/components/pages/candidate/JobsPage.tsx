@@ -122,7 +122,7 @@ const JobsPage: React.FC = () => {
       const { data, error } = await supabase
         .from('jobs')
         .select(`*, companies(name)`)
-        .eq('status', 'open')
+        .eq('status', 'active')
         .order('created_at', { ascending: false });
 
       if (error) throw error;

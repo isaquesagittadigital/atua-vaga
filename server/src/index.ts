@@ -35,7 +35,23 @@ app.post('/api/jobs', requireAuth, async (req, res) => {
             return res.status(403).json({ error: 'Only companies can create jobs' });
         }
 
-        const { title, description, location, type, salary_range, status } = req.body;
+        const { title, description, location, type, salary_range, status, requirements_json, screening_questions } = req.body;
+
+        // Parse salary_range into numeric min/max
+        let salary_min = null;
+        let salary_max = null;
+
+        if (salary_range) {
+            const cleanSalary = salary_range.replace(/[R$\s.]/g, '').replace(',', '.');
+            if (cleanSalary.includes('-')) {
+                const parts = cleanSalary.split('-');
+                salary_min = parseFloat(parts[0]);
+                salary_max = parseFloat(parts[1]);
+            } else {
+                salary_min = parseFloat(cleanSalary);
+                salary_max = salary_min;
+            }
+        }
 
         const { data, error } = await supabaseAdmin
             .from('jobs')
@@ -46,7 +62,11 @@ app.post('/api/jobs', requireAuth, async (req, res) => {
                 location,
                 type,
                 salary_range,
-                status: status || 'active'
+                salary_min,
+                salary_max,
+                status: status || 'active',
+                requirements_json,
+                screening_questions
             })
             .select()
             .single();
@@ -80,7 +100,23 @@ app.patch('/api/jobs/:id', requireAuth, async (req, res) => {
             return res.status(403).json({ error: 'Unauthorized to update this job' });
         }
 
-        const { title, description, location, type, salary_range, status } = req.body;
+        const { title, description, location, type, salary_range, status, requirements_json, screening_questions } = req.body;
+
+        // Parse salary_range into numeric min/max
+        let salary_min = null;
+        let salary_max = null;
+
+        if (salary_range) {
+            const cleanSalary = salary_range.replace(/[R$\s.]/g, '').replace(',', '.');
+            if (cleanSalary.includes('-')) {
+                const parts = cleanSalary.split('-');
+                salary_min = parseFloat(parts[0]);
+                salary_max = parseFloat(parts[1]);
+            } else {
+                salary_min = parseFloat(cleanSalary);
+                salary_max = salary_min;
+            }
+        }
 
         const { data, error } = await supabaseAdmin
             .from('jobs')
@@ -90,13 +126,47 @@ app.patch('/api/jobs/:id', requireAuth, async (req, res) => {
                 location,
                 type,
                 salary_range,
-                status
+                salary_min,
+                salary_max,
+                status,
+                requirements_json,
+                screening_questions
             })
             .eq('id', id)
             .select()
             .single();
 
         if (error) throw error;
+
+        // Notify candidates who applied or saved the job
+        try {
+            // 1. Get all affected users
+            const [appsRes, savedRes] = await Promise.all([
+                supabaseAdmin.from('job_applications').select('user_id').eq('job_id', id),
+                supabaseAdmin.from('saved_jobs').select('user_id').eq('job_id', id)
+            ]);
+
+            const userIds = new Set([
+                ...(appsRes.data?.map(a => a.user_id) || []),
+                ...(savedRes.data?.map(s => s.user_id) || [])
+            ]);
+
+            if (userIds.size > 0) {
+                const notifications = Array.from(userIds).map(uid => ({
+                    user_id: uid,
+                    title: 'Vaga Atualizada',
+                    message: `A vaga "${title}" da empresa ${(req as any).company.name} recebeu novas atualizações. Confira os detalhes!`,
+                    type: 'info',
+                    read: false,
+                    link: `/app/jobs?id=${id}`
+                }));
+
+                await supabaseAdmin.from('notifications').insert(notifications);
+            }
+        } catch (notifError) {
+            console.error('Error sending update notifications:', notifError);
+            // Don't fail the request if notifications fail
+        }
 
         res.json(data);
     } catch (error: any) {

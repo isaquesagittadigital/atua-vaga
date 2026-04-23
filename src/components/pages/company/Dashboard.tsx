@@ -4,6 +4,7 @@ import MetricCard from '../../ui/MetricCard';
 import CandidateMatchCard from '../../ui/CandidateMatchCard';
 import { useAuth } from '@/contexts/AuthContext';
 import CompanyOnboardingModal from '../../modals/CompanyOnboardingModal';
+import { Users } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
     const navigate = useNavigate();
@@ -105,7 +106,15 @@ const Dashboard: React.FC = () => {
                         />
                     ))}
                     {matches.length === 0 && !loading && (
-                        <p className="text-gray-500">Nenhum candidato sugerido no momento.</p>
+                        <div className="w-full py-12 flex flex-col items-center justify-center bg-gray-50 rounded-[32px] border-2 border-dashed border-gray-200">
+                            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 mb-4">
+                                <Users size={32} />
+                            </div>
+                            <h3 className="text-lg font-bold text-gray-700 mb-1">Nenhum candidato ainda</h3>
+                            <p className="text-gray-500 text-sm max-w-[300px] text-center">
+                                Assim que novos talentos se candidatarem às suas vagas, eles aparecerão aqui com a pontuação de aderência.
+                            </p>
+                        </div>
                     )}
                 </div>
             </div>

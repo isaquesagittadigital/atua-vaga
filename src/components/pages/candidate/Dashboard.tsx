@@ -225,7 +225,7 @@ const Dashboard: React.FC = () => {
       const { data: allJobsData, error } = await supabase
         .from('jobs')
         .select('*, companies(name, logo_url)')
-        .eq('status', 'open')
+        .eq('status', 'active')
         .order('created_at', { ascending: false });
 
       if (error) throw error;

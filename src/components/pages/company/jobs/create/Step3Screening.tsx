@@ -10,29 +10,27 @@ interface StepProps {
 }
 
 const Step3Screening: React.FC<StepProps> = ({ data, onUpdate, onFinish, onBack, loading }) => {
-    // We synchronize local questions with parent state if needed, or just use parent state.
-    // For simplicity, let's keep local state but allow it to update parent on change?
-    // Actually, let's just use the props directly if we want to persist it across step navigation.
-    // But refactoring the internal logic is tricky with the time.
-    // Let's just update the interface to accept the props so it doesn't crash CreateJobPage.
-
-    const [questions, setQuestions] = useState(data.questions || [
+    // Initialize questions from props, but provide defaults ONLY if it's a completely new set
+    // In edit mode, if they have questions, use them. If they cleared them all, it will be empty.
+    const defaultQuestions = [
         "Quem são suas referências? Cite três pessoas que você acompanha",
         "Como é a sua rotina hoje? Descreva como você organiza o seu dia de trabalho.",
         "O que está buscando atualmente para sua carreira?",
         "Agora fale pra gente porque deveríamos trazer você pro time!"
-    ]);
+    ];
+
+    const questions = data.questions && data.questions.length > 0 ? data.questions : (data.isNew ? defaultQuestions : (data.questions || []));
     const [newQuestion, setNewQuestion] = useState("");
 
     const handleAdd = () => {
         if (newQuestion.trim()) {
-            setQuestions([...questions, newQuestion]);
+            onUpdate({ questions: [...questions, newQuestion] });
             setNewQuestion("");
         }
     };
 
     const handleRemove = (index: number) => {
-        setQuestions(questions.filter((_, i) => i !== index));
+        onUpdate({ questions: questions.filter((_: any, i: number) => i !== index) });
     };
 
     return (
