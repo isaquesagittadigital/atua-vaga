@@ -91,18 +91,26 @@ const JobCandidatesPage: React.FC = () => {
         if (!window.confirm('Tem certeza que deseja excluir esta vaga? Esta ação não pode ser desfeita.')) return;
         
         try {
-            const { error } = await supabase
-                .from('jobs')
-                .delete()
-                .eq('id', id);
+            const { session } = (await supabase.auth.getSession()).data;
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+            
+            const response = await fetch(`${apiUrl}/jobs/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${session?.access_token}`
+                }
+            });
 
-            if (error) throw error;
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Erro ao excluir vaga');
+            }
             
             alert('Vaga excluída com sucesso!');
             navigate('/company/dashboard');
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error deleting job:', error);
-            alert('Erro ao excluir vaga. Tente novamente.');
+            alert('Erro ao excluir vaga: ' + error.message);
         }
     };
 

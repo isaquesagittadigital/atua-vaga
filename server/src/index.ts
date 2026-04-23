@@ -60,6 +60,85 @@ app.post('/api/jobs', requireAuth, async (req, res) => {
     }
 });
 
+app.patch('/api/jobs/:id', requireAuth, async (req, res) => {
+    try {
+        const company = (req as any).company;
+        const { id } = req.params;
+
+        if (!company) {
+            return res.status(403).json({ error: 'Company access required' });
+        }
+
+        // Verify ownership
+        const { data: job, error: fetchError } = await supabaseAdmin
+            .from('jobs')
+            .select('company_id')
+            .eq('id', id)
+            .single();
+
+        if (fetchError || !job || job.company_id !== company.id) {
+            return res.status(403).json({ error: 'Unauthorized to update this job' });
+        }
+
+        const { title, description, location, type, salary_range, status } = req.body;
+
+        const { data, error } = await supabaseAdmin
+            .from('jobs')
+            .update({
+                title,
+                description,
+                location,
+                type,
+                salary_range,
+                status
+            })
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        res.json(data);
+    } catch (error: any) {
+        console.error('Error updating job:', error);
+        res.status(500).json({ error: error.message || 'Error updating job' });
+    }
+});
+
+app.delete('/api/jobs/:id', requireAuth, async (req, res) => {
+    try {
+        const company = (req as any).company;
+        const { id } = req.params;
+
+        if (!company) {
+            return res.status(403).json({ error: 'Company access required' });
+        }
+
+        // Verify ownership
+        const { data: job, error: fetchError } = await supabaseAdmin
+            .from('jobs')
+            .select('company_id')
+            .eq('id', id)
+            .single();
+
+        if (fetchError || !job || job.company_id !== company.id) {
+            return res.status(403).json({ error: 'Unauthorized to delete this job' });
+        }
+
+        const { error } = await supabaseAdmin
+            .from('jobs')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+
+        res.status(204).send();
+    } catch (error: any) {
+        console.error('Error deleting job:', error);
+        res.status(500).json({ error: error.message || 'Error deleting job' });
+    }
+});
+
 app.get('/api/jobs', requireAuth, async (req, res) => {
     try {
         const company = (req as any).company;
