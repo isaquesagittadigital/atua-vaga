@@ -108,6 +108,7 @@ const Dashboard: React.FC = () => {
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
   const [toast, setToast] = useState<{ show: boolean; message: string } | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [isProfessionalComplete, setIsProfessionalComplete] = useState(false);
 
   // Use stable primitive values as deps to avoid infinite re-fetch caused by
   // object reference changes in the auth context on every render.
@@ -147,6 +148,7 @@ const Dashboard: React.FC = () => {
 
   const fetchDashboardData = async () => {
     setLoading(true);
+    
     // Reset states to prevent "cache" feel from previous user
     setCompanyCount(0);
     setProfileViewCount(0);
@@ -155,15 +157,20 @@ const Dashboard: React.FC = () => {
     setSimilarJobs([]);
     setHasTest(false);
     setProgress(0);
+    setIsProfessionalComplete(false);
 
-    await Promise.all([
+    const [_, testResult, profComplete] = await Promise.all([
       fetchStats(),
       fetchBehavioralTest(),
       calculateProgress(),
     ]);
 
-    // Check if onboarding is needed
-    if (profile && (!profile.cpf || !profile.phone)) {
+    // Check if onboarding is needed (either professional or behavioral incomplete)
+    // We use the direct results to avoid stale state issues
+    const isProfIncomplete = !profile?.full_name || !profile?.phone || !profComplete;
+    const isBehavIncomplete = !testResult;
+
+    if (isProfIncomplete || isBehavIncomplete) {
       setShowOnboarding(true);
     }
 
@@ -191,11 +198,12 @@ const Dashboard: React.FC = () => {
     // Check if user has completed a test
     const { data: results } = await supabase
       .from('candidate_test_results')
-      .select('id, scores')
+      .select('id, scores, completed_at')
       .eq('user_id', user.id)
+      .not('completed_at', 'is', null)
       .limit(1);
 
-    const tested = Array.isArray(results) && results.length > 0;
+    const tested = Array.isArray(results) && results.length > 0 && results[0].scores && Object.keys(results[0].scores).length > 0;
     setHasTest(tested);
 
     // Get the Big Five test ID for CTA link
@@ -208,6 +216,7 @@ const Dashboard: React.FC = () => {
 
     // Now fetch jobs based on test state
     await fetchJobSections(tested);
+    return tested;
   };
 
   const fetchJobSections = async (tested: boolean) => {
@@ -281,16 +290,31 @@ const Dashboard: React.FC = () => {
     if (!user) return;
     let done = 0;
     const total = 6;
+    let hasProfData = false;
+
     if (profile?.full_name && profile?.phone) done++;
     if ((profile as any)?.city) done++;
-    const { count: edu } = await supabase.from('academic_education').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
-    if (edu && edu > 0) done++;
-    const { count: exp } = await supabase.from('professional_experience').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
-    if (exp && exp > 0) done++;
+    
+    const [eduRes, expRes] = await Promise.all([
+      supabase.from('academic_education').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
+      supabase.from('professional_experience').select('*', { count: 'exact', head: true }).eq('user_id', user.id)
+    ]);
+
+    if (eduRes.count && eduRes.count > 0) done++;
+    if (expRes.count && expRes.count > 0) done++;
     if (profile?.trainings && profile.trainings.length > 0) done++;
+
     const { count: tests } = await supabase.from('candidate_test_results').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
     if (tests && tests > 0) done++;
+
+    // Consider professional complete if they have at least profile + (edu or exp)
+    if (profile?.full_name && ( (eduRes.count && eduRes.count > 0) || (expRes.count && expRes.count > 0) )) {
+      hasProfData = true;
+    }
+
+    setIsProfessionalComplete(hasProfData);
     setProgress(Math.round((done / total) * 100));
+    return hasProfData;
   };
 
   // ── Render helpers ─────────────────────────────────────────────────────────
@@ -566,9 +590,15 @@ const Dashboard: React.FC = () => {
       {/* Onboarding Modal */}
       {showOnboarding && (
         <OnboardingModal 
+          professionalComplete={isProfessionalComplete}
+          behavioralComplete={hasTest}
           onStart={() => {
             setShowOnboarding(false);
-            navigate('/app/profile');
+            if (!isProfessionalComplete) {
+              navigate('/app/profile');
+            } else if (!hasTest) {
+              navigate(testId ? `/app/behavioral-test/${testId}` : '/app/behavioral-test');
+            }
           }} 
         />
       )}
