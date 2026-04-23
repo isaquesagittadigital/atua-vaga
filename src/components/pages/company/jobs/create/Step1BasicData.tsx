@@ -68,6 +68,25 @@ const Step1BasicData: React.FC<StepProps> = ({ data, onUpdate, onNext, onCancel 
         }
     };
 
+    const formatCurrency = (value: string) => {
+        const digits = value.replace(/\D/g, '');
+        const amount = (Number(digits) / 100).toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        });
+        return amount;
+    };
+
+    const handleSalaryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const rawValue = e.target.value;
+        if (!rawValue) {
+            onUpdate({ salary: '' });
+            return;
+        }
+        const formatted = formatCurrency(rawValue);
+        onUpdate({ salary: formatted });
+    };
+
     return (
         <div className="animate-in fade-in slide-in-from-right-8 duration-500">
             {/* Warning Alert */}
@@ -232,8 +251,8 @@ const Step1BasicData: React.FC<StepProps> = ({ data, onUpdate, onNext, onCancel 
                         <input
                             type="text"
                             value={data.salary}
-                            onChange={(e) => onUpdate({ salary: e.target.value })}
-                            placeholder="Informe o salário desta vaga"
+                            onChange={handleSalaryChange}
+                            placeholder="R$ 0,00"
                             className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm"
                         />
                     </div>
