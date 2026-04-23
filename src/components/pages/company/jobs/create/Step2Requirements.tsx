@@ -46,6 +46,11 @@ const Step2Requirements: React.FC<StepProps> = ({ data, onUpdate, onNext, onBack
         });
     };
 
+    const handleNumericChange = (field: string, value: string) => {
+        const numericValue = value.replace(/\D/g, '');
+        updateRequirement(field, numericValue);
+    };
+
     return (
         <div className="animate-in fade-in slide-in-from-right-8 duration-500">
             <h3 className="text-lg font-bold text-gray-800 mb-6">Requisitos da vaga</h3>
@@ -121,7 +126,7 @@ const Step2Requirements: React.FC<StepProps> = ({ data, onUpdate, onNext, onBack
                             type="text" 
                             placeholder="Informe somente o nº" 
                             value={data.requirements.minAge || ''}
-                            onChange={(e) => updateRequirement('minAge', e.target.value)}
+                            onChange={(e) => handleNumericChange('minAge', e.target.value)}
                             className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm" 
                         />
                     </div>
@@ -131,7 +136,7 @@ const Step2Requirements: React.FC<StepProps> = ({ data, onUpdate, onNext, onBack
                             type="text" 
                             placeholder="Informe somente o nº" 
                             value={data.requirements.maxAge || ''}
-                            onChange={(e) => updateRequirement('maxAge', e.target.value)}
+                            onChange={(e) => handleNumericChange('maxAge', e.target.value)}
                             className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm" 
                         />
                     </div>
@@ -172,15 +177,45 @@ const Step2Requirements: React.FC<StepProps> = ({ data, onUpdate, onNext, onBack
                             ))}
                         </div>
                     </div>
-                    <div>
+                    <div className="col-span-1">
                         <label className="block text-xs text-gray-500 mb-1.5">Cursos preferênciais</label>
-                        <input 
-                            type="text" 
-                            placeholder="Informe os cursos" 
-                            value={data.requirements.courses || ''}
-                            onChange={(e) => updateRequirement('courses', e.target.value)}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm" 
-                        />
+                        <div className="space-y-2">
+                            <div className="flex flex-wrap gap-2 mb-2">
+                                {(data.requirements.courses || []).map((course: string, index: number) => (
+                                    <span key={index} className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-600 text-xs font-bold rounded-lg border border-blue-100">
+                                        {course}
+                                        <button 
+                                            type="button"
+                                            onClick={() => {
+                                                const updated = data.requirements.courses.filter((_: any, i: number) => i !== index);
+                                                updateRequirement('courses', updated);
+                                            }}
+                                            className="hover:text-blue-800"
+                                        >
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                        </button>
+                                    </span>
+                                ))}
+                            </div>
+                            <input 
+                                type="text" 
+                                placeholder="Digite o curso e pressione Enter" 
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ',') {
+                                        e.preventDefault();
+                                        const val = e.currentTarget.value.trim();
+                                        if (val) {
+                                            const current = data.requirements.courses || [];
+                                            if (!current.includes(val)) {
+                                                updateRequirement('courses', [...current, val]);
+                                            }
+                                            e.currentTarget.value = '';
+                                        }
+                                    }
+                                }}
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm" 
+                            />
+                        </div>
                     </div>
                 </div>
 
@@ -191,7 +226,7 @@ const Step2Requirements: React.FC<StepProps> = ({ data, onUpdate, onNext, onBack
                             type="text" 
                             placeholder="Informe a quantidade" 
                             value={data.requirements.limit || ''}
-                            onChange={(e) => updateRequirement('limit', e.target.value)}
+                            onChange={(e) => handleNumericChange('limit', e.target.value)}
                             className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm" 
                         />
                         <p className="text-[10px] text-gray-400 mt-1">Quando atingir o número de inscrições acima a vaga é encerrada.</p>
@@ -202,7 +237,7 @@ const Step2Requirements: React.FC<StepProps> = ({ data, onUpdate, onNext, onBack
                             type="text" 
                             placeholder="Informe a quantidade" 
                             value={data.requirements.avgTenure || ''}
-                            onChange={(e) => updateRequirement('avgTenure', e.target.value)}
+                            onChange={(e) => handleNumericChange('avgTenure', e.target.value)}
                             className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm" 
                         />
                     </div>
