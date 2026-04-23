@@ -22,7 +22,10 @@ const CandidatesPage: React.FC = () => {
                 });
                 if (response.ok) {
                     const data = await response.json();
+                    console.log('Candidates fetched:', data);
                     setCandidates(data);
+                } else {
+                    console.error('Failed to fetch candidates:', response.status, await response.text());
                 }
             } catch (error) {
                 console.error('Error fetching candidates:', error);

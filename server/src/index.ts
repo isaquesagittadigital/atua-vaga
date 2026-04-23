@@ -297,7 +297,7 @@ app.get('/api/candidates/matches', requireAuth, async (req, res) => {
                     title,
                     company_id
                 ),
-                profiles:user_id (
+                profiles!job_applications_user_id_fkey (
                     id,
                     full_name,
                     avatar_url,
@@ -314,17 +314,20 @@ app.get('/api/candidates/matches', requireAuth, async (req, res) => {
 
         // 2. Format the response to match CandidateMatchCard props
         const candidates = (apps || []).map((app: any) => {
-            const profile = app.profiles;
+            // Supabase may return it under the table name or the alias
+            const profile = app.profiles || app.profiles_user_id || {};
             
             return {
-                id: profile?.id,
-                role: profile?.job_objective || 'Candidato',
+                id: profile.id,
+                role: profile.job_objective || 'Candidato',
                 matchPercentage: app.match_score || 0,
-                companyRef: profile?.full_name || 'Usuário',
-                location: profile?.city && profile?.state ? `${profile.city}, ${profile.state}` : 'Brasil',
-                imgUrl: profile?.avatar_url
+                companyRef: profile.full_name || 'Usuário',
+                location: profile.city && profile.state ? `${profile.city}, ${profile.state}` : 'Brasil',
+                imgUrl: profile.avatar_url
             };
         });
+
+        console.log(`Returning ${candidates.length} candidates for company ${company.id}`);
 
         res.json(candidates);
     } catch (error: any) {
