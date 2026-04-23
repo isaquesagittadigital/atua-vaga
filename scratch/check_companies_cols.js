@@ -6,13 +6,15 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-async function checkColumns() {
+async function listColumns() {
   const { data, error } = await supabase.from('companies').select('*').limit(1);
   if (error) {
-    console.error(error);
+     console.error(error);
+  } else if (data && data.length > 0) {
+     console.log("Keys in first row of companies:", Object.keys(data[0]));
   } else {
-    console.log("Columns in companies table:", Object.keys(data[0] || {}));
+     console.log("No data in companies table to check keys.");
   }
 }
 
-checkColumns();
+listColumns();
