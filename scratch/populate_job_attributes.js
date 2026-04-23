@@ -64,6 +64,28 @@ async function populate() {
         }
     }
     console.log("Specializations populated.");
+
+    // 5. Experience Levels
+    const expLevels = ['Sem experiência', 'Menos de 1 ano', '1 a 2 anos', '2 a 3 anos', '3 a 5 anos', 'Mais de 5 anos'];
+    for (const name of expLevels) {
+        await supabase.from('experience_levels').upsert({ name }, { onConflict: 'name' });
+    }
+    console.log("Experience levels populated.");
+
+    // 6. Genders
+    const genders = ['Masculino', 'Feminino', 'Ambos'];
+    for (const name of genders) {
+        await supabase.from('genders').upsert({ name }, { onConflict: 'name' });
+    }
+    console.log("Genders populated.");
+
+    // 7. Education Levels
+    const eduLevels = ['Ensino Fundamental', 'Ensino Médio', 'Ensino Técnico', 'Ensino Superior (Incompleto)', 'Ensino Superior (Completo)', 'Pós-graduação / MBA', 'Mestrado / Doutorado'];
+    for (const name of eduLevels) {
+        await supabase.from('education_levels').upsert({ name }, { onConflict: 'name' });
+    }
+    console.log("Education levels populated.");
+
     console.log("Done!");
 }
 

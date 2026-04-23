@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 
 interface StepProps {
     data: any;
@@ -8,6 +9,43 @@ interface StepProps {
 }
 
 const Step2Requirements: React.FC<StepProps> = ({ data, onUpdate, onNext, onBack }) => {
+    const [experienceLevels, setExperienceLevels] = useState<any[]>([]);
+    const [genders, setGenders] = useState<any[]>([]);
+    const [educationLevels, setEducationLevels] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchRequirementData = async () => {
+            setLoading(true);
+            try {
+                const [expRes, genderRes, eduRes] = await Promise.all([
+                    supabase.from('experience_levels').select('*').order('name'),
+                    supabase.from('genders').select('*').order('name'),
+                    supabase.from('education_levels').select('*').order('name')
+                ]);
+
+                if (expRes.data) setExperienceLevels(expRes.data);
+                if (genderRes.data) setGenders(genderRes.data);
+                if (eduRes.data) setEducationLevels(eduRes.data);
+            } catch (error) {
+                console.error('Error fetching requirement data:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchRequirementData();
+    }, []);
+
+    const updateRequirement = (field: string, value: any) => {
+        onUpdate({
+            requirements: {
+                ...data.requirements,
+                [field]: value
+            }
+        });
+    };
+
     return (
         <div className="animate-in fade-in slide-in-from-right-8 duration-500">
             <h3 className="text-lg font-bold text-gray-800 mb-6">Requisitos da vaga</h3>
@@ -16,51 +54,119 @@ const Step2Requirements: React.FC<StepProps> = ({ data, onUpdate, onNext, onBack
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                         <label className="block text-xs text-gray-500 mb-1.5">Tempo de experiência exigido</label>
-                        <select className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm bg-white">
-                            <option>Selecione o tempo</option>
+                        <select 
+                            value={data.requirements.experience || ''}
+                            onChange={(e) => updateRequirement('experience', e.target.value)}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm bg-white"
+                        >
+                            <option value="">Selecione o tempo</option>
+                            {experienceLevels.map(lvl => (
+                                <option key={lvl.id} value={lvl.name}>{lvl.name}</option>
+                            ))}
                         </select>
                     </div>
                     <div>
                         <label className="block text-xs text-gray-500 mb-1.5">Sexo</label>
-                        <select className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm bg-white">
-                            <option>Selecione o sexo</option>
+                        <select 
+                            value={data.requirements.gender || ''}
+                            onChange={(e) => updateRequirement('gender', e.target.value)}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm bg-white"
+                        >
+                            <option value="">Selecione o sexo</option>
+                            {genders.map(g => (
+                                <option key={g.id} value={g.name}>{g.name}</option>
+                            ))}
                         </select>
                     </div>
                     <div>
                         <label className="block text-xs text-gray-500 mb-1.5">Escolaridade</label>
-                        <select className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm bg-white">
-                            <option>Selecione o grau de escolaridade</option>
+                        <select 
+                            value={data.requirements.education || ''}
+                            onChange={(e) => updateRequirement('education', e.target.value)}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm bg-white"
+                        >
+                            <option value="">Selecione o grau de escolaridade</option>
+                            {educationLevels.map(lvl => (
+                                <option key={lvl.id} value={lvl.name}>{lvl.name}</option>
+                            ))}
                         </select>
                     </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <RadioGroup label="Disponibilidade para viajar?" name="travel" />
-                    <RadioGroup label="Disponibilidade para dormir?" name="sleep" />
-                    <RadioGroup label="Disponibilidade para se mudar?" name="move" />
+                    <RadioGroup 
+                        label="Disponibilidade para viajar?" 
+                        name="travel" 
+                        value={data.requirements.travel}
+                        onChange={(val) => updateRequirement('travel', val)}
+                    />
+                    <RadioGroup 
+                        label="Disponibilidade para dormir?" 
+                        name="sleep" 
+                        value={data.requirements.sleep}
+                        onChange={(val) => updateRequirement('sleep', val)}
+                    />
+                    <RadioGroup 
+                        label="Disponibilidade para se mudar?" 
+                        name="move" 
+                        value={data.requirements.move}
+                        onChange={(val) => updateRequirement('move', val)}
+                    />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                         <label className="block text-xs text-gray-500 mb-1.5">Idade mínima</label>
-                        <input type="text" placeholder="Informe somente o nº" className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm" />
+                        <input 
+                            type="text" 
+                            placeholder="Informe somente o nº" 
+                            value={data.requirements.minAge || ''}
+                            onChange={(e) => updateRequirement('minAge', e.target.value)}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm" 
+                        />
                     </div>
                     <div>
                         <label className="block text-xs text-gray-500 mb-1.5">Idade máxima</label>
-                        <input type="text" placeholder="Informe somente o nº" className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm" />
+                        <input 
+                            type="text" 
+                            placeholder="Informe somente o nº" 
+                            value={data.requirements.maxAge || ''}
+                            onChange={(e) => updateRequirement('maxAge', e.target.value)}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm" 
+                        />
                     </div>
-                    <RadioGroup label="Requer experiência?" name="exp" />
+                    <RadioGroup 
+                        label="Requer experiência?" 
+                        name="exp" 
+                        value={data.requirements.requiresExp}
+                        onChange={(val) => updateRequirement('requiresExp', val)}
+                    />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <RadioGroup label="Requer CNH?" name="cnh" />
-                    {/* Types of CNH (Checkbox group visually similar to radios in snippet) */}
+                    <RadioGroup 
+                        label="Requer CNH?" 
+                        name="cnh" 
+                        value={data.requirements.requiresCnh}
+                        onChange={(val) => updateRequirement('requiresCnh', val)}
+                    />
                     <div className="col-span-1">
                         <label className="block text-xs text-gray-500 mb-1.5">Tipo de CNH?</label>
                         <div className="flex gap-3">
                             {['A', 'B', 'C', 'D', 'E'].map(type => (
                                 <label key={type} className="flex items-center gap-1 cursor-pointer">
-                                    <input type="checkbox" className="rounded text-[#F04E23] focus:ring-[#F04E23]" />
+                                    <input 
+                                        type="checkbox" 
+                                        checked={data.requirements.cnhTypes?.includes(type)}
+                                        onChange={(e) => {
+                                            const current = data.requirements.cnhTypes || [];
+                                            const updated = e.target.checked 
+                                                ? [...current, type]
+                                                : current.filter((t: string) => t !== type);
+                                            updateRequirement('cnhTypes', updated);
+                                        }}
+                                        className="rounded text-[#F04E23] focus:ring-[#F04E23]" 
+                                    />
                                     <span className="text-sm text-gray-600">{type}</span>
                                 </label>
                             ))}
@@ -68,19 +174,37 @@ const Step2Requirements: React.FC<StepProps> = ({ data, onUpdate, onNext, onBack
                     </div>
                     <div>
                         <label className="block text-xs text-gray-500 mb-1.5">Cursos preferênciais</label>
-                        <input type="text" placeholder="Informe os cursos" className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm" />
+                        <input 
+                            type="text" 
+                            placeholder="Informe os cursos" 
+                            value={data.requirements.courses || ''}
+                            onChange={(e) => updateRequirement('courses', e.target.value)}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm" 
+                        />
                     </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label className="block text-xs text-gray-500 mb-1.5">Número Limite de Candidatos</label>
-                        <input type="text" placeholder="Informe a quantidade" className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm" />
+                        <input 
+                            type="text" 
+                            placeholder="Informe a quantidade" 
+                            value={data.requirements.limit || ''}
+                            onChange={(e) => updateRequirement('limit', e.target.value)}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm" 
+                        />
                         <p className="text-[10px] text-gray-400 mt-1">Quando atingir o número de inscrições acima a vaga é encerrada.</p>
                     </div>
                     <div>
                         <label className="block text-xs text-gray-500 mb-1.5">Tempo médio emprego anterior</label>
-                        <input type="text" placeholder="Informe a quantidade" className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm" />
+                        <input 
+                            type="text" 
+                            placeholder="Informe a quantidade" 
+                            value={data.requirements.avgTenure || ''}
+                            onChange={(e) => updateRequirement('avgTenure', e.target.value)}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm" 
+                        />
                     </div>
                 </div>
 
@@ -90,7 +214,18 @@ const Step2Requirements: React.FC<StepProps> = ({ data, onUpdate, onNext, onBack
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {['VR', 'VA', 'VT', 'Plano de saúde', 'Plano odontológico', 'Plano bem-estar', 'Auxílio escolar', 'Auxílio medicamento', 'Previdência privada', 'Participação de lucro', 'Comissão', 'Outro'].map(b => (
                             <label key={b} className="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" className="rounded text-[#F04E23] focus:ring-[#F04E23]" />
+                                <input 
+                                    type="checkbox" 
+                                    checked={data.requirements.benefits?.includes(b)}
+                                    onChange={(e) => {
+                                        const current = data.requirements.benefits || [];
+                                        const updated = e.target.checked 
+                                            ? [...current, b]
+                                            : current.filter((item: string) => item !== b);
+                                        updateRequirement('benefits', updated);
+                                    }}
+                                    className="rounded text-[#F04E23] focus:ring-[#F04E23]" 
+                                />
                                 <span className="text-sm text-gray-600">{b}</span>
                             </label>
                         ))}
@@ -111,16 +246,28 @@ const Step2Requirements: React.FC<StepProps> = ({ data, onUpdate, onNext, onBack
     );
 };
 
-const RadioGroup: React.FC<{ label: string, name: string }> = ({ label, name }) => (
+const RadioGroup: React.FC<{ label: string, name: string, value: string, onChange: (val: string) => void }> = ({ label, name, value, onChange }) => (
     <div>
         <label className="block text-xs text-gray-500 mb-1.5">{label}</label>
         <div className="flex gap-4">
             <label className="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name={name} className="text-[#F04E23] focus:ring-[#F04E23]" />
+                <input 
+                    type="radio" 
+                    name={name} 
+                    checked={value === 'Sim'}
+                    onChange={() => onChange('Sim')}
+                    className="text-[#F04E23] focus:ring-[#F04E23]" 
+                />
                 <span className="text-sm text-gray-600">Sim</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name={name} className="text-[#F04E23] focus:ring-[#F04E23]" />
+                <input 
+                    type="radio" 
+                    name={name} 
+                    checked={value === 'Não'}
+                    onChange={() => onChange('Não')}
+                    className="text-[#F04E23] focus:ring-[#F04E23]" 
+                />
                 <span className="text-sm text-gray-600">Não</span>
             </label>
         </div>
