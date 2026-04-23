@@ -1,67 +1,73 @@
 import React from 'react';
-import { Building2, DollarSign, Clock, Gift, Calendar, User } from 'lucide-react';
+import { Briefcase, Calendar, MapPin, Info, ExternalLink, User } from 'lucide-react';
 
 interface CandidateMatchCardProps {
+    id?: string;
     role: string;
-    companyRef?: string;
+    companyRef?: string; // This is the Name
     matchPercentage: number;
     location?: string;
     imgUrl?: string;
+    age?: number;
 }
 
 const CandidateMatchCard: React.FC<CandidateMatchCardProps> = ({ 
     role, 
     companyRef, 
     matchPercentage,
-    location = 'Remoto',
-    imgUrl 
+    location = 'Brasil',
+    imgUrl,
+    age = 25
 }) => {
     return (
-        <div className="bg-white rounded-[24px] p-6 border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.02)] min-w-[320px] flex-1 border-l-4 border-l-blue-500 hover:shadow-lg transition-all group">
-            <div className="flex items-start gap-4 mb-6">
-                <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 border border-blue-100 overflow-hidden shrink-0">
+        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all flex gap-8 max-w-md">
+            {/* Left side: Avatar and Name */}
+            <div className="flex flex-col items-center gap-4 shrink-0">
+                <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-50 shadow-sm bg-gray-50 flex items-center justify-center">
                     {imgUrl ? (
                         <img src={imgUrl} alt={companyRef} className="w-full h-full object-cover" />
                     ) : (
-                        <User size={24} />
+                        <User size={32} className="text-gray-300" />
                     )}
                 </div>
-                <div>
-                    <h3 className="font-black text-[#1D4ED8] text-lg leading-tight group-hover:text-[#F04E23] transition-colors line-clamp-1">{role}</h3>
-                    <p className="text-gray-500 text-sm font-medium mt-1 line-clamp-1">{companyRef || 'Candidato'}</p>
-                </div>
+                <h3 className="font-bold text-gray-800 text-center max-w-[120px] leading-tight">
+                    {companyRef || 'Usuário'}
+                </h3>
             </div>
 
-            <div className="space-y-3 mb-8">
-                <div className="flex items-center gap-2 text-gray-500 text-sm font-medium">
-                    <Building2 size={18} className="text-blue-400" />
-                    {location}
+            {/* Right side: Badge, Info, and Link */}
+            <div className="flex flex-col gap-4 flex-1">
+                {/* Match Badge */}
+                <div className="flex justify-end">
+                    <div className="bg-[#EBF5FF] text-[#1E6BFF] px-4 py-1.5 rounded-full flex items-center gap-2 text-sm font-bold border border-[#D1E5FF]">
+                        {matchPercentage}% de aderência
+                        <Info size={16} />
+                    </div>
                 </div>
-                <div className="flex items-center gap-2 text-gray-500 text-sm font-medium">
-                    <DollarSign size={18} className="text-blue-400" />
-                    <span className="text-orange-500 font-bold">A combinar</span>
-                </div>
-                <div className="flex items-center gap-2 text-gray-500 text-sm font-medium">
-                    <Clock size={18} className="text-blue-400" />
-                    Período flexível
-                </div>
-                <div className="flex items-center gap-2 text-gray-500 text-sm font-medium">
-                    <Gift size={18} className="text-blue-400" />
-                    VR/VT
-                </div>
-            </div>
 
-            <div className="flex items-center justify-center mb-6">
-                <span className="px-4 py-1.5 bg-blue-50 text-blue-600 font-bold text-sm rounded-full border border-blue-100">
-                    {matchPercentage}% de aderência
-                </span>
-            </div>
+                {/* Details List */}
+                <div className="space-y-2.5">
+                    <div className="flex items-center gap-2.5 text-gray-600">
+                        <Briefcase size={18} className="text-gray-700" />
+                        <span className="text-sm font-medium">{role}</span>
+                    </div>
+                    <div className="flex items-center gap-2.5 text-gray-600">
+                        <Calendar size={18} className="text-gray-700" />
+                        <span className="text-sm font-medium">{age} anos</span>
+                    </div>
+                    <div className="flex items-center gap-2.5 text-gray-600">
+                        <MapPin size={18} className="text-gray-700" />
+                        <span className="text-sm font-medium">{location}</span>
+                    </div>
+                </div>
 
-            <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-50">
-                <button className="text-[#F04E23] font-bold text-sm hover:underline">Ver perfil</button>
-                <span className="text-gray-400 text-xs font-bold flex items-center gap-1">
-                    <Calendar size={14} /> Ativo agora
-                </span>
+                {/* View Link */}
+                <div className="mt-auto pt-2">
+                    <button className="flex items-center gap-2 text-[#C0421D] font-bold hover:underline transition-colors">
+                        Ver candidato
+                        <ExternalLink size={20} />
+                    </button>
+                </div>
             </div>
         </div>
     );

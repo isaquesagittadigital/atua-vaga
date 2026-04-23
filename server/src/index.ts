@@ -301,6 +301,7 @@ app.get('/api/candidates/matches', requireAuth, async (req, res) => {
                     full_name,
                     avatar_url,
                     job_objective,
+                    birth_date,
                     city,
                     state
                 )
@@ -315,13 +316,26 @@ app.get('/api/candidates/matches', requireAuth, async (req, res) => {
             // Supabase may return it under the table name or the alias
             const profile = app.profiles || app.profiles_user_id || {};
             
+            // Calculate age
+            let age = 0;
+            if (profile.birth_date) {
+                const birth = new Date(profile.birth_date);
+                const today = new Date();
+                age = today.getFullYear() - birth.getFullYear();
+                const m = today.getMonth() - birth.getMonth();
+                if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+                    age--;
+                }
+            }
+
             return {
                 id: profile.id,
                 role: profile.job_objective || 'Candidato',
                 matchPercentage: app.match_score || 0,
                 companyRef: profile.full_name || 'Usuário',
                 location: profile.city && profile.state ? `${profile.city}, ${profile.state}` : 'Brasil',
-                imgUrl: profile.avatar_url
+                imgUrl: profile.avatar_url,
+                age: age > 0 ? age : 25
             };
         });
 
