@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 
 // Candidate Pages
 import Dashboard from '../components/pages/candidate/Dashboard';
@@ -16,6 +16,7 @@ import CompanyProfilePage from '../components/pages/candidate/CompanyProfilePage
 const CandidateRoutes: React.FC = () => {
     return (
         <Routes>
+            <Route path="/" element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="jobs" element={<JobsPage onNavigate={() => { }} />} />
             <Route path="my-jobs" element={<MyJobsPage />} />
