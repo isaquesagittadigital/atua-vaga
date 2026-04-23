@@ -46,8 +46,11 @@ const Step2Requirements: React.FC<StepProps> = ({ data, onUpdate, onNext, onBack
         });
     };
 
-    const handleNumericChange = (field: string, value: string) => {
-        const numericValue = value.replace(/\D/g, '');
+    const handleNumericChange = (field: string, value: string, maxLength?: number) => {
+        let numericValue = value.replace(/\D/g, '');
+        if (maxLength && numericValue.length > maxLength) {
+            numericValue = numericValue.slice(0, maxLength);
+        }
         updateRequirement(field, numericValue);
     };
 
@@ -126,7 +129,7 @@ const Step2Requirements: React.FC<StepProps> = ({ data, onUpdate, onNext, onBack
                             type="text" 
                             placeholder="Informe somente o nº" 
                             value={data.requirements.minAge || ''}
-                            onChange={(e) => handleNumericChange('minAge', e.target.value)}
+                            onChange={(e) => handleNumericChange('minAge', e.target.value, 2)}
                             className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm" 
                         />
                     </div>
@@ -136,7 +139,7 @@ const Step2Requirements: React.FC<StepProps> = ({ data, onUpdate, onNext, onBack
                             type="text" 
                             placeholder="Informe somente o nº" 
                             value={data.requirements.maxAge || ''}
-                            onChange={(e) => handleNumericChange('maxAge', e.target.value)}
+                            onChange={(e) => handleNumericChange('maxAge', e.target.value, 2)}
                             className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm" 
                         />
                     </div>
@@ -226,7 +229,7 @@ const Step2Requirements: React.FC<StepProps> = ({ data, onUpdate, onNext, onBack
                             type="text" 
                             placeholder="Informe a quantidade" 
                             value={data.requirements.limit || ''}
-                            onChange={(e) => handleNumericChange('limit', e.target.value)}
+                            onChange={(e) => handleNumericChange('limit', e.target.value, 4)}
                             className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm" 
                         />
                         <p className="text-[10px] text-gray-400 mt-1">Quando atingir o número de inscrições acima a vaga é encerrada.</p>
