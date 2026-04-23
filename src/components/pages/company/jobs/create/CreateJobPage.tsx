@@ -7,6 +7,7 @@ import Step3Screening from './Step3Screening';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
+import SuccessModal from '@/components/modals/SuccessModal';
 
 const CreateJobPage: React.FC = () => {
     const { id } = useParams();
@@ -15,6 +16,7 @@ const CreateJobPage: React.FC = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [dataLoading, setDataLoading] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
 
     const [jobData, setJobData] = useState({
         title: '',
@@ -51,28 +53,44 @@ const CreateJobPage: React.FC = () => {
             if (error) throw error;
 
             if (data) {
-                // Parse description if it contains our custom format
+                // Parse description and metadata
                 let cleanDescription = data.description || '';
+                const metadata: any = {};
+                
                 const parts = cleanDescription.split('---');
                 if (parts.length > 1) {
                     cleanDescription = parts[0].trim();
+                    const metadataText = parts[1];
+                    
+                    // Regex to extract fields from the "---" section
+                    const extract = (key: string) => {
+                        const match = metadataText.match(new RegExp(`- ${key}: (.*)`));
+                        return match ? match[1].trim() : '';
+                    };
+
+                    metadata.role = extract('Cargo');
+                    metadata.workModel = extract('Modelo');
+                    metadata.area = extract('Área');
+                    metadata.specialization = extract('Especialização');
+                    metadata.level = extract('Nível');
+                    metadata.journey = extract('Jornada');
                 }
 
                 setJobData({
                     title: data.title || '',
-                    companyName: '', // Usually fetched from the company profile
-                    role: '', // We don't have this column yet, extracted from description if needed
+                    companyName: '', 
+                    role: metadata.role || '',
                     location: data.location || '',
-                    workModel: '',
-                    area: '',
-                    specialization: '',
-                    level: '',
+                    workModel: metadata.workModel || '',
+                    area: metadata.area || '',
+                    specialization: metadata.specialization || '',
+                    level: metadata.level || '',
                     description: cleanDescription,
                     contractType: data.type || '',
-                    journey: '',
+                    journey: metadata.journey || '',
                     salary: data.salary_range || '',
-                    requirements: {},
-                    questions: []
+                    requirements: data.requirements_json || {},
+                    questions: data.screening_questions || []
                 });
             }
         } catch (error) {
@@ -104,6 +122,7 @@ ${jobData.description}
 - Cargo: ${jobData.role}
 - Modelo: ${jobData.workModel}
 - Área: ${jobData.area}
+- Especialização: ${jobData.specialization}
 - Nível: ${jobData.level}
 - Jornada: ${jobData.journey}
             `.trim();
@@ -124,7 +143,9 @@ ${jobData.description}
                     location: jobData.location,
                     type: jobData.contractType,
                     salary_range: jobData.salary,
-                    status: 'active'
+                    status: 'active',
+                    requirements_json: jobData.requirements,
+                    screening_questions: jobData.questions
                 })
             });
 
@@ -133,8 +154,7 @@ ${jobData.description}
                 throw new Error(errorData.error || `Falha ao ${id ? 'atualizar' : 'criar'} vaga`);
             }
 
-            alert(`Vaga ${id ? 'atualizada' : 'publicada'} com sucesso!`);
-            navigate('/company/dashboard');
+            setShowSuccess(true);
         } catch (error: any) {
             console.error(error);
             alert(`Erro ao ${id ? 'atualizar' : 'publicar'} vaga: ` + error.message);
@@ -210,6 +230,14 @@ ${jobData.description}
                     />
                 )}
             </div>
+
+            <SuccessModal 
+                isOpen={showSuccess}
+                onClose={() => navigate('/company/dashboard')}
+                title={id ? "Vaga Atualizada!" : "Vaga Publicada!"}
+                description={id ? "As alterações foram salvas com sucesso." : "Sua nova vaga já está disponível para candidaturas."}
+                buttonText="Voltar ao Dashboard"
+            />
         </div>
     );
 };

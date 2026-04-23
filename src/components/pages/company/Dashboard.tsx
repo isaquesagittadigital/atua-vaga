@@ -100,6 +100,8 @@ const Dashboard: React.FC = () => {
                             role={match.role}
                             matchPercentage={match.matchPercentage}
                             companyRef={match.companyRef}
+                            location={match.location}
+                            imgUrl={match.imgUrl}
                         />
                     ))}
                     {matches.length === 0 && !loading && (

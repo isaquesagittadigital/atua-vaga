@@ -210,16 +210,57 @@ app.get('/api/dashboard/metrics', requireAuth, async (req, res) => {
 
 app.get('/api/candidates/matches', requireAuth, async (req, res) => {
     try {
-        // In a real scenario, this would query a 'candidates' table and run a matching algorithm.
-        // For now, we move the mock data to the backend to centralize the API contract.
-        const mockCandidates = [
-            { id: 1, role: 'Pessoa Recursos Humanos', matchPercentage: 90, companyRef: 'Digital Marketing Experts S/A' },
-            { id: 2, role: 'Pessoa Recursos Humanos', matchPercentage: 90, companyRef: 'Digital Marketing Experts S/A' },
-            { id: 3, role: 'Analista de RH', matchPercentage: 85, companyRef: 'Tech Solutions Inc.' }
-        ];
+        const company = (req as any).company;
+        if (!company) {
+            return res.status(403).json({ error: 'Company access required' });
+        }
 
-        res.json(mockCandidates);
+        // 1. Fetch applications for jobs owned by this company
+        const { data: apps, error } = await supabaseAdmin
+            .from('job_applications')
+            .select(`
+                id,
+                match_score,
+                job_id,
+                jobs!inner (
+                    id,
+                    title,
+                    company_id
+                ),
+                profiles (
+                    id,
+                    full_name,
+                    avatar_url,
+                    job_objective,
+                    birth_date,
+                    city,
+                    state
+                )
+            `)
+            .eq('jobs.company_id', company.id)
+            .order('match_score', { ascending: false })
+            .limit(10);
+
+        if (error) throw error;
+
+        // 2. Format the response to match CandidateMatchCard props
+        const candidates = (apps || []).map((app: any) => {
+            const profile = app.profiles;
+            
+            // Calculate age if needed, or just use objective as role
+            return {
+                id: profile.id,
+                role: profile.job_objective || 'Candidato',
+                matchPercentage: app.match_score || 0,
+                companyRef: profile.full_name || 'Usuário',
+                location: profile.city && profile.state ? `${profile.city}, ${profile.state}` : 'Brasil',
+                imgUrl: profile.avatar_url
+            };
+        });
+
+        res.json(candidates);
     } catch (error: any) {
+        console.error('Error fetching candidates:', error);
         res.status(500).json({ error: 'Error fetching candidates' });
     }
 });

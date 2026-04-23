@@ -21,7 +21,10 @@ const JobCard: React.FC<JobCardProps> = ({
     const navigate = useNavigate();
 
     return (
-        <div className="bg-white rounded-[24px] border border-gray-100 p-6 hover:shadow-lg transition-all shadow-[0_4px_20px_rgb(0,0,0,0.02)] flex flex-col group h-full">
+        <div 
+            onClick={() => navigate(`/company/jobs/${id || '1'}`)}
+            className="bg-white rounded-[24px] border border-gray-100 p-6 hover:shadow-lg transition-all shadow-[0_4px_20px_rgb(0,0,0,0.02)] flex flex-col group h-full cursor-pointer"
+        >
             <div className="flex items-start gap-4 mb-6">
                 <div className="w-14 h-14 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center overflow-hidden shrink-0">
                     {logoUrl ? <img src={logoUrl} alt={company} className="w-full h-full object-cover" /> : <span className="text-xl font-black text-blue-600">C</span>}
