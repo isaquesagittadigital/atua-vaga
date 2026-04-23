@@ -10,9 +10,10 @@ type TestResult = Database['public']['Tables']['candidate_test_results']['Row'] 
     behavioral_tests: BehavioralTest | null;
 };
 
-const BehavioralResults: React.FC = () => {
+const BehavioralResults: React.FC<{ externalUserId?: string }> = ({ externalUserId }) => {
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user: authUser } = useAuth();
+    const user = externalUserId ? { id: externalUserId } as any : authUser;
     const [resultsData, setResultsData] = useState<TestResult[]>([]);
     const [loading, setLoading] = useState(true);
 

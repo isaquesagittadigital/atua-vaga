@@ -10,15 +10,16 @@ interface AddressFormProps {
     readOnly?: boolean;
     canEdit?: boolean;
     hideSkip?: boolean;
+    externalProfile?: any;
 }
 
-const AddressForm: React.FC<AddressFormProps> = ({ onNext, onBack, readOnly = false, canEdit = false, hideSkip = false }) => {
-    const { user, profile, refreshUser } = useAuth();
+const AddressForm: React.FC<AddressFormProps> = ({ onNext, onBack, readOnly = false, canEdit = false, hideSkip = false, externalProfile }) => {
+    const { user, profile: authProfile, refreshUser } = useAuth();
     const [loading, setLoading] = useState(false);
     const [isEditing, setIsEditing] = useState(!canEdit);
 
     // Using any for profile to accept the new fields until types are fully updated
-    const userProfile = profile as any;
+    const userProfile = (externalProfile || authProfile) as any;
 
     const [formData, setFormData] = useState({
         cep: '',
@@ -42,7 +43,7 @@ const AddressForm: React.FC<AddressFormProps> = ({ onNext, onBack, readOnly = fa
                 neighborhood: userProfile.neighborhood || ''
             });
         }
-    }, [userProfile]);
+    }, [userProfile?.id]);
 
     const handleChange = (field: string, value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }));

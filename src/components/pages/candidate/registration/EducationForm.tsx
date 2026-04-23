@@ -11,6 +11,7 @@ interface EducationFormProps {
     readOnly?: boolean;
     canEdit?: boolean;
     hideSkip?: boolean;
+    externalUserId?: string;
 }
 
 interface Education {
@@ -23,8 +24,9 @@ interface Education {
     status: string;
 }
 
-const EducationForm: React.FC<EducationFormProps> = ({ onNext, readOnly = false, canEdit = false, hideSkip = false }) => {
-    const { user } = useAuth();
+const EducationForm: React.FC<EducationFormProps> = ({ onNext, readOnly = false, canEdit = false, hideSkip = false, externalUserId }) => {
+    const { user: authUser } = useAuth();
+    const user = externalUserId ? { id: externalUserId } as any : authUser;
     const [loading, setLoading] = useState(false);
     const [educations, setEducations] = useState<Education[]>([]);
     const [isEditing, setIsEditing] = useState(!canEdit);

@@ -10,6 +10,7 @@ interface ExperienceFormProps {
     readOnly?: boolean;
     canEdit?: boolean;
     hideSkip?: boolean;
+    externalUserId?: string;
 }
 
 interface Experience {
@@ -31,8 +32,9 @@ const EMPTY_EXP: Experience = {
     start_date: '', end_date: '', is_current: false
 };
 
-const ExperienceForm: React.FC<ExperienceFormProps> = ({ onNext, readOnly = false, canEdit = false, hideSkip = false }) => {
-    const { user } = useAuth();
+const ExperienceForm: React.FC<ExperienceFormProps> = ({ onNext, readOnly = false, canEdit = false, hideSkip = false, externalUserId }) => {
+    const { user: authUser } = useAuth();
+    const user = externalUserId ? { id: externalUserId } as any : authUser;
     const [loading, setLoading] = useState(false);
     const [experiences, setExperiences] = useState<Experience[]>([]);
     const [isEditing, setIsEditing] = useState(!canEdit);

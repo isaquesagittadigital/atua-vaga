@@ -8,6 +8,8 @@ interface SkillsFormProps {
     readOnly?: boolean;
     canEdit?: boolean;
     hideSkip?: boolean;
+    externalProfile?: any;
+    externalUserId?: string;
 }
 
 const SOCIAL_PLATFORMS = [
@@ -22,8 +24,10 @@ const SOCIAL_PLATFORMS = [
     { name: 'Discord', icon: Globe, domain: 'discord.gg/', color: '#5865F2' },
 ];
 
-const SkillsForm: React.FC<SkillsFormProps> = ({ onNext, readOnly = false, canEdit = false, hideSkip = false }) => {
-    const { user, profile, refreshUser } = useAuth();
+const SkillsForm: React.FC<SkillsFormProps> = ({ onNext, readOnly = false, canEdit = false, hideSkip = false, externalProfile, externalUserId }) => {
+    const { user: authUser, profile: authProfile, refreshUser } = useAuth();
+    const user = externalUserId ? { id: externalUserId } as any : authUser;
+    const profile = externalProfile || authProfile;
     const [loading, setLoading] = useState(false);
     const [isEditing, setIsEditing] = useState(!canEdit);
 
