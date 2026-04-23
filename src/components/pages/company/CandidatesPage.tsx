@@ -1,3 +1,7 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Users, Plus } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 import CandidateMatchCard from '@/components/ui/CandidateMatchCard';
 
 const CandidatesPage: React.FC = () => {

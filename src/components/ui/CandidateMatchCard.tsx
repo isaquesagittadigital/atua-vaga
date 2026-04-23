@@ -35,18 +35,10 @@ const CandidateMatchCard: React.FC<CandidateMatchCardProps> = ({
                 </h3>
             </div>
 
-            {/* Right side: Badge, Info, and Link */}
+            {/* Right side: Info and Link */}
             <div className="flex flex-col gap-4 flex-1">
-                {/* Match Badge */}
-                <div className="flex justify-end">
-                    <div className="bg-[#EBF5FF] text-[#1E6BFF] px-4 py-1.5 rounded-full flex items-center gap-2 text-sm font-bold border border-[#D1E5FF]">
-                        {matchPercentage}% de aderência
-                        <Info size={16} />
-                    </div>
-                </div>
-
                 {/* Details List */}
-                <div className="space-y-2.5">
+                <div className="space-y-2.5 mt-2">
                     <div className="flex items-center gap-2.5 text-gray-600">
                         <Briefcase size={18} className="text-gray-700" />
                         <span className="text-sm font-medium">{role}</span>
