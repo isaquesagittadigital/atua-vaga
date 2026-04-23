@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import JobCard from '../JobCard';
 import CandidateRankingCard from './CandidateRankingCard';
 import { supabase } from '@/lib/supabase';
+import { Edit2, Trash2 } from 'lucide-react';
 
 const JobCandidatesPage: React.FC = () => {
     const { id } = useParams();
@@ -86,6 +87,25 @@ const JobCandidatesPage: React.FC = () => {
         fetchJobAndCandidates();
     }, [id]);
 
+    const handleDeleteJob = async () => {
+        if (!window.confirm('Tem certeza que deseja excluir esta vaga? Esta ação não pode ser desfeita.')) return;
+        
+        try {
+            const { error } = await supabase
+                .from('jobs')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+            
+            alert('Vaga excluída com sucesso!');
+            navigate('/company/dashboard');
+        } catch (error) {
+            console.error('Error deleting job:', error);
+            alert('Erro ao excluir vaga. Tente novamente.');
+        }
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -105,8 +125,28 @@ const JobCandidatesPage: React.FC = () => {
 
     return (
         <div className="max-w-[1400px] w-full mx-auto px-6 py-8">
-            <h1 className="text-3xl font-black text-gray-900 mb-2">Minhas vagas</h1>
-            <p className="text-gray-500 mb-8">Baseado no seu perfil, preferências e requisitos da vaga.</p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                <div>
+                    <h1 className="text-3xl font-black text-gray-900 mb-2">Minhas vagas</h1>
+                    <p className="text-gray-500">Baseado no seu perfil, preferências e requisitos da vaga.</p>
+                </div>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => navigate(`/company/jobs/edit/${id}`)}
+                        className="flex items-center gap-2 px-6 py-3 border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-all text-sm"
+                    >
+                        <Edit2 size={18} />
+                        Editar vaga
+                    </button>
+                    <button
+                        onClick={handleDeleteJob}
+                        className="flex items-center gap-2 px-6 py-3 border border-red-100 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 transition-all text-sm"
+                    >
+                        <Trash2 size={18} />
+                        Excluir
+                    </button>
+                </div>
+            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Column: Job Details */}

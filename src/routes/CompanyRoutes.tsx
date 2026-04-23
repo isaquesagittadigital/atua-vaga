@@ -17,6 +17,7 @@ const CompanyRoutes: React.FC = () => {
             <Route path="onboarding" element={<OnboardingPage />} />
             <Route path="jobs" element={<JobsListPage />} />
             <Route path="jobs/new" element={<CreateJobPage />} />
+            <Route path="jobs/edit/:id" element={<CreateJobPage />} />
             <Route path="jobs/:id" element={<JobCandidatesPage />} />
             <Route path="candidates" element={<CandidatesPage />} />
             <Route path="selection" element={<SelectionPage />} />

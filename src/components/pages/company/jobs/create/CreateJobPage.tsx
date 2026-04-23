@@ -1,21 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Briefcase, Flag, UserPlus } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Step1BasicData from './Step1BasicData';
 import Step2Requirements from './Step2Requirements';
 import Step3Screening from './Step3Screening';
 
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
 
 const CreateJobPage: React.FC = () => {
+    const { id } = useParams();
     const { user, session } = useAuth();
     const [step, setStep] = useState(1);
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
+    const [dataLoading, setDataLoading] = useState(false);
 
     const [jobData, setJobData] = useState({
         title: '',
-        companyName: '', // Visual only or for description
+        companyName: '',
         role: '',
         location: '',
         workModel: '',
@@ -26,9 +29,59 @@ const CreateJobPage: React.FC = () => {
         contractType: '',
         journey: '',
         salary: '',
-        requirements: {} as any, // For step 2
-        questions: [] as string[] // For step 3
+        requirements: {} as any,
+        questions: [] as string[]
     });
+
+    useEffect(() => {
+        if (id) {
+            fetchExistingJob();
+        }
+    }, [id]);
+
+    const fetchExistingJob = async () => {
+        setDataLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from('jobs')
+                .select('*')
+                .eq('id', id)
+                .single();
+
+            if (error) throw error;
+
+            if (data) {
+                // Parse description if it contains our custom format
+                let cleanDescription = data.description || '';
+                const parts = cleanDescription.split('---');
+                if (parts.length > 1) {
+                    cleanDescription = parts[0].trim();
+                }
+
+                setJobData({
+                    title: data.title || '',
+                    companyName: '', // Usually fetched from the company profile
+                    role: '', // We don't have this column yet, extracted from description if needed
+                    location: data.location || '',
+                    workModel: '',
+                    area: '',
+                    specialization: '',
+                    level: '',
+                    description: cleanDescription,
+                    contractType: data.type || '',
+                    journey: '',
+                    salary: data.salary_range || '',
+                    requirements: {},
+                    questions: []
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching job:', error);
+            alert('Erro ao carregar dados da vaga.');
+        } finally {
+            setDataLoading(false);
+        }
+    };
 
     const updateJobData = (data: Partial<typeof jobData>) => {
         setJobData(prev => ({ ...prev, ...data }));
@@ -43,8 +96,6 @@ const CreateJobPage: React.FC = () => {
         try {
             setLoading(true);
 
-            // Construct the payload matching our simple table schema
-            // We append extra details to description since we don't have columns for them yet
             const fullDescription = `
 ${jobData.description}
 
@@ -55,14 +106,14 @@ ${jobData.description}
 - Área: ${jobData.area}
 - Nível: ${jobData.level}
 - Jornada: ${jobData.journey}
-
-**Requisitos:**
-(Detalhes dos requisitos seriam listados aqui baseados no Step 2)
             `.trim();
 
             const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-            const response = await fetch(`${apiUrl}/jobs`, {
-                method: 'POST',
+            const method = id ? 'PATCH' : 'POST';
+            const url = id ? `${apiUrl}/jobs/${id}` : `${apiUrl}/jobs`;
+
+            const response = await fetch(url, {
+                method: method,
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${session.access_token}`
@@ -79,23 +130,31 @@ ${jobData.description}
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.error || 'Falha ao criar vaga');
+                throw new Error(errorData.error || `Falha ao ${id ? 'atualizar' : 'criar'} vaga`);
             }
 
-            alert("Vaga publicada com sucesso!");
-            navigate('/company/dashboard'); // Navigate to dashboard or jobs list
+            alert(`Vaga ${id ? 'atualizada' : 'publicada'} com sucesso!`);
+            navigate('/company/dashboard');
         } catch (error: any) {
             console.error(error);
-            alert("Erro ao publicar vaga: " + error.message);
+            alert(`Erro ao ${id ? 'atualizar' : 'publicar'} vaga: ` + error.message);
         } finally {
             setLoading(false);
         }
     };
 
+    if (dataLoading) {
+        return (
+            <div className="min-h-[400px] flex items-center justify-center">
+                <div className="w-8 h-8 border-3 border-[#F04E23] border-t-transparent rounded-full animate-spin"></div>
+            </div>
+        );
+    }
+
     return (
         <div className="max-w-[1200px] mx-auto w-full px-6 py-8">
             <div className="mb-8">
-                <h1 className="text-3xl font-black text-gray-900 mb-2">Nova vaga</h1>
+                <h1 className="text-3xl font-black text-gray-900 mb-2">{id ? 'Editar vaga' : 'Nova vaga'}</h1>
                 <p className="text-gray-500">Baseado no seu perfil, preferências e requisitos da vaga.</p>
             </div>
 
@@ -130,7 +189,7 @@ ${jobData.description}
                         data={jobData}
                         onUpdate={updateJobData}
                         onNext={() => setStep(2)}
-                        onCancel={() => navigate('/company/jobs')}
+                        onCancel={() => navigate('/company/dashboard')}
                     />
                 )}
                 {step === 2 && (
