@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 
 interface StepProps {
     data: any;
@@ -8,6 +9,65 @@ interface StepProps {
 }
 
 const Step1BasicData: React.FC<StepProps> = ({ data, onUpdate, onNext, onCancel }) => {
+    const [areas, setAreas] = useState<any[]>([]);
+    const [specializations, setSpecializations] = useState<any[]>([]);
+    const [levels, setLevels] = useState<any[]>([]);
+    const [schedules, setSchedules] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchInitialData = async () => {
+            setLoading(true);
+            try {
+                const [areasRes, levelsRes, schedulesRes] = await Promise.all([
+                    supabase.from('professional_areas').select('*').order('name'),
+                    supabase.from('seniority_levels').select('*').order('name'),
+                    supabase.from('work_schedules').select('*').order('name')
+                ]);
+
+                if (areasRes.data) setAreas(areasRes.data);
+                if (levelsRes.data) setLevels(levelsRes.data);
+                if (schedulesRes.data) setSchedules(schedulesRes.data);
+
+                // If an area is already selected (e.g., in edit mode), fetch specializations
+                if (data.area) {
+                    const areaObj = areasRes.data?.find(a => a.name === data.area);
+                    if (areaObj) fetchSpecializations(areaObj.id);
+                }
+
+            } catch (error) {
+                console.error('Error fetching form data:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchInitialData();
+    }, []);
+
+    const fetchSpecializations = async (areaId: string) => {
+        try {
+            const { data: specData } = await supabase
+                .from('specializations')
+                .select('*')
+                .eq('area_id', areaId)
+                .order('name');
+            setSpecializations(specData || []);
+        } catch (error) {
+            console.error('Error fetching specializations:', error);
+        }
+    };
+
+    const handleAreaChange = (areaName: string) => {
+        onUpdate({ area: areaName, specialization: '' });
+        const selectedArea = areas.find(a => a.name === areaName);
+        if (selectedArea) {
+            fetchSpecializations(selectedArea.id);
+        } else {
+            setSpecializations([]);
+        }
+    };
+
     return (
         <div className="animate-in fade-in slide-in-from-right-8 duration-500">
             {/* Warning Alert */}
@@ -83,8 +143,15 @@ const Step1BasicData: React.FC<StepProps> = ({ data, onUpdate, onNext, onCancel 
                         </div>
                         <div>
                             <label className="block text-xs text-gray-500 mb-1.5">Área Profissional</label>
-                            <select className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm bg-white">
-                                <option>Selecione a área</option>
+                            <select 
+                                value={data.area}
+                                onChange={(e) => handleAreaChange(e.target.value)}
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm bg-white"
+                            >
+                                <option value="">Selecione a área</option>
+                                {areas.map(area => (
+                                    <option key={area.id} value={area.name}>{area.name}</option>
+                                ))}
                             </select>
                         </div>
                     </div>
@@ -93,14 +160,29 @@ const Step1BasicData: React.FC<StepProps> = ({ data, onUpdate, onNext, onCancel 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label className="block text-xs text-gray-500 mb-1.5">Especialização</label>
-                        <select className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm bg-white">
-                            <option>Selecione a especialização</option>
+                        <select 
+                            value={data.specialization}
+                            onChange={(e) => onUpdate({ specialization: e.target.value })}
+                            disabled={!data.area}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm bg-white disabled:bg-gray-50 disabled:text-gray-400"
+                        >
+                            <option value="">Selecione a especialização</option>
+                            {specializations.map(spec => (
+                                <option key={spec.id} value={spec.name}>{spec.name}</option>
+                            ))}
                         </select>
                     </div>
                     <div>
                         <label className="block text-xs text-gray-500 mb-1.5">Nível Hierárquico</label>
-                        <select className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm bg-white">
-                            <option>Selecione o nível</option>
+                        <select 
+                            value={data.level}
+                            onChange={(e) => onUpdate({ level: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm bg-white"
+                        >
+                            <option value="">Selecione o nível</option>
+                            {levels.map(level => (
+                                <option key={level.id} value={level.name}>{level.name}</option>
+                            ))}
                         </select>
                     </div>
                 </div>
@@ -128,12 +210,21 @@ const Step1BasicData: React.FC<StepProps> = ({ data, onUpdate, onNext, onCancel 
                             <option value="">Selecione o tipo</option>
                             <option value="CLT">CLT</option>
                             <option value="PJ">PJ</option>
+                            <option value="Temporário">Temporário</option>
+                            <option value="Estágio">Estágio</option>
                         </select>
                     </div>
                     <div>
                         <label className="block text-xs text-gray-500 mb-1.5">Jornada de trabalho</label>
-                        <select className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm bg-white">
-                            <option>Selecione a jornada</option>
+                        <select 
+                            value={data.journey}
+                            onChange={(e) => onUpdate({ journey: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F04E23] text-sm bg-white"
+                        >
+                            <option value="">Selecione a jornada</option>
+                            {schedules.map(schedule => (
+                                <option key={schedule.id} value={schedule.name}>{schedule.name}</option>
+                            ))}
                         </select>
                     </div>
                     <div>
