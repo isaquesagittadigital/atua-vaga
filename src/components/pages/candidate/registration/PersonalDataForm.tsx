@@ -9,10 +9,12 @@ interface PersonalDataFormProps {
     readOnly?: boolean;
     canEdit?: boolean;
     hideSkip?: boolean;
+    externalProfile?: any;
 }
 
-const PersonalDataForm: React.FC<PersonalDataFormProps> = ({ onNext, readOnly = false, canEdit = false, hideSkip = false }) => {
-    const { user, profile, refreshUser } = useAuth();
+const PersonalDataForm: React.FC<PersonalDataFormProps> = ({ onNext, readOnly = false, canEdit = false, hideSkip = false, externalProfile }) => {
+    const { user, profile: authProfile, refreshUser } = useAuth();
+    const profile = externalProfile || authProfile;
     const [loading, setLoading] = useState(false);
     const [isEditing, setIsEditing] = useState(!canEdit);
     
@@ -41,13 +43,13 @@ const PersonalDataForm: React.FC<PersonalDataFormProps> = ({ onNext, readOnly = 
                 phone: profile.phone || '',
                 birth_date: formatDateToLocale(profile.birth_date || ''),
                 civil_status: profile.civil_status || '',
-                cep: (profile as any).cep || '',
-                city: (profile as any).city || '',
-                state: (profile as any).state || '',
-                street: (profile as any).street || '',
-                number: (profile as any).number || '',
-                neighborhood: (profile as any).neighborhood || '',
-                cnh: (profile as any).cnh || (profile as any).has_cnh || false
+                cep: profile.cep || '',
+                city: profile.city || '',
+                state: profile.state || '',
+                street: profile.street || '',
+                number: profile.number || '',
+                neighborhood: profile.neighborhood || '',
+                cnh: profile.cnh || profile.has_cnh || false
             });
         }
     }, [profile]);
