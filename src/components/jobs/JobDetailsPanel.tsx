@@ -208,7 +208,8 @@ const JobDetailsPanel: React.FC<JobDetailsPanelProps> = ({ job, onClose, isAppli
                 .insert({
                     user_id: user.id,
                     job_id: job.id,
-                    status: 'applied'
+                    status: 'applied',
+                    match_score: matchScore
                 });
 
             if (error) {

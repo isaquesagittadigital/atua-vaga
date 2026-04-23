@@ -297,12 +297,11 @@ app.get('/api/candidates/matches', requireAuth, async (req, res) => {
                     title,
                     company_id
                 ),
-                profiles (
+                profiles:user_id (
                     id,
                     full_name,
                     avatar_url,
                     job_objective,
-                    birth_date,
                     city,
                     state
                 )
@@ -317,14 +316,13 @@ app.get('/api/candidates/matches', requireAuth, async (req, res) => {
         const candidates = (apps || []).map((app: any) => {
             const profile = app.profiles;
             
-            // Calculate age if needed, or just use objective as role
             return {
-                id: profile.id,
-                role: profile.job_objective || 'Candidato',
+                id: profile?.id,
+                role: profile?.job_objective || 'Candidato',
                 matchPercentage: app.match_score || 0,
-                companyRef: profile.full_name || 'Usuário',
-                location: profile.city && profile.state ? `${profile.city}, ${profile.state}` : 'Brasil',
-                imgUrl: profile.avatar_url
+                companyRef: profile?.full_name || 'Usuário',
+                location: profile?.city && profile?.state ? `${profile.city}, ${profile.state}` : 'Brasil',
+                imgUrl: profile?.avatar_url
             };
         });
 

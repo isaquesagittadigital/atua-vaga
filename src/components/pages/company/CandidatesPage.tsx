@@ -10,13 +10,22 @@ const CandidatesPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Simulação de busca de dados (depois pode ser substituído pela API real)
         const fetchCandidates = async () => {
+            if (!session?.access_token) return;
             setLoading(true);
             try {
-                // Aqui entraria a chamada de API
-                // const { data } = await supabase.from('candidates').select('*')...
-                setCandidates([]); // Forçando lista vazia para mostrar o empty state solicitado
+                const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+                const response = await fetch(`${apiUrl}/candidates/matches`, {
+                    headers: {
+                        'Authorization': `Bearer ${session.access_token}`
+                    }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    setCandidates(data);
+                }
+            } catch (error) {
+                console.error('Error fetching candidates:', error);
             } finally {
                 setLoading(false);
             }
@@ -59,12 +68,43 @@ const CandidatesPage: React.FC = () => {
                     </button>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 gap-4">
-                    {/* Lista de candidatos aqui quando houver dados */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {candidates.map(candidate => (
+                        <CandidateCard key={candidate.id} candidate={candidate} />
+                    ))}
                 </div>
             )}
         </div>
     );
 };
+
+const CandidateCard: React.FC<{ candidate: any }> = ({ candidate }) => (
+    <div className="bg-white p-6 rounded-[24px] border border-gray-100 shadow-sm hover:shadow-md transition-all group">
+        <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center overflow-hidden">
+                    {candidate.imgUrl ? (
+                        <img src={candidate.imgUrl} alt={candidate.companyRef} className="w-full h-full object-cover" />
+                    ) : (
+                        <span className="text-blue-500 font-bold text-xl">{candidate.companyRef?.charAt(0)}</span>
+                    )}
+                </div>
+                <div>
+                    <h4 className="font-bold text-gray-900 group-hover:text-[#F04E23] transition-colors">{candidate.companyRef}</h4>
+                    <p className="text-xs text-gray-500">{candidate.role}</p>
+                </div>
+            </div>
+            <div className="bg-orange-50 text-orange-600 px-3 py-1 rounded-full text-xs font-black border border-orange-100">
+                {candidate.matchPercentage}% match
+            </div>
+        </div>
+        <div className="flex items-center gap-2 text-xs text-gray-400 mb-6">
+            <span>{candidate.location}</span>
+        </div>
+        <button className="w-full py-3 bg-gray-50 text-gray-700 font-bold rounded-xl hover:bg-gray-100 transition-colors text-sm">
+            Ver perfil completo
+        </button>
+    </div>
+);
 
 export default CandidatesPage;
