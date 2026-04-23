@@ -3,10 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import MetricCard from '../../ui/MetricCard';
 import CandidateMatchCard from '../../ui/CandidateMatchCard';
 import { useAuth } from '@/contexts/AuthContext';
+import CompanyOnboardingModal from '../../modals/CompanyOnboardingModal';
 
 const Dashboard: React.FC = () => {
     const navigate = useNavigate();
-    const { session } = useAuth();
+    const { session, company } = useAuth();
 
     const [metrics, setMetrics] = useState({
         openJobs: 0,
@@ -19,6 +20,7 @@ const Dashboard: React.FC = () => {
 
     const [matches, setMatches] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -51,7 +53,13 @@ const Dashboard: React.FC = () => {
         };
 
         fetchData();
-    }, [session]);
+
+        // Se o onboarding não estiver completo, abre o modal automaticamente após um pequeno delay
+        if (company && !company.onboarding_completed) {
+            const timer = setTimeout(() => setIsOnboardingOpen(true), 1500);
+            return () => clearTimeout(timer);
+        }
+    }, [session, company]);
 
     return (
         <div className="max-w-[1400px] w-full mx-auto px-6 py-8">
@@ -59,10 +67,10 @@ const Dashboard: React.FC = () => {
             <div className="flex items-center justify-between mb-10">
                 <h1 className="text-3xl font-black text-gray-900">Indicadores</h1>
                 <button
-                    onClick={() => navigate('/company/onboarding')}
+                    onClick={() => setIsOnboardingOpen(true)}
                     className="px-6 py-3 bg-[#F04E23] text-white font-bold rounded-xl hover:bg-[#E03E13] transition-all shadow-lg shadow-orange-500/20 text-sm"
                 >
-                    Perguntas técnicas
+                    Configurar Perfil
                 </button>
             </div>
 
@@ -99,6 +107,16 @@ const Dashboard: React.FC = () => {
                     )}
                 </div>
             </div>
+
+            {/* Modal de Onboarding */}
+            <CompanyOnboardingModal 
+                isOpen={isOnboardingOpen} 
+                onClose={() => setIsOnboardingOpen(false)}
+                onComplete={() => {
+                    // Opcional: recarregar dados ou mostrar mensagem de sucesso
+                    console.log('Onboarding concluído');
+                }}
+            />
         </div>
     );
 };
